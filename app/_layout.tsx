@@ -1,3 +1,4 @@
+// app/_layout.tsx
 import Constants from "expo-constants";
 import { Stack } from "expo-router";
 import { PrivyProvider } from "@privy-io/expo";
@@ -15,13 +16,19 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
   });
+  
   return (
     <PrivyProvider
       appId={Constants.expoConfig?.extra?.privyAppId}
       clientId={Constants.expoConfig?.extra?.privyClientId}
     >
-      <Stack>
-        <Stack.Screen name="index" />
+      <Stack screenOptions={{ 
+        headerShown: false,
+        statusBarStyle: 'light',
+        statusBarTranslucent: true,
+        statusBarBackgroundColor: 'transparent'
+      }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
       </Stack>
       <PrivyElements />
     </PrivyProvider>
