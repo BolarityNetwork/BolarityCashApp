@@ -481,14 +481,11 @@ const PerfectVaultSavingsPlatform = () => {
             <View style={styles.balanceSection}>
               <View style={styles.balanceHeader}>
                 <Text style={styles.balanceLabel}>Total Savings Balance</Text>
-                <TouchableOpacity onPress={() => setShowBalance(!showBalance)}>
-                  <IconComponent name={showBalance ? "Eye" : "EyeOff"} size={16} color="#6b7280" />
-                </TouchableOpacity>
               </View>
               <View style={styles.balanceContent}>
-                <View>
+                <View style={styles.balanceLeft}>
                   <Text style={styles.balanceAmount}>
-                    ${showBalance ? totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '••••••••'}
+                    ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Text>
                   <View style={styles.earningsRow}>
                     <View style={styles.earningsItem}>
@@ -503,7 +500,6 @@ const PerfectVaultSavingsPlatform = () => {
                 </View>
                 <View style={styles.apyBadge}>
                   <Text style={styles.apyText}>Earning 8.4%</Text>
-                  <Text style={styles.apySubtext}>Across all vaults</Text>
                 </View>
               </View>
             </View>
@@ -1234,7 +1230,10 @@ const styles = StyleSheet.create({
   balanceContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
+  },
+  balanceLeft: {
+    flex: 1,
   },
   balanceAmount: {
     fontSize: 26,
@@ -1266,6 +1265,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: -4,
   },
   apyText: {
     fontSize: 14,
@@ -1280,12 +1281,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 200, // Space for fixed header (reduced from 250)
+    paddingTop: 270, // Space for fixed header (increased to 270px)
     paddingBottom: 10, // Reduced bottom padding
   },
   chartSection: {
     paddingHorizontal: 24,
-    marginBottom: 32,
+    marginBottom: 20,
     marginTop: 16,
   },
   chartContainer: {
@@ -1380,7 +1381,7 @@ const styles = StyleSheet.create({
   vaultSection: {
     paddingHorizontal: 24,
     marginBottom: 32,
-    marginTop: 32,
+    marginTop: 16,
   },
   sectionHeader: {
     flexDirection: 'row',

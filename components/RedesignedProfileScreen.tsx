@@ -18,29 +18,27 @@ import {
   usePrivy,
   useEmbeddedEthereumWallet,
   getUserEmbeddedEthereumWallet,
-  PrivyEmbeddedWalletProvider,
   useLinkWithOAuth,
 } from "@privy-io/expo";
 import Constants from "expo-constants";
 import { useLinkWithPasskey } from "@privy-io/expo/passkey";
-import { PrivyUser } from "@privy-io/public-api";
 
 const { width } = Dimensions.get('window');
 
-const toMainIdentifier = (x: PrivyUser["linked_accounts"][number]) => {
-  if (x.type === "phone") {
-    return x.phoneNumber;
+const toMainIdentifier = (account: any) => {
+  if (account.type === "phone") {
+    return account.phoneNumber;
   }
-  if (x.type === "email" || x.type === "wallet") {
-    return x.address;
+  if (account.type === "email" || account.type === "wallet") {
+    return account.address;
   }
-  if (x.type === "twitter_oauth" || x.type === "tiktok_oauth") {
-    return x.username;
+  if (account.type === "twitter_oauth" || account.type === "tiktok_oauth") {
+    return account.username;
   }
-  if (x.type === "custom_auth") {
-    return x.custom_user_id;
+  if (account.type === "custom_auth") {
+    return account.custom_user_id;
   }
-  return x.type;
+  return account.type;
 };
 
 const getProviderIcon = (type: string) => {
@@ -59,13 +57,15 @@ const getProviderIcon = (type: string) => {
   return icons[type] || "🔗";
 };
 
-export const RedesignedProfileScreen = () => {
+const RedesignedProfileScreen: React.FC = () => {
   const [chainId, setChainId] = useState("1");
+  const [solanaNetwork, setSolanaNetwork] = useState("mainnet-beta");
   const [signedMessages, setSignedMessages] = useState<string[]>([]);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [showMessagesModal, setShowMessagesModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showSolanaModal, setShowSolanaModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -76,7 +76,7 @@ export const RedesignedProfileScreen = () => {
   const account = getUserEmbeddedEthereumWallet(user);
 
   const signMessage = useCallback(
-    async (provider: PrivyEmbeddedWalletProvider) => {
+    async (provider: any) => {
       setIsLoading(true);
       try {
         const message = await provider.request({
@@ -98,7 +98,7 @@ export const RedesignedProfileScreen = () => {
   );
 
   const switchChain = useCallback(
-    async (provider: PrivyEmbeddedWalletProvider, id: string) => {
+    async (provider: any, id: string) => {
       setIsLoading(true);
       try {
         await provider.request({
@@ -109,6 +109,23 @@ export const RedesignedProfileScreen = () => {
       } catch (e) {
         console.error(e);
         Alert.alert("Error", "Failed to switch chain");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const switchSolanaNetwork = useCallback(
+    async (network: string) => {
+      setIsLoading(true);
+      try {
+        // 模拟Solana网络切换
+        setSolanaNetwork(network);
+        Alert.alert("Success", `Solana network switched to ${network}`);
+      } catch (e) {
+        console.error(e);
+        Alert.alert("Error", "Failed to switch Solana network");
       } finally {
         setIsLoading(false);
       }
@@ -224,6 +241,16 @@ export const RedesignedProfileScreen = () => {
                   <Text style={styles.quickActionIcon}>✍️</Text>
                 </View>
                 <Text style={styles.quickActionText}>Messages</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.quickActionButton}
+                onPress={() => setShowSolanaModal(true)}
+              >
+                <View style={[styles.quickActionIconContainer, { backgroundColor: '#ecfdf5' }]}>
+                  <Text style={styles.quickActionIcon}>🌞</Text>
+                </View>
+                <Text style={styles.quickActionText}>Solana</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -371,19 +398,19 @@ export const RedesignedProfileScreen = () => {
 
             {expandedSection === 'accounts' && (
               <View style={styles.sectionContent}>
-                {user.linked_accounts.slice(0, 3).map((account, index) => (
+                {user.linked_accounts.slice(0, 3).map((accountItem, index) => (
                   <View key={index} style={styles.accountPreview}>
                     <View style={styles.accountIconContainer}>
                       <Text style={styles.accountIcon}>
-                        {getProviderIcon(account.type)}
+                        {getProviderIcon(accountItem.type)}
                       </Text>
                     </View>
                     <View style={styles.accountInfo}>
                       <Text style={styles.accountType}>
-                        {account.type.replace('_oauth', '').replace('_', ' ')}
+                        {accountItem.type.replace('_oauth', '').replace('_', ' ')}
                       </Text>
                       <Text style={styles.accountId}>
-                        {toMainIdentifier(account)}
+                        {toMainIdentifier(accountItem)}
                       </Text>
                     </View>
                     <View style={styles.accountStatus}>
@@ -510,6 +537,61 @@ export const RedesignedProfileScreen = () => {
         </SafeAreaView>
       </Modal>
 
+      {/* Solana Network Modal */}
+      <Modal
+        visible={showSolanaModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowSolanaModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Solana Network</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowSolanaModal(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <View style={styles.modalSection}>
+              <Text style={styles.modalSectionTitle}>🌞 Current Network</Text>
+              <View style={styles.networkCard}>
+                <Text style={styles.currentNetwork}>{solanaNetwork}</Text>
+              </View>
+            </View>
+
+            <View style={styles.modalSection}>
+              <Text style={styles.modalSectionTitle}>Available Networks</Text>
+              {['mainnet-beta', 'testnet', 'devnet'].map((network) => (
+                <TouchableOpacity
+                  key={network}
+                  style={[
+                    styles.networkOption,
+                    solanaNetwork === network && styles.activeNetworkOption
+                  ]}
+                  onPress={() => switchSolanaNetwork(network)}
+                  disabled={isLoading}
+                >
+                  <View style={styles.networkInfo}>
+                    <Text style={styles.networkName}>{network}</Text>
+                    <Text style={styles.networkDesc}>
+                      {network === 'mainnet-beta' ? 'Production network' :
+                       network === 'testnet' ? 'Testing network' : 'Development network'}
+                    </Text>
+                  </View>
+                  {solanaNetwork === network && (
+                    <Text style={styles.networkCheck}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
       {/* Accounts Modal */}
       <Modal
         visible={showAccountsModal}
@@ -529,19 +611,19 @@ export const RedesignedProfileScreen = () => {
           </View>
 
           <ScrollView style={styles.modalContent}>
-            {user.linked_accounts.map((account, index) => (
+            {user.linked_accounts.map((accountItem, index) => (
               <View key={index} style={styles.fullAccountItem}>
                 <View style={styles.fullAccountIcon}>
                   <Text style={styles.fullAccountIconText}>
-                    {getProviderIcon(account.type)}
+                    {getProviderIcon(accountItem.type)}
                   </Text>
                 </View>
                 <View style={styles.fullAccountInfo}>
                   <Text style={styles.fullAccountType}>
-                    {account.type.replace('_oauth', '').replace('_', ' ')}
+                    {accountItem.type.replace('_oauth', '').replace('_', ' ')}
                   </Text>
                   <Text style={styles.fullAccountId}>
-                    {toMainIdentifier(account)}
+                    {toMainIdentifier(accountItem)}
                   </Text>
                 </View>
                 <View style={styles.fullAccountBadge}>
@@ -808,10 +890,11 @@ const styles = StyleSheet.create({
   },
   quickActions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   quickActionButton: {
-    flex: 1,
+    width: '47%',
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
@@ -1253,6 +1336,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  // Solana specific styles
+  networkCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  currentNetwork: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    textTransform: 'capitalize',
+  },
+  networkOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  activeNetworkOption: {
+    backgroundColor: '#ecfdf5',
+    borderColor: '#10b981',
+  },
+  networkInfo: {
+    flex: 1,
+  },
+  networkName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    textTransform: 'capitalize',
+  },
+  networkDesc: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  networkCheck: {
+    fontSize: 18,
+    color: '#10b981',
+    fontWeight: 'bold',
+  },
   fullAccountItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1405,3 +1534,6 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
   },
 });
+
+export default RedesignedProfileScreen;
+
