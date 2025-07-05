@@ -29,10 +29,33 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
     };
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
+  // Package exports in `@noble/hashes` have issues with crypto.js
+  if (moduleName === "@noble/hashes/crypto") {
+    const ctx = {
+      ...context,
+      unstable_enablePackageExports: false,
+    };
+    return ctx.resolveRequest(ctx, moduleName, platform);
+  }
 
   return context.resolveRequest(context, moduleName, platform);
 };
 
 config.resolver.resolveRequest = resolveRequestWithPackageExports;
+
+// 添加对 @noble/hashes 的别名解析
+config.resolver.alias = {
+  ...config.resolver.alias,
+  '@noble/hashes/crypto': '@noble/hashes/crypto.js',
+};
+
+// 添加对 .mjs 文件的支持
+config.resolver.sourceExts = [
+  ...config.resolver.sourceExts,
+  'mjs',
+];
+
+// 添加对 crypto polyfills 的支持
+config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
 module.exports = config;

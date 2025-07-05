@@ -1138,15 +1138,15 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   headerContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 6,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   logoSection: {
     flexDirection: 'row',
@@ -1205,7 +1205,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   userInfo: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   userLabel: {
     fontSize: 12,
@@ -1219,7 +1219,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   balanceSection: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   balanceHeader: {
     flexDirection: 'row',
@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   balanceAmount: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: '300',
     color: '#111827',
     marginBottom: 0,
@@ -1262,9 +1262,9 @@ const styles = StyleSheet.create({
   },
   apyBadge: {
     backgroundColor: '#10b981',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
     alignItems: 'center',
   },
   apyText: {
@@ -1280,8 +1280,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 250, // Space for fixed header
-    paddingBottom: 20, // Reduced bottom padding since no bottom nav
+    paddingTop: 200, // Space for fixed header (reduced from 250)
+    paddingBottom: 10, // Reduced bottom padding
   },
   chartSection: {
     paddingHorizontal: 24,
