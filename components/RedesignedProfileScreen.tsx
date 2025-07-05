@@ -12,8 +12,10 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Clipboard from 'expo-clipboard';
 import {
   usePrivy,
   useEmbeddedEthereumWallet,
@@ -22,8 +24,145 @@ import {
 } from "@privy-io/expo";
 import Constants from "expo-constants";
 import { useLinkWithPasskey } from "@privy-io/expo/passkey";
+import { useMultiChainWallet, useSolanaOperations } from '../hooks/useMultiChainWallet';
 
 const { width } = Dimensions.get('window');
+
+// 🖼️ 安全导入本地logo图片 - 带try-catch处理
+let ethereumLogo, solanaLogo;
+
+try {
+  ethereumLogo = require('../assets/logos/ethereum.png');
+} catch (e) {
+  console.warn('Ethereum logo not found');
+}
+
+try {
+  solanaLogo = require('../assets/logos/solana.png');
+} catch (e) {
+  console.warn('Solana logo not found');
+}
+
+// 为 getProviderIcon 重新导入 PNG 图片
+let ethereumProviderLogo, solanaProviderLogo;
+
+try {
+  ethereumProviderLogo = require('../assets/logos/ethereum.png');
+  console.log('✅ Ethereum provider logo loaded');
+} catch (e) {
+  console.warn('❌ Ethereum provider logo not found:', e);
+  ethereumProviderLogo = null;
+}
+
+try {
+  solanaProviderLogo = require('../assets/logos/solana.png');
+  console.log('✅ Solana provider logo loaded');
+} catch (e) {
+  console.warn('❌ Solana provider logo not found:', e);
+  solanaProviderLogo = null;
+}
+
+// 修复后的 WalletLogo 组件
+const WalletLogo = ({ type, size = 32, style = {} }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  const logoSrc = type === 'ethereum' ? ethereumLogo : solanaLogo;
+  const fallbackIcon = type === 'ethereum' ? '🔷' : '🌞';
+  
+  console.log(`🎯 WalletLogo ${type}:`, {
+    logoSrc: !!logoSrc,
+    imageLoaded,
+    imageError
+  });
+  
+  // 重置状态当type改变时
+  React.useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [type]);
+  
+  // 如果没有logo源文件，显示fallback
+  if (!logoSrc) {
+    console.log(`❌ No logo source for ${type}`);
+    return (
+      <View style={[{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: '#f3f4f6',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#e5e7eb'
+      }, style]}>
+        <Text style={{ fontSize: size * 0.6 }}>
+          {fallbackIcon}
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[{ position: 'relative' }, style]}>
+      {/* 始终渲染图片，即使还在加载中 */}
+      <Image
+        source={logoSrc}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: 1,
+          borderColor: '#e5e7eb',
+          backgroundColor: imageLoaded ? 'transparent' : '#f3f4f6',
+        }}
+        onLoad={() => {
+          console.log(`✅ ${type} logo loaded`);
+          setImageLoaded(true);
+        }}
+        onError={(error) => {
+          console.log(`❌ ${type} logo error:`, error.nativeEvent);
+          setImageError(true);
+        }}
+        onLoadStart={() => {
+          console.log(`🔄 ${type} logo loading started`);
+        }}
+      />
+      
+      {/* 只有在图片加载失败时才显示fallback覆盖层 */}
+      {imageError && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: '#f3f4f6',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderWidth: 1,
+          borderColor: '#e5e7eb',
+        }}>
+          <Text style={{ fontSize: size * 0.6 }}>
+            {fallbackIcon}
+          </Text>
+        </View>
+      )}
+      
+      {/* 调试指示器 */}
+      <View style={{
+        position: 'absolute',
+        top: 2,
+        right: 2,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: imageError ? 'red' : (imageLoaded ? 'green' : 'orange'),
+      }} />
+    </View>
+  );
+};
 
 const toMainIdentifier = (account: any) => {
   if (account.type === "phone") {
@@ -41,11 +180,48 @@ const toMainIdentifier = (account: any) => {
   return account.type;
 };
 
-const getProviderIcon = (type: string) => {
+// 更新后的 getProviderIcon 函数，返回组件而不是字符串
+const getProviderIcon = (type: string, size: number = 18) => {
+  // 对于 ethereum 和 solana，返回 PNG 图片组件
+  if (type === 'ethereum' && ethereumProviderLogo) {
+    return (
+      <Image
+        source={ethereumProviderLogo}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        onError={() => {
+          console.log('❌ Ethereum provider icon failed to load');
+        }}
+      />
+    );
+  }
+  
+  if (type === 'solana' && solanaProviderLogo) {
+    return (
+      <Image
+        source={solanaProviderLogo}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        onError={() => {
+          console.log('❌ Solana provider icon failed to load');
+        }}
+      />
+    );
+  }
+  
+  // 对于其他类型或PNG加载失败时，返回 emoji 组件
   const icons: { [key: string]: string } = {
     email: "📧",
     phone: "📱",
     wallet: "💼",
+    solana: "🌞",      // fallback
+    ethereum: "🔷",    // fallback
     twitter_oauth: "🐦",
     tiktok_oauth: "🎵",
     google: "🔍",
@@ -54,18 +230,24 @@ const getProviderIcon = (type: string) => {
     apple: "🍎",
     custom_auth: "🔐",
   };
-  return icons[type] || "🔗";
+  
+  const icon = icons[type] || "🔗";
+  
+  return (
+    <Text style={{ fontSize: size * 0.9 }}>
+      {icon}
+    </Text>
+  );
 };
 
 const RedesignedProfileScreen: React.FC = () => {
   const [chainId, setChainId] = useState("1");
-  const [solanaNetwork, setSolanaNetwork] = useState("mainnet-beta");
   const [signedMessages, setSignedMessages] = useState<string[]>([]);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [showMessagesModal, setShowMessagesModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showSolanaModal, setShowSolanaModal] = useState(false);
+  const [showWalletSwitchModal, setShowWalletSwitchModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -74,6 +256,38 @@ const RedesignedProfileScreen: React.FC = () => {
   const oauth = useLinkWithOAuth();
   const { wallets, create } = useEmbeddedEthereumWallet();
   const account = getUserEmbeddedEthereumWallet(user);
+  
+  // 多链钱包管理
+  const {
+    activeWalletType,
+    ethereumWallet,
+    solanaWallet,
+    hasSolanaWallet,
+    isCreatingSolanaWallet,
+    switchWalletType,
+    createSolanaWallet,
+    removeSolanaWallet,
+    activeWallet,
+    canSwitchTo
+  } = useMultiChainWallet();
+
+  // Solana操作
+  const { signMessage: signSolanaMessage } = useSolanaOperations();
+
+  // 复制地址到剪贴板
+  const copyToClipboard = useCallback(async (address: string, walletType: string) => {
+    try {
+      await Clipboard.setStringAsync(address);
+      Alert.alert(
+        'Copy Success',
+        `${walletType} address copied to clipboard`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Copy failed:', error);
+      Alert.alert('Error', 'Failed to copy address');
+    }
+  }, []);
 
   const signMessage = useCallback(
     async (provider: any) => {
@@ -84,18 +298,38 @@ const RedesignedProfileScreen: React.FC = () => {
           params: [`0x${Date.now()}`, account?.address],
         });
         if (message) {
-          setSignedMessages((prev) => prev.concat(message));
-          Alert.alert("Success", "Message signed successfully!");
+          setSignedMessages((prev) => prev.concat(`Ethereum: ${message}`));
+          Alert.alert("Success", "Ethereum message signed successfully!");
         }
       } catch (e) {
         console.error(e);
-        Alert.alert("Error", "Failed to sign message");
+        Alert.alert("Error", "Failed to sign Ethereum message");
       } finally {
         setIsLoading(false);
       }
     },
     [account?.address]
   );
+
+  const handleSolanaSignMessage = useCallback(async () => {
+    if (activeWalletType !== 'solana' || !hasSolanaWallet) {
+      Alert.alert('Notice', 'Please switch to Solana wallet first');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const message = `Test message ${Date.now()}`;
+      const signature = await signSolanaMessage(message);
+      setSignedMessages(prev => [`Solana: ${signature}`, ...prev]);
+      Alert.alert("Success", "Solana message signed successfully!");
+    } catch (error) {
+      console.error('Solana sign failed:', error);
+      Alert.alert("Error", "Failed to sign Solana message");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeWalletType, hasSolanaWallet, signSolanaMessage]);
 
   const switchChain = useCallback(
     async (provider: any, id: string) => {
@@ -109,23 +343,6 @@ const RedesignedProfileScreen: React.FC = () => {
       } catch (e) {
         console.error(e);
         Alert.alert("Error", "Failed to switch chain");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  const switchSolanaNetwork = useCallback(
-    async (network: string) => {
-      setIsLoading(true);
-      try {
-        // 模拟Solana网络切换
-        setSolanaNetwork(network);
-        Alert.alert("Success", `Solana network switched to ${network}`);
-      } catch (e) {
-        console.error(e);
-        Alert.alert("Error", "Failed to switch Solana network");
       } finally {
         setIsLoading(false);
       }
@@ -191,6 +408,28 @@ const RedesignedProfileScreen: React.FC = () => {
               ID: {formatAddress(user.id)}
             </Text>
             
+            {/* 当前活跃钱包显示 - 使用 WalletLogo 组件 */}
+            <TouchableOpacity 
+              style={styles.currentWalletCard}
+              onPress={() => setShowWalletSwitchModal(true)}
+            >
+              <WalletLogo 
+                type={activeWallet.iconType} 
+                size={28} 
+                style={{ marginRight: 12 }} 
+              />
+              <View style={styles.currentWalletInfo}>
+                <Text style={styles.currentWalletType}>
+                  {activeWallet.type === 'ethereum' ? 'Ethereum Wallet' : 'Solana Wallet'}
+                </Text>
+                <Text style={styles.currentWalletAddress}>
+                  {activeWallet.address ? formatAddress(activeWallet.address) : 'Not connected'}
+                </Text>
+                <Text style={styles.currentWalletNetwork}>{activeWallet.network}</Text>
+              </View>
+              <Text style={styles.switchIcon}>🔄</Text>
+            </TouchableOpacity>
+            
             <View style={styles.profileStats}>
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>{user.linked_accounts.length}</Text>
@@ -203,7 +442,9 @@ const RedesignedProfileScreen: React.FC = () => {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{wallets.length}</Text>
+                <Text style={styles.statNumber}>
+                  {(ethereumWallet ? 1 : 0) + (hasSolanaWallet ? 1 : 0)}
+                </Text>
                 <Text style={styles.statLabel}>Wallets</Text>
               </View>
             </View>
@@ -215,12 +456,12 @@ const RedesignedProfileScreen: React.FC = () => {
             <View style={styles.quickActions}>
               <TouchableOpacity
                 style={styles.quickActionButton}
-                onPress={() => setShowWalletModal(true)}
+                onPress={() => setShowWalletSwitchModal(true)}
               >
                 <View style={[styles.quickActionIconContainer, { backgroundColor: '#f0f9ff' }]}>
-                  <Text style={styles.quickActionIcon}>💼</Text>
+                  <Text style={styles.quickActionIcon}>🔄</Text>
                 </View>
-                <Text style={styles.quickActionText}>Wallet</Text>
+                <Text style={styles.quickActionText}>Switch Wallet</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -245,17 +486,24 @@ const RedesignedProfileScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={styles.quickActionButton}
-                onPress={() => setShowSolanaModal(true)}
+                onPress={() => {
+                  if (activeWalletType === 'ethereum' && wallets.length > 0) {
+                    signMessage(wallets[0].getProvider());
+                  } else if (activeWalletType === 'solana') {
+                    handleSolanaSignMessage();
+                  }
+                }}
+                disabled={isLoading}
               >
                 <View style={[styles.quickActionIconContainer, { backgroundColor: '#ecfdf5' }]}>
-                  <Text style={styles.quickActionIcon}>🌞</Text>
+                  <Text style={styles.quickActionIcon}>✍️</Text>
                 </View>
-                <Text style={styles.quickActionText}>Solana</Text>
+                <Text style={styles.quickActionText}>Sign Message</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Wallet Section */}
+          {/* Multi-Chain Wallet Section */}
           <View style={styles.section}>
             <TouchableOpacity
               style={styles.sectionHeader}
@@ -265,7 +513,7 @@ const RedesignedProfileScreen: React.FC = () => {
                 <View style={styles.sectionIconContainer}>
                   <Text style={styles.sectionIcon}>💰</Text>
                 </View>
-                <Text style={styles.sectionTitleText}>Embedded Wallet</Text>
+                <Text style={styles.sectionTitleText}>Multi-Chain Wallets</Text>
               </View>
               <Text style={styles.expandIcon}>
                 {expandedSection === 'wallet' ? '▼' : '▶'}
@@ -274,46 +522,177 @@ const RedesignedProfileScreen: React.FC = () => {
 
             {expandedSection === 'wallet' && (
               <View style={styles.sectionContent}>
-                {account?.address ? (
-                  <View style={styles.walletInfo}>
+                {/* Ethereum Wallet */}
+                <View style={styles.walletSection}>
+                  <View style={styles.walletSectionHeader}>
+                    <View style={styles.walletTitleContainer}>
+                      <WalletLogo type="ethereum" size={24} style={{ marginRight: 8 }} />
+                      <Text style={styles.walletSectionTitle}>Ethereum Wallet</Text>
+                    </View>
+                    {activeWalletType === 'ethereum' && (
+                      <View style={styles.activeWalletBadge}>
+                        <Text style={styles.activeWalletBadgeText}>Active</Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  {ethereumWallet?.address ? (
                     <View style={styles.walletCard}>
                       <LinearGradient
-                        colors={['#667eea', '#764ba2']}
+                        colors={activeWalletType === 'ethereum' ? ['#667eea', '#764ba2'] : ['#94a3b8', '#64748b']}
                         style={styles.walletCardGradient}
                       >
                         <View style={styles.walletStatusContainer}>
                           <View style={styles.walletStatusDot} />
-                          <Text style={styles.walletStatus}>Active</Text>
+                          <Text style={styles.walletStatus}>Connected</Text>
                         </View>
-                        <Text style={styles.walletAddress}>
-                          {formatAddress(account.address)}
-                        </Text>
+                        
+                        {/* 地址显示区域 */}
+                        <View style={styles.addressContainer}>
+                          <Text style={styles.walletAddress}>
+                            {formatAddress(ethereumWallet.address)}
+                          </Text>
+                          <TouchableOpacity 
+                            style={styles.copyButton}
+                            onPress={() => copyToClipboard(ethereumWallet.address, 'Ethereum')}
+                          >
+                            <Text style={styles.copyIcon}>📋</Text>
+                          </TouchableOpacity>
+                        </View>
+                        
                         <TouchableOpacity
                           style={styles.walletManageButton}
-                          onPress={() => setShowWalletModal(true)}
+                          onPress={() => {
+                            if (activeWalletType !== 'ethereum') {
+                              switchWalletType('ethereum');
+                            }
+                            setShowWalletModal(true);
+                          }}
                         >
-                          <Text style={styles.walletManageText}>Manage Wallet</Text>
+                          <Text style={styles.walletManageText}>
+                            {activeWalletType === 'ethereum' ? 'Manage' : 'Switch to ETH'}
+                          </Text>
                         </TouchableOpacity>
                       </LinearGradient>
                     </View>
-                  </View>
-                ) : (
-                  <View style={styles.walletCreate}>
-                    <View style={styles.emptyWalletIcon}>
-                      <Text style={styles.emptyWalletIconText}>💼</Text>
+                  ) : (
+                    <View style={styles.walletCreate}>
+                      <View style={styles.emptyWalletIcon}>
+                        <WalletLogo type="ethereum" size={40} />
+                      </View>
+                      <Text style={styles.walletCreateTitle}>No Ethereum Wallet</Text>
+                      <Text style={styles.walletCreateDesc}>
+                        Create an Ethereum wallet to use ETH DeFi features
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.createButton}
+                        onPress={() => create()}
+                      >
+                        <Text style={styles.createButtonText}>Create ETH Wallet</Text>
+                      </TouchableOpacity>
                     </View>
-                    <Text style={styles.walletCreateTitle}>No Wallet Found</Text>
-                    <Text style={styles.walletCreateDesc}>
-                      Create an embedded wallet to start using DeFi features
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.createButton}
-                      onPress={() => create()}
-                    >
-                      <Text style={styles.createButtonText}>Create Wallet</Text>
-                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Solana Wallet */}
+                <View style={styles.walletSection}>
+                  <View style={styles.walletSectionHeader}>
+                    <View style={styles.walletTitleContainer}>
+                      <WalletLogo type="solana" size={24} style={{ marginRight: 8 }} />
+                      <Text style={styles.walletSectionTitle}>Solana Wallet</Text>
+                    </View>
+                    {activeWalletType === 'solana' && (
+                      <View style={styles.activeWalletBadge}>
+                        <Text style={styles.activeWalletBadgeText}>Active</Text>
+                      </View>
+                    )}
                   </View>
-                )}
+                  
+                  {hasSolanaWallet ? (
+                    <View style={styles.walletCard}>
+                      <LinearGradient
+                        colors={activeWalletType === 'solana' ? ['#f59e0b', '#d97706'] : ['#94a3b8', '#64748b']}
+                        style={styles.walletCardGradient}
+                      >
+                        <View style={styles.walletStatusContainer}>
+                          <View style={styles.walletStatusDot} />
+                          <Text style={styles.walletStatus}>Connected</Text>
+                        </View>
+                        
+                        {/* 地址显示区域 */}
+                        <View style={styles.addressContainer}>
+                          <Text style={styles.walletAddress}>
+                            {solanaWallet?.address ? formatAddress(solanaWallet.address) : 'Loading...'}
+                          </Text>
+                          {solanaWallet?.address && (
+                            <TouchableOpacity 
+                              style={styles.copyButton}
+                              onPress={() => copyToClipboard(solanaWallet.address, 'Solana')}
+                            >
+                              <Text style={styles.copyIcon}>📋</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        
+                        <View style={styles.walletButtonsRow}>
+                          <TouchableOpacity
+                            style={styles.walletManageButton}
+                            onPress={() => {
+                              if (activeWalletType !== 'solana') {
+                                switchWalletType('solana');
+                              }
+                            }}
+                          >
+                            <Text style={styles.walletManageText}>
+                              {activeWalletType === 'solana' ? 'Active' : 'Switch to SOL'}
+                            </Text>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
+                            style={[styles.walletManageButton, styles.dangerButton]}
+                            onPress={() => {
+                              Alert.alert(
+                                'Confirm Delete',
+                                'Are you sure you want to delete the Solana wallet? This action cannot be undone.',
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { 
+                                    text: 'Delete', 
+                                    style: 'destructive',
+                                    onPress: removeSolanaWallet
+                                  }
+                                ]
+                              );
+                            }}
+                          >
+                            <Text style={styles.walletManageText}>Remove</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </LinearGradient>
+                    </View>
+                  ) : (
+                    <View style={styles.walletCreate}>
+                      <View style={styles.emptyWalletIcon}>
+                        <WalletLogo type="solana" size={40} />
+                      </View>
+                      <Text style={styles.walletCreateTitle}>No Solana Wallet</Text>
+                      <Text style={styles.walletCreateDesc}>
+                        Create a Solana wallet to use SOL DeFi features
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.createButton}
+                        onPress={createSolanaWallet}
+                        disabled={isCreatingSolanaWallet}
+                      >
+                        {isCreatingSolanaWallet ? (
+                          <ActivityIndicator color="#fff" size="small" />
+                        ) : (
+                          <Text style={styles.createButtonText}>Create SOL Wallet</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </View>
             )}
           </View>
@@ -401,9 +780,7 @@ const RedesignedProfileScreen: React.FC = () => {
                 {user.linked_accounts.slice(0, 3).map((accountItem, index) => (
                   <View key={index} style={styles.accountPreview}>
                     <View style={styles.accountIconContainer}>
-                      <Text style={styles.accountIcon}>
-                        {getProviderIcon(accountItem.type)}
-                      </Text>
+                      {getProviderIcon(accountItem.type, 18)}
                     </View>
                     <View style={styles.accountInfo}>
                       <Text style={styles.accountType}>
@@ -440,9 +817,7 @@ const RedesignedProfileScreen: React.FC = () => {
                         onPress={() => oauth.link({ provider } as any)}
                         disabled={oauth.state.status === "loading"}
                       >
-                        <Text style={styles.providerIcon}>
-                          {getProviderIcon(provider)}
-                        </Text>
+                        {getProviderIcon(provider, 16)}
                         <Text style={styles.providerName}>
                           {provider.charAt(0).toUpperCase() + provider.slice(1)}
                         </Text>
@@ -466,127 +841,117 @@ const RedesignedProfileScreen: React.FC = () => {
         </ScrollView>
       </SafeAreaView>
 
-      {/* Wallet Management Modal */}
+      {/* Wallet Switch Modal */}
       <Modal
-        visible={showWalletModal}
+        visible={showWalletSwitchModal}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setShowWalletModal(false)}
+        onRequestClose={() => setShowWalletSwitchModal(false)}
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Wallet Management</Text>
+            <Text style={styles.modalTitle}>Switch Wallet</Text>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setShowWalletModal(false)}
+              onPress={() => setShowWalletSwitchModal(false)}
             >
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent}>
-            {/* Chain Switch Section */}
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>🔄 Switch Chain</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  value={chainId}
-                  onChangeText={setChainId}
-                  placeholder="Enter Chain ID (e.g., 1, 137, 56)"
-                  placeholderTextColor="#9ca3af"
-                />
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={async () => {
-                    if (wallets.length > 0) {
-                      await switchChain(await wallets[0].getProvider(), chainId);
-                    }
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#fff" size="small" />
-                  ) : (
-                    <Text style={styles.actionButtonText}>Switch</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
+            <Text style={styles.modalDescription}>
+              Choose which wallet to use as your primary wallet
+            </Text>
 
-            {/* Sign Message Section */}
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>✍️ Sign Message</Text>
+            {/* Ethereum Wallet Option */}
+            {ethereumWallet?.address && (
               <TouchableOpacity
-                style={[styles.actionButton, styles.fullWidthButton]}
-                onPress={async () => {
-                  if (wallets.length > 0) {
-                    await signMessage(await wallets[0].getProvider());
-                  }
+                style={[
+                  styles.walletOption,
+                  activeWalletType === 'ethereum' && styles.activeWalletOption
+                ]}
+                onPress={() => {
+                  switchWalletType('ethereum');
+                  setShowWalletSwitchModal(false);
                 }}
-                disabled={isLoading}
               >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.actionButtonText}>Sign Test Message</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* Solana Network Modal */}
-      <Modal
-        visible={showSolanaModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowSolanaModal(false)}
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Solana Network</Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowSolanaModal(false)}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>🌞 Current Network</Text>
-              <View style={styles.networkCard}>
-                <Text style={styles.currentNetwork}>{solanaNetwork}</Text>
-              </View>
-            </View>
-
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>Available Networks</Text>
-              {['mainnet-beta', 'testnet', 'devnet'].map((network) => (
-                <TouchableOpacity
-                  key={network}
-                  style={[
-                    styles.networkOption,
-                    solanaNetwork === network && styles.activeNetworkOption
-                  ]}
-                  onPress={() => switchSolanaNetwork(network)}
-                  disabled={isLoading}
-                >
-                  <View style={styles.networkInfo}>
-                    <Text style={styles.networkName}>{network}</Text>
-                    <Text style={styles.networkDesc}>
-                      {network === 'mainnet-beta' ? 'Production network' :
-                       network === 'testnet' ? 'Testing network' : 'Development network'}
+                <View style={styles.walletOptionContent}>
+                  <WalletLogo type="ethereum" size={32} style={{ marginRight: 12 }} />
+                  <View style={styles.walletOptionInfo}>
+                    <Text style={styles.walletOptionTitle}>Ethereum Wallet</Text>
+                    <Text style={styles.walletOptionAddress}>
+                      {formatAddress(ethereumWallet.address)}
                     </Text>
+                    <Text style={styles.walletOptionNetwork}>Ethereum Mainnet</Text>
                   </View>
-                  {solanaNetwork === network && (
-                    <Text style={styles.networkCheck}>✓</Text>
+                  {activeWalletType === 'ethereum' && (
+                    <Text style={styles.walletOptionCheck}>✓</Text>
                   )}
+                </View>
+              </TouchableOpacity>
+            )}
+
+            {/* Solana Wallet Option */}
+            {hasSolanaWallet && solanaWallet && (
+              <TouchableOpacity
+                style={[
+                  styles.walletOption,
+                  activeWalletType === 'solana' && styles.activeWalletOption
+                ]}
+                onPress={() => {
+                  switchWalletType('solana');
+                  setShowWalletSwitchModal(false);
+                }}
+              >
+                <View style={styles.walletOptionContent}>
+                  <WalletLogo type="solana" size={32} style={{ marginRight: 12 }} />
+                  <View style={styles.walletOptionInfo}>
+                    <Text style={styles.walletOptionTitle}>Solana Wallet</Text>
+                    <Text style={styles.walletOptionAddress}>
+                      {formatAddress(solanaWallet.address)}
+                    </Text>
+                    <Text style={styles.walletOptionNetwork}>{solanaWallet.cluster}</Text>
+                  </View>
+                  {activeWalletType === 'solana' && (
+                    <Text style={styles.walletOptionCheck}>✓</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
+
+            {/* Create New Wallet Section */}
+            <View style={styles.createWalletSection}>
+              <Text style={styles.createWalletTitle}>Create New Wallet</Text>
+              
+              {!ethereumWallet?.address && (
+                <TouchableOpacity
+                  style={styles.createWalletButton}
+                  onPress={() => {
+                    create();
+                    setShowWalletSwitchModal(false);
+                  }}
+                >
+                  <WalletLogo type="ethereum" size={24} style={{ marginRight: 12 }} />
+                  <Text style={styles.createWalletText}>Create Ethereum Wallet</Text>
                 </TouchableOpacity>
-              ))}
+              )}
+
+              {!hasSolanaWallet && (
+                <TouchableOpacity
+                  style={styles.createWalletButton}
+                  onPress={async () => {
+                    setShowWalletSwitchModal(false);
+                    await createSolanaWallet();
+                  }}
+                  disabled={isCreatingSolanaWallet}
+                >
+                  <WalletLogo type="solana" size={24} style={{ marginRight: 12 }} />
+                  <Text style={styles.createWalletText}>
+                    {isCreatingSolanaWallet ? 'Creating...' : 'Create Solana Wallet'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -612,22 +977,23 @@ const RedesignedProfileScreen: React.FC = () => {
 
           <ScrollView style={styles.modalContent}>
             {user.linked_accounts.map((accountItem, index) => (
-              <View key={index} style={styles.fullAccountItem}>
-                <View style={styles.fullAccountIcon}>
-                  <Text style={styles.fullAccountIconText}>
-                    {getProviderIcon(accountItem.type)}
-                  </Text>
+              <View key={index} style={styles.accountItem}>
+                <View style={styles.accountIconContainer}>
+                  {getProviderIcon(accountItem.type, 24)}
                 </View>
-                <View style={styles.fullAccountInfo}>
-                  <Text style={styles.fullAccountType}>
-                    {accountItem.type.replace('_oauth', '').replace('_', ' ')}
+                <View style={styles.accountDetailInfo}>
+                  <Text style={styles.accountDetailType}>
+                    {accountItem.type.replace('_oauth', '').replace('_', ' ').toUpperCase()}
                   </Text>
-                  <Text style={styles.fullAccountId}>
+                  <Text style={styles.accountDetailId}>
                     {toMainIdentifier(accountItem)}
                   </Text>
+                  <Text style={styles.accountDetailDate}>
+                    Connected: {new Date().toLocaleDateString()}
+                  </Text>
                 </View>
-                <View style={styles.fullAccountBadge}>
-                  <Text style={styles.fullAccountBadgeText}>✓</Text>
+                <View style={styles.accountStatus}>
+                  <Text style={styles.accountStatusText}>✓</Text>
                 </View>
               </View>
             ))}
@@ -657,19 +1023,19 @@ const RedesignedProfileScreen: React.FC = () => {
             {signedMessages.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateIcon}>📝</Text>
-                <Text style={styles.emptyStateTitle}>No Messages Yet</Text>
-                <Text style={styles.emptyStateText}>
-                  Signed messages will appear here
+                <Text style={styles.emptyStateTitle}>No Messages Signed</Text>
+                <Text style={styles.emptyStateDesc}>
+                  Sign your first message to see it here
                 </Text>
               </View>
             ) : (
               signedMessages.map((message, index) => (
                 <View key={index} style={styles.messageItem}>
-                  <View style={styles.messageHeader}>
-                    <Text style={styles.messageIndex}>#{index + 1}</Text>
-                    <Text style={styles.messageTime}>Just now</Text>
-                  </View>
+                  <Text style={styles.messageIndex}>#{index + 1}</Text>
                   <Text style={styles.messageContent}>{message}</Text>
+                  <Text style={styles.messageTime}>
+                    {new Date().toLocaleString()}
+                  </Text>
                 </View>
               ))
             )}
@@ -696,24 +1062,189 @@ const RedesignedProfileScreen: React.FC = () => {
           </View>
 
           <ScrollView style={styles.modalContent}>
-            {[
-              { icon: '🔔', title: 'Notifications', desc: 'Manage push notifications' },
-              { icon: '🔒', title: 'Privacy', desc: 'Control your privacy settings' },
-              { icon: '🌐', title: 'Language', desc: 'Change app language' },
-              { icon: '❓', title: 'Help & Support', desc: 'Get help and support' },
-              { icon: '📋', title: 'Terms & Privacy', desc: 'Legal information' },
-            ].map((setting, index) => (
-              <TouchableOpacity key={index} style={styles.settingItem}>
-                <View style={styles.settingIconContainer}>
-                  <Text style={styles.settingIcon}>{setting.icon}</Text>
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsSectionTitle}>Preferences</Text>
+              
+              <TouchableOpacity style={styles.settingsItem}>
+                <Text style={styles.settingsItemIcon}>🔔</Text>
+                <View style={styles.settingsItemInfo}>
+                  <Text style={styles.settingsItemTitle}>Notifications</Text>
+                  <Text style={styles.settingsItemDesc}>Manage notification preferences</Text>
                 </View>
-                <View style={styles.settingInfo}>
-                  <Text style={styles.settingTitle}>{setting.title}</Text>
-                  <Text style={styles.settingDesc}>{setting.desc}</Text>
-                </View>
-                <Text style={styles.settingArrow}>›</Text>
+                <Text style={styles.settingsItemArrow}>›</Text>
               </TouchableOpacity>
-            ))}
+
+              <TouchableOpacity style={styles.settingsItem}>
+                <Text style={styles.settingsItemIcon}>🌙</Text>
+                <View style={styles.settingsItemInfo}>
+                  <Text style={styles.settingsItemTitle}>Dark Mode</Text>
+                  <Text style={styles.settingsItemDesc}>Switch to dark theme</Text>
+                </View>
+                <Text style={styles.settingsItemArrow}>›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.settingsItem}>
+                <Text style={styles.settingsItemIcon}>🔒</Text>
+                <View style={styles.settingsItemInfo}>
+                  <Text style={styles.settingsItemTitle}>Privacy</Text>
+                  <Text style={styles.settingsItemDesc}>Privacy and security settings</Text>
+                </View>
+                <Text style={styles.settingsItemArrow}>›</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsSectionTitle}>Support</Text>
+              
+              <TouchableOpacity style={styles.settingsItem}>
+                <Text style={styles.settingsItemIcon}>❓</Text>
+                <View style={styles.settingsItemInfo}>
+                  <Text style={styles.settingsItemTitle}>Help Center</Text>
+                  <Text style={styles.settingsItemDesc}>Get help and support</Text>
+                </View>
+                <Text style={styles.settingsItemArrow}>›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.settingsItem}>
+                <Text style={styles.settingsItemIcon}>📧</Text>
+                <View style={styles.settingsItemInfo}>
+                  <Text style={styles.settingsItemTitle}>Contact Us</Text>
+                  <Text style={styles.settingsItemDesc}>Send feedback or report issues</Text>
+                </View>
+                <Text style={styles.settingsItemArrow}>›</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Wallet Modal */}
+      <Modal
+        visible={showWalletModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowWalletModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Wallet Management</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowWalletModal(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {activeWalletType === 'ethereum' && ethereumWallet?.address && (
+              <View style={styles.walletDetailsSection}>
+                <Text style={styles.walletDetailsTitle}>Ethereum Wallet Details</Text>
+                
+                <View style={styles.walletDetailItem}>
+                  <Text style={styles.walletDetailLabel}>Address</Text>
+                  <TouchableOpacity
+                    style={styles.walletDetailValue}
+                    onPress={() => copyToClipboard(ethereumWallet.address, 'Ethereum')}
+                  >
+                    <Text style={styles.walletDetailText}>{ethereumWallet.address}</Text>
+                    <Text style={styles.copyIcon}>📋</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.walletDetailItem}>
+                  <Text style={styles.walletDetailLabel}>Network</Text>
+                  <Text style={styles.walletDetailText}>Ethereum Mainnet</Text>
+                </View>
+
+                <View style={styles.walletActionsSection}>
+                  <Text style={styles.walletActionsSectionTitle}>Chain Management</Text>
+                  
+                  <View style={styles.chainSwitchContainer}>
+                    <Text style={styles.chainSwitchLabel}>Switch Chain:</Text>
+                    <View style={styles.chainButtonsRow}>
+                      <TouchableOpacity
+                        style={[styles.chainButton, chainId === "1" && styles.activeChainButton]}
+                        onPress={() => {
+                          setChainId("1");
+                          if (wallets.length > 0) {
+                            switchChain(wallets[0].getProvider(), "0x1");
+                          }
+                        }}
+                        disabled={isLoading}
+                      >
+                        <Text style={styles.chainButtonText}>Mainnet</Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        style={[styles.chainButton, chainId === "5" && styles.activeChainButton]}
+                        onPress={() => {
+                          setChainId("5");
+                          if (wallets.length > 0) {
+                            switchChain(wallets[0].getProvider(), "0x5");
+                          }
+                        }}
+                        disabled={isLoading}
+                      >
+                        <Text style={styles.chainButtonText}>Goerli</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.signMessageButton}
+                    onPress={() => {
+                      if (wallets.length > 0) {
+                        signMessage(wallets[0].getProvider());
+                      }
+                    }}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.signMessageButtonText}>Sign Test Message</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {activeWalletType === 'solana' && hasSolanaWallet && solanaWallet && (
+              <View style={styles.walletDetailsSection}>
+                <Text style={styles.walletDetailsTitle}>Solana Wallet Details</Text>
+                
+                <View style={styles.walletDetailItem}>
+                  <Text style={styles.walletDetailLabel}>Address</Text>
+                  <TouchableOpacity
+                    style={styles.walletDetailValue}
+                    onPress={() => copyToClipboard(solanaWallet.address, 'Solana')}
+                  >
+                    <Text style={styles.walletDetailText}>{solanaWallet.address}</Text>
+                    <Text style={styles.copyIcon}>📋</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.walletDetailItem}>
+                  <Text style={styles.walletDetailLabel}>Cluster</Text>
+                  <Text style={styles.walletDetailText}>{solanaWallet.cluster}</Text>
+                </View>
+
+                <View style={styles.walletActionsSection}>
+                  <TouchableOpacity
+                    style={styles.signMessageButton}
+                    onPress={handleSolanaSignMessage}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <Text style={styles.signMessageButtonText}>Sign Test Message</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -846,7 +1377,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     fontFamily: 'monospace',
+    marginBottom: 16,
+  },
+  currentWalletCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    width: '100%',
+  },
+  currentWalletInfo: {
+    flex: 1,
+  },
+  currentWalletType: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  currentWalletAddress: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'monospace',
+    marginTop: 2,
+  },
+  currentWalletNetwork: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  switchIcon: {
+    fontSize: 20,
+    color: '#667eea',
   },
   profileStats: {
     flexDirection: 'row',
@@ -985,8 +1550,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
-  walletInfo: {
-    marginTop: -10,
+  walletSection: {
+    marginBottom: 20,
+  },
+  walletSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  walletTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  walletSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  activeWalletBadge: {
+    backgroundColor: '#10b981',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  activeWalletBadgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   walletCard: {
     borderRadius: 16,
@@ -1013,12 +1604,39 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '500',
   },
+  addressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
   walletAddress: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     fontFamily: 'monospace',
-    marginBottom: 16,
+    flex: 1,
+  },
+  copyButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  copyIcon: {
+    fontSize: 16,
+  },
+  walletButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
   },
   walletManageButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -1027,6 +1645,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dangerButton: {
+    backgroundColor: 'rgba(239, 68, 68, 0.8)',
   },
   walletManageText: {
     fontSize: 14,
@@ -1045,9 +1666,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-  },
-  emptyWalletIconText: {
-    fontSize: 28,
   },
   walletCreateTitle: {
     fontSize: 16,
@@ -1143,9 +1761,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 12,
   },
-  accountIcon: {
-    fontSize: 18,
-  },
   accountInfo: {
     flex: 1,
   },
@@ -1210,14 +1825,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  providerIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
   providerName: {
     fontSize: 12,
     fontWeight: '500',
     color: '#475569',
+    marginLeft: 6,
   },
   signOutButton: {
     marginHorizontal: 20,
@@ -1286,108 +1898,15 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
   },
-  modalSection: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  modalSectionTitle: {
+  modalDescription: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: 16,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  textInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 14,
-    backgroundColor: '#f8fafc',
-    color: '#1e293b',
-  },
-  actionButton: {
-    backgroundColor: '#667eea',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fullWidthButton: {
-    width: '100%',
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  // Solana specific styles
-  networkCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  currentNetwork: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e293b',
-    textTransform: 'capitalize',
-  },
-  networkOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  activeNetworkOption: {
-    backgroundColor: '#ecfdf5',
-    borderColor: '#10b981',
-  },
-  networkInfo: {
-    flex: 1,
-  },
-  networkName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-    textTransform: 'capitalize',
-  },
-  networkDesc: {
-    fontSize: 14,
     color: '#64748b',
-    marginTop: 2,
+    marginBottom: 24,
+    textAlign: 'center',
   },
-  networkCheck: {
-    fontSize: 18,
-    color: '#10b981',
-    fontWeight: 'bold',
-  },
-  fullAccountItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  walletOption: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -1397,48 +1916,100 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
-  fullAccountIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f8fafc',
+  activeWalletOption: {
+    borderColor: '#667eea',
+    borderWidth: 2,
+  },
+  walletOptionContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    padding: 16,
   },
-  fullAccountIconText: {
-    fontSize: 20,
-  },
-  fullAccountInfo: {
+  walletOptionInfo: {
     flex: 1,
   },
-  fullAccountType: {
+  walletOptionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  walletOptionAddress: {
+    fontSize: 14,
+    color: '#64748b',
+    fontFamily: 'monospace',
+    marginTop: 2,
+  },
+  walletOptionNetwork: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  walletOptionCheck: {
+    fontSize: 20,
+    color: '#667eea',
+    fontWeight: 'bold',
+  },
+  createWalletSection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  createWalletTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 16,
+  },
+  createWalletButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  createWalletText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1e293b',
-    textTransform: 'capitalize',
   },
-  fullAccountId: {
+  accountItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  accountDetailInfo: {
+    flex: 1,
+  },
+  accountDetailType: {
     fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  accountDetailId: {
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
-  fullAccountBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#10b981',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fullAccountBadgeText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: 'bold',
+  accountDetailDate: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginTop: 4,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: 40,
   },
   emptyStateIcon: {
     fontSize: 48,
@@ -1450,90 +2021,168 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     marginBottom: 8,
   },
-  emptyStateText: {
+  emptyStateDesc: {
     fontSize: 14,
     color: '#64748b',
     textAlign: 'center',
   },
   messageItem: {
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    shadowRadius: 2,
+    elevation: 1,
   },
   messageIndex: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#667eea',
-  },
-  messageTime: {
-    fontSize: 12,
-    color: '#64748b',
+    marginBottom: 8,
   },
   messageContent: {
-    fontSize: 12,
-    color: '#475569',
+    fontSize: 13,
+    color: '#1e293b',
     fontFamily: 'monospace',
-    lineHeight: 16,
+    marginBottom: 8,
   },
-  settingItem: {
+  messageTime: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  settingsSection: {
+    marginBottom: 32,
+  },
+  settingsSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 16,
+  },
+  settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
+    shadowRadius: 2,
+    elevation: 1,
   },
-  settingIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
+  settingsItemIcon: {
+    fontSize: 20,
     marginRight: 12,
   },
-  settingIcon: {
-    fontSize: 18,
-  },
-  settingInfo: {
+  settingsItemInfo: {
     flex: 1,
   },
-  settingTitle: {
+  settingsItemTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1e293b',
   },
-  settingDesc: {
-    fontSize: 14,
+  settingsItemDesc: {
+    fontSize: 13,
     color: '#64748b',
     marginTop: 2,
   },
-  settingArrow: {
+  settingsItemArrow: {
     fontSize: 20,
-    color: '#cbd5e1',
+    color: '#9ca3af',
+  },
+  walletDetailsSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  walletDetailsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 20,
+  },
+  walletDetailItem: {
+    marginBottom: 16,
+  },
+  walletDetailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  walletDetailValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 12,
+  },
+  walletDetailText: {
+    fontSize: 14,
+    color: '#1e293b',
+    flex: 1,
+    fontFamily: 'monospace',
+  },
+  walletActionsSection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  walletActionsSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 16,
+  },
+  chainSwitchContainer: {
+    marginBottom: 20,
+  },
+  chainSwitchLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 8,
+  },
+  chainButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  chainButton: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  activeChainButton: {
+    backgroundColor: '#667eea',
+    borderColor: '#667eea',
+  },
+  chainButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  signMessageButton: {
+    backgroundColor: '#667eea',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  signMessageButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
 export default RedesignedProfileScreen;
-

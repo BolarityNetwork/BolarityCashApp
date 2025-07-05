@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePrivy } from "@privy-io/expo";
+import useMultiChainWallet from '../hooks/useMultiChainWallet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -210,6 +211,14 @@ const PerfectVaultSavingsPlatform = () => {
   const [selectedSpecificVault, setSelectedSpecificVault] = useState(null);
   const [totalBalance, setTotalBalance] = useState(127845.67);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
+
+  // 多链钱包状态
+  const {
+    activeWalletType,
+    ethereumWallet,
+    solanaWallet,
+    activeWallet
+  } = useMultiChainWallet();
 
   // 动画值
   const actionMenuOpacity = new Animated.Value(0);
@@ -427,10 +436,31 @@ const PerfectVaultSavingsPlatform = () => {
     return heights[index] || 24;
   };
 
-  const formatUserAddress = (address) => {
+  // 格式化地址显示
+  const formatAddress = (address) => {
     if (!address) return 'Not Connected';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
+
+  // 获取当前钱包信息用于显示
+  const getCurrentWalletInfo = () => {
+    if (activeWallet.address) {
+      return {
+        address: activeWallet.address,
+        type: activeWallet.type === 'ethereum' ? 'ETH' : 'SOL',
+        icon: activeWallet.icon,
+        network: activeWallet.network
+      };
+    }
+    return {
+      address: null,
+      type: 'Not Connected',
+      icon: '💼',
+      network: 'N/A'
+    };
+  };
+
+  const currentWalletInfo = getCurrentWalletInfo();
 
   return (
     <View style={styles.container}>
@@ -468,12 +498,12 @@ const PerfectVaultSavingsPlatform = () => {
               </View>
             </View>
 
-            {/* User Info */}
-            {user && (
+            {/* User Info - 简化版本 */}
+            {user && currentWalletInfo.address && (
               <View style={styles.userInfo}>
-                <Text style={styles.userLabel}>Connected as:</Text>
-                <Text style={styles.userAddress}>
-                  {formatUserAddress(user.wallet?.address)}
+                <Text style={styles.userLabel}>Connected as</Text>
+                <Text style={styles.userAddressSimple}>
+                  {formatAddress(currentWalletInfo.address)}
                 </Text>
               </View>
             )}
@@ -1201,18 +1231,19 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   userInfo: {
-    marginBottom: 10,
+    marginBottom: 8,
+    paddingHorizontal: 4,
   },
   userLabel: {
     fontSize: 12,
     color: '#6b7280',
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  userAddress: {
+  userAddressSimple: {
     fontSize: 14,
     color: '#111827',
     fontFamily: 'monospace',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   balanceSection: {
     marginBottom: 4,
@@ -1281,8 +1312,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 270, // Space for fixed header (increased to 270px)
-    paddingBottom: 10, // Reduced bottom padding
+    paddingTop: 250, // 减少header高度以适应简化的地址显示
+    paddingBottom: 10,
   },
   chartSection: {
     paddingHorizontal: 24,
