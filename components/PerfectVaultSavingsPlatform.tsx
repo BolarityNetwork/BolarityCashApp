@@ -16,6 +16,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePrivy } from "@privy-io/expo";
 import useMultiChainWallet from '../hooks/useMultiChainWallet';
+import AnimatedNumber from './AnimatedNumber';
 
 const { width, height } = Dimensions.get('window');
 
@@ -210,6 +211,8 @@ const PerfectVaultSavingsPlatform = () => {
   const [selectedVault, setSelectedVault] = useState(null);
   const [selectedSpecificVault, setSelectedSpecificVault] = useState(null);
   const [totalBalance, setTotalBalance] = useState(127845.67);
+  const [todayEarnings, setTodayEarnings] = useState(293.52);
+  const [monthlyEarnings, setMonthlyEarnings] = useState(8247.18);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
   // 多链钱包状态
@@ -228,6 +231,13 @@ const PerfectVaultSavingsPlatform = () => {
     const interval = setInterval(() => {
       const increment = Math.random() * 0.04 + 0.01;
       setTotalBalance(prev => prev + increment);
+      
+      // 🎯 今日收益的增量与总余额增量保持一致
+      setTodayEarnings(prev => prev + increment);
+      
+      // 月度收益可以是总余额增量的略微倍数（模拟累积效果）
+      const monthlyIncrement = increment * (Math.random() * 0.5 + 1.2); // 1.2-1.7倍
+      setMonthlyEarnings(prev => prev + monthlyIncrement);
     }, 2500);
 
     return () => clearInterval(interval);
@@ -428,9 +438,6 @@ const PerfectVaultSavingsPlatform = () => {
     { type: 'Interest Earned', amount: '+$89.45', date: 'Dec 14', vault: 'MaxVault Elite', isPositive: true }
   ];
 
-  const todayEarnings = 293.52;
-  const monthlyEarnings = 8247.18;
-
   const getBarHeight = (index) => {
     const heights = [24, 40, 56, 160, 80];
     return heights[index] || 24;
@@ -514,16 +521,44 @@ const PerfectVaultSavingsPlatform = () => {
               </View>
               <View style={styles.balanceContent}>
                 <View style={styles.balanceLeft}>
-                  <Text style={styles.balanceAmount}>
-                    ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Text>
+                  {/* 🎯 使用 AnimatedNumber 组件替换原来的余额显示 */}
+                  <AnimatedNumber
+                    value={totalBalance}
+                    style={styles.balanceAmount}
+                    duration={1200}
+                    formatOptions={{
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                      prefix: '$'
+                    }}
+                  />
                   <View style={styles.earningsRow}>
                     <View style={styles.earningsItem}>
-                      <Text style={styles.earningsAmount}>+${todayEarnings}</Text>
+                      {/* 🎯 今日收益也使用动画 */}
+                      <AnimatedNumber
+                        value={todayEarnings}
+                        style={styles.earningsAmount}
+                        duration={800}
+                        formatOptions={{
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                          prefix: '+$'
+                        }}
+                      />
                       <Text style={styles.earningsLabel}>today</Text>
                     </View>
                     <View style={styles.earningsItem}>
-                      <Text style={styles.earningsAmount}>+${monthlyEarnings.toLocaleString()}</Text>
+                      {/* 🎯 月度收益也使用动画 */}
+                      <AnimatedNumber
+                        value={monthlyEarnings}
+                        style={styles.earningsAmount}
+                        duration={1000}
+                        formatOptions={{
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                          prefix: '+$'
+                        }}
+                      />
                       <Text style={styles.earningsLabel}>this month</Text>
                     </View>
                   </View>
