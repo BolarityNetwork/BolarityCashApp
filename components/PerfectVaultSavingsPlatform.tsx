@@ -22,6 +22,7 @@ const { width, height } = Dimensions.get('window');
 
 // 🖼️ 安全导入本地logo图片 - 带try-catch处理
 let aaveLogo, compoundLogo, driftLogo, solendLogo, naviLogo, humaLogo, ratexLogo, pendleLogo, bolarityLogo;
+let flexiVaultLogo, timeVaultLogo, maxVaultLogo;
 
 try {
   aaveLogo = require('../assets/logos/aave.png');
@@ -77,6 +78,25 @@ try {
   console.warn('Bolarity logo not found');
 }
 
+// 🎯 Vault 产品专用 Logo
+try {
+  flexiVaultLogo = require('../assets/logos/flexivault.png');
+} catch (e) {
+  console.warn('FlexiVault logo not found');
+}
+
+try {
+  timeVaultLogo = require('../assets/logos/timevault.png');
+} catch (e) {
+  console.warn('TimeVault logo not found');
+}
+
+try {
+  maxVaultLogo = require('../assets/logos/maxvault.png');
+} catch (e) {
+  console.warn('MaxVault logo not found');
+}
+
 // Protocol Logo映射 - 只包含成功导入的图片
 const PROTOCOL_LOGOS = {
   'AAVE': aaveLogo,
@@ -87,6 +107,67 @@ const PROTOCOL_LOGOS = {
   'Huma': humaLogo,
   'Ratex': ratexLogo,
   'Pendle': pendleLogo
+};
+
+// Vault Logo组件 - 用于显示Vault产品的logo
+const VaultLogo = ({ vaultName, size = 24, style = {} }) => {
+  const [imageError, setImageError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const logoMapping = {
+    'FlexiVault': flexiVaultLogo,
+    'TimeVault Pro': timeVaultLogo,
+    'MaxVault Elite': maxVaultLogo
+  };
+
+  const fallbackIcons = {
+    'FlexiVault': '⚡',
+    'TimeVault Pro': '⏰',
+    'MaxVault Elite': '⭐'
+  };
+
+  const logoSrc = logoMapping[vaultName];
+
+  useEffect(() => {
+    setImageError(false);
+    setLoading(true);
+  }, [vaultName]);
+
+  if (!logoSrc || imageError) {
+    return (
+      <Text style={{ fontSize: size, color: '#fff' }}>
+        {fallbackIcons[vaultName] || '💼'}
+      </Text>
+    );
+  }
+
+  return (
+    <View style={[{ position: 'relative' }, style]}>
+      {loading && (
+        <View style={{
+          position: 'absolute',
+          width: size,
+          height: size,
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          borderRadius: size / 8,
+        }} />
+      )}
+      <Image
+        source={logoSrc}
+        style={{
+          width: size,
+          height: size,
+          tintColor: '#fff', // 🎯 关键：将黑色logo反转为白色
+          opacity: loading ? 0 : 1
+        }}
+        onLoad={() => setLoading(false)}
+        onError={() => {
+          setImageError(true);
+          setLoading(false);
+        }}
+      />
+    </View>
+  );
 };
 
 // Protocol Logo组件 - 优化版本
@@ -406,7 +487,7 @@ const PerfectVaultSavingsPlatform = () => {
       description: 'Flexible access anytime',
       minimum: '$100',
       features: ['Instant withdrawals', 'No lock-up period', 'Daily compounding'],
-      gradientColors: ['#10b981', '#059669'],
+      gradientColors: ['#667eea', '#5a67d8'], // 🎯 蓝紫色系，与主题色协调
       icon: 'Zap'
     },
     {
@@ -416,7 +497,7 @@ const PerfectVaultSavingsPlatform = () => {
       description: 'Higher returns, fixed term',
       minimum: '$1,000',
       features: ['12-month term', 'Guaranteed returns', 'Monthly interest'],
-      gradientColors: ['#3b82f6', '#1e40af'],
+      gradientColors: ['#764ba2', '#9f7aea'], // 🎯 紫色系，与主题色协调
       icon: 'Clock'
     },
     {
@@ -426,7 +507,7 @@ const PerfectVaultSavingsPlatform = () => {
       description: 'Maximum yield for VIP',
       minimum: '$10,000',
       features: ['18-month term', 'Premium rates', 'Priority support'],
-      gradientColors: ['#8b5cf6', '#7c3aed'],
+      gradientColors: ['#c084fc', '#f093fb'], // 🎯 粉紫色系，与主题色协调
       icon: 'Star'
     }
   ];
@@ -684,7 +765,8 @@ const PerfectVaultSavingsPlatform = () => {
                         colors={vault.gradientColors}
                         style={styles.vaultIcon}
                       >
-                        <IconComponent name={vault.icon} size={24} color="#fff" />
+                        {/* 🎯 使用新的 VaultLogo 组件 */}
+                        <VaultLogo vaultName={vault.name} size={24} />
                       </LinearGradient>
                       <View>
                         <Text style={styles.vaultName}>{vault.name}</Text>
@@ -1005,7 +1087,7 @@ const PerfectVaultSavingsPlatform = () => {
                 {isTimeVault ? (
                   <>
                     <LinearGradient
-                      colors={['#2563eb', '#3730a3']}
+                      colors={['#667eea', '#764ba2']} // 🎯 使用主题色
                       style={styles.depositVaultHeader}
                     >
                       <View style={styles.depositVaultInfo}>
@@ -1035,7 +1117,7 @@ const PerfectVaultSavingsPlatform = () => {
                       <Text style={styles.depositFeaturesTitle}>Vault Features:</Text>
                       {['Fixed-term guaranteed returns', 'No early withdrawal penalty', 'Automated yield optimization', 'Institutional-grade security'].map((feature, index) => (
                         <View key={index} style={styles.depositFeatureItem}>
-                          <View style={styles.depositFeatureDot} />
+                          <View style={[styles.depositFeatureDot, { backgroundColor: '#667eea' }]} />
                           <Text style={styles.depositFeatureText}>{feature}</Text>
                         </View>
                       ))}
@@ -1061,7 +1143,7 @@ const PerfectVaultSavingsPlatform = () => {
                 ) : isSpecificVault ? (
                   <>
                     <LinearGradient
-                      colors={['#2563eb', '#7c3aed']}
+                      colors={['#764ba2', '#c084fc']} // 🎯 使用主题色
                       style={styles.depositVaultHeader}
                     >
                       <View style={styles.depositVaultInfo}>
@@ -1091,7 +1173,7 @@ const PerfectVaultSavingsPlatform = () => {
                       <Text style={styles.depositFeaturesTitle}>Protocol Features:</Text>
                       {['Flexible access anytime', 'Auto-compounding rewards', 'Audited smart contracts', '24/7 yield optimization'].map((feature, index) => (
                         <View key={index} style={styles.depositFeatureItem}>
-                          <View style={[styles.depositFeatureDot, { backgroundColor: '#10b981' }]} />
+                          <View style={[styles.depositFeatureDot, { backgroundColor: '#764ba2' }]} />
                           <Text style={styles.depositFeatureText}>{feature}</Text>
                         </View>
                       ))}
@@ -1118,7 +1200,8 @@ const PerfectVaultSavingsPlatform = () => {
                     >
                       <View style={styles.depositVaultHeaderContent}>
                         <Text style={styles.depositVaultName}>{displayVault.name}</Text>
-                        <IconComponent name={displayVault.icon} size={24} color="#fff" />
+                        {/* 🎯 使用新的 VaultLogo 组件 */}
+                        <VaultLogo vaultName={displayVault.name} size={24} />
                       </View>
                       <View style={styles.depositVaultStats}>
                         <View style={styles.depositStatItem}>
@@ -1136,7 +1219,7 @@ const PerfectVaultSavingsPlatform = () => {
                       <Text style={styles.depositFeaturesTitle}>Key Features:</Text>
                       {displayVault.features.map((feature, index) => (
                         <View key={index} style={styles.depositFeatureItem}>
-                          <View style={[styles.depositFeatureDot, { backgroundColor: '#10b981' }]} />
+                          <View style={[styles.depositFeatureDot, { backgroundColor: '#c084fc' }]} />
                           <Text style={styles.depositFeatureText}>{feature}</Text>
                         </View>
                       ))}
@@ -1861,7 +1944,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#2563eb',
+    backgroundColor: '#667eea', // 🎯 使用主题色作为默认色
     marginRight: 12,
   },
   depositFeatureText: {
