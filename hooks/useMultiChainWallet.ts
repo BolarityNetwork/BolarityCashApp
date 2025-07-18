@@ -85,7 +85,7 @@ const ETHEREUM_NETWORKS: { [key: string]: NetworkConfig } = {
   base: {
     chainId: '0x2105',
     name: 'Base Mainnet',
-    rpcUrl: 'https://mainnet.base.org',
+    rpcUrl: 'https://rpc.ankr.com/base/d71a9cd8dd190bf86a472bb7c7211ec1d99f131c9739266c6420a2efcafe4325',
     symbol: 'ETH',
     blockExplorer: 'https://basescan.org',
     icon: '🟦',
@@ -101,6 +101,7 @@ interface MultiChainWalletState {
   isCreatingSolanaWallet: boolean;
   hasSolanaWallet: boolean;
   isSwitchingNetwork: boolean;
+  currentProvider: any | null;
 }
 
 // 创建Context来全局管理钱包状态
@@ -115,6 +116,11 @@ interface MultiChainWalletContextType extends MultiChainWalletState {
   canSwitchTo: (type: WalletType) => boolean;
   hasEthereumWallet: boolean;
   activeWallet: any;
+  // 新增方法
+  getProvider: () => Promise<any>;
+  getEthereumProvider: () => Promise<any>;
+  getSolanaProvider: () => Promise<any>;
+  getCurrentNetworkKey: () => string;
   // 签名和交易方法
   signMessage: (message: string) => Promise<string>;
   sendTestTransaction: () => Promise<string>;
@@ -187,6 +193,7 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     isCreatingSolanaWallet: false,
     hasSolanaWallet: false,
     isSwitchingNetwork: false,
+    currentProvider: null,
   });
 
   // 从AsyncStorage加载保存的状态
@@ -249,6 +256,29 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     }
   }, [user, ethAccount, solAccount]);
 
+  // 更新provider状态 - 监听网络变化
+  useEffect(() => {
+    const updateProvider = async () => {
+      if (state.activeWalletType === 'ethereum' && ethWallets && ethWallets.length > 0) {
+        try {
+          const provider = await ethWallets[0].getProvider();
+          setState(prev => ({ ...prev, currentProvider: provider }));
+        } catch (error) {
+          console.error('Failed to get Ethereum provider:', error);
+        }
+      } else if (state.activeWalletType === 'solana' && solWallets && solWallets.length > 0) {
+        try {
+          const provider = await solWallets[0].getProvider();
+          setState(prev => ({ ...prev, currentProvider: provider }));
+        } catch (error) {
+          console.error('Failed to get Solana provider:', error);
+        }
+      }
+    };
+
+    updateProvider();
+  }, [state.activeWalletType, state.activeEthereumNetwork, ethWallets, solWallets]); // 🔧 添加 activeEthereumNetwork 监听
+
   // 切换活跃钱包类型
   const switchWalletType = useCallback((type: WalletType) => {
     setState(prev => ({ ...prev, activeWalletType: type }));
@@ -308,6 +338,7 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
         ...prev, 
         activeEthereumNetwork: networkKey,
         isSwitchingNetwork: false,
+        currentProvider: provider, // 更新provider
       }));
       
       // 持久化网络选择
@@ -337,10 +368,13 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
       const wallet = await createSolWallet();
       
       if (wallet) {
+        const provider = await wallet.getProvider();
+        
         const newState = {
           hasSolanaWallet: true,
           isCreatingSolanaWallet: false,
-          activeWalletType: 'solana' as WalletType
+          activeWalletType: 'solana' as WalletType,
+          currentProvider: provider,
         };
 
         setState(prev => ({
@@ -417,6 +451,104 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
       return state.hasSolanaWallet;
     }
   }, [state]);
+
+  // 获取当前provider
+  const getProvider = useCallback(async (): Promise<any> => {
+    if (state.currentProvider) {
+      return state.currentProvider;
+    }
+
+    // 如果没有缓存的provider，动态获取
+    if (state.activeWalletType === 'ethereum' && ethWallets && ethWallets.length > 0) {
+      const provider = await ethWallets[0].getProvider();
+      setState(prev => ({ ...prev, currentProvider: provider }));
+      return provider;
+    } else if (state.activeWalletType === 'solana' && solWallets && solWallets.length > 0) {
+      const provider = await solWallets[0].getProvider();
+      setState(prev => ({ ...prev, currentProvider: provider }));
+      return provider;
+    }
+
+    throw new Error('No wallet provider available');
+  }, [state.currentProvider, state.activeWalletType, ethWallets, solWallets]);
+
+  // 🔧 修复后的获取以太坊provider - 确保网络同步
+  const getEthereumProvider = useCallback(async (): Promise<any> => {
+    if (!ethWallets || ethWallets.length === 0) {
+      throw new Error('No Ethereum wallet available');
+    }
+    
+    const provider = await ethWallets[0].getProvider();
+    
+    // 🔧 验证当前provider的chainId是否与选择的网络匹配
+    try {
+      const currentChainId = await getCurrentChainId(provider);
+      const expectedNetwork = ETHEREUM_NETWORKS[state.activeEthereumNetwork];
+      
+      console.log(`🔍 Provider chainId: ${currentChainId}, Expected: ${expectedNetwork.chainId}`);
+      
+      if (currentChainId !== expectedNetwork.chainId) {
+        console.log(`🔄 Provider chainId mismatch, forcing network switch...`);
+        
+        // 强制切换到正确的网络
+        try {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: expectedNetwork.chainId }],
+          });
+          console.log(`✅ Successfully synced provider to ${expectedNetwork.name}`);
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
+            // 网络不存在，添加网络
+            console.log(`➕ Adding ${expectedNetwork.name} to wallet...`);
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: expectedNetwork.chainId,
+                chainName: expectedNetwork.name,
+                rpcUrls: [expectedNetwork.rpcUrl],
+                nativeCurrency: {
+                  name: expectedNetwork.symbol,
+                  symbol: expectedNetwork.symbol,
+                  decimals: 18,
+                },
+                blockExplorerUrls: [expectedNetwork.blockExplorer],
+              }],
+            });
+            console.log(`✅ Added and switched to ${expectedNetwork.name}`);
+          } else {
+            console.warn(`⚠️ Failed to switch network: ${switchError.message}`);
+            // 即使切换失败，也返回provider，让上层处理
+          }
+        }
+        
+        // 🔧 更新缓存的provider
+        setState(prev => ({ ...prev, currentProvider: provider }));
+      }
+    } catch (error) {
+      console.warn(`⚠️ Failed to verify chainId: ${error.message}`);
+      // 即使验证失败，也返回provider
+    }
+    
+    return provider;
+  }, [ethWallets, state.activeEthereumNetwork]);
+
+  // 获取Solana provider
+  const getSolanaProvider = useCallback(async (): Promise<any> => {
+    if (!solWallets || solWallets.length === 0) {
+      throw new Error('No Solana wallet available');
+    }
+    return await solWallets[0].getProvider();
+  }, [solWallets]);
+
+  // 获取当前网络key
+  const getCurrentNetworkKey = useCallback((): string => {
+    if (state.activeWalletType === 'ethereum') {
+      return state.activeEthereumNetwork;
+    } else {
+      return 'mainnet-beta'; // Solana默认主网
+    }
+  }, [state.activeWalletType, state.activeEthereumNetwork]);
 
   // =============== 签名和交易方法 ===============
   
@@ -872,6 +1004,11 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     canSwitchTo,
     hasEthereumWallet: !!state.ethereumWallet?.address,
     activeWallet: getActiveWallet(),
+    // 新增的provider方法
+    getProvider,
+    getEthereumProvider,
+    getSolanaProvider,
+    getCurrentNetworkKey,
     // 签名和交易方法
     signMessage,
     sendTestTransaction,
