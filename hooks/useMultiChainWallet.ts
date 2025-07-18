@@ -10,6 +10,9 @@ import {
   getUserEmbeddedSolanaWallet,
 } from "@privy-io/expo";
 
+import { Connection, Transaction, SystemProgram, PublicKey } from '@solana/web3.js';
+import bs58 from 'bs58';
+
 type WalletType = 'ethereum' | 'solana';
 
 interface MultiChainWalletState {
@@ -29,6 +32,10 @@ interface MultiChainWalletContextType extends MultiChainWalletState {
   canSwitchTo: (type: WalletType) => boolean;
   hasEthereumWallet: boolean;
   activeWallet: any;
+  // 签名和交易方法
+  signMessage: (message: string) => Promise<string>;
+  sendTestTransaction: () => Promise<string>;
+  signTestTransaction: () => Promise<any>;
 }
 
 const MultiChainWalletContext = createContext<MultiChainWalletContextType | null>(null);
@@ -36,6 +43,16 @@ const MultiChainWalletContext = createContext<MultiChainWalletContextType | null
 // Storage keys
 const STORAGE_KEYS = {
   ACTIVE_WALLET_TYPE: '@active_wallet_type',
+};
+
+// React Native 兼容的字符串转十六进制函数
+const stringToHex = (str: string): string => {
+  let hex = '';
+  for (let i = 0; i < str.length; i++) {
+    const charCode = str.charCodeAt(i);
+    hex += charCode.toString(16).padStart(2, '0');
+  }
+  return '0x' + hex;
 };
 
 // 创建一个 hook 来管理钱包状态
@@ -46,10 +63,10 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
   const { wallets: ethWallets, create: createEthWallet } = useEmbeddedEthereumWallet();
   const ethAccount = getUserEmbeddedEthereumWallet(user);
   
-  // Solana wallet hooks - 使用官方 Privy Solana 支持
+  // Solana wallet hooks - 使用官方 Privy Expo 支持
   const { wallets: solWallets, create: createSolWallet } = useEmbeddedSolanaWallet();
   const solAccount = getUserEmbeddedSolanaWallet(user);
-  
+
   const [state, setState] = useState<MultiChainWalletState>({
     activeWalletType: 'ethereum',
     ethereumWallet: null,
@@ -191,6 +208,250 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     }
   }, [state]);
 
+  // =============== 修复后的签名和交易方法 ===============
+  
+  // 统一的签名消息方法
+  const signMessage = useCallback(async (message: string): Promise<string> => {
+    if (state.activeWalletType === 'ethereum') {
+      if (!state.ethereumWallet?.address || !ethWallets || ethWallets.length === 0) {
+        throw new Error('No Ethereum wallet available');
+      }
+      
+      console.log('🔷 Using Ethereum wallet provider to sign message');
+      
+      try {
+        const wallet = ethWallets[0];
+        const provider = await wallet.getProvider();
+        
+        // 使用 React Native 兼容的方式转换消息为十六进制
+        const hexMessage = stringToHex(message);
+        
+        console.log('📝 Original message:', message);
+        console.log('🔢 Hex message:', hexMessage);
+        console.log('📍 Wallet address:', state.ethereumWallet.address);
+        
+        // 使用 personal_sign 方法
+        const signature = await provider.request({
+          method: "personal_sign",
+          params: [hexMessage, state.ethereumWallet.address],
+        });
+        
+        console.log('✅ Ethereum signature received:', signature);
+        return signature;
+      } catch (error) {
+        console.error('Ethereum signing failed:', error);
+        throw new Error(`Failed to sign Ethereum message: ${error.message}`);
+      }
+    } else {
+      console.log('🌞 Starting Solana message signing process');
+      
+      if (!state.hasSolanaWallet || !state.solanaWallet?.address || !solWallets || solWallets.length === 0) {
+        throw new Error('No Solana wallet available');
+      }
+      
+      try {
+        const wallet = solWallets[0];
+        console.log('🔍 Getting Solana provider...');
+        
+        // 获取 provider - 这是官方推荐的方法
+        const provider = await wallet.getProvider();
+        console.log('✅ Solana provider obtained');
+        
+        // 使用官方 Privy Solana API - provider.request()
+        console.log('📝 Signing message:', message);
+        const result = await provider.request({
+          method: 'signMessage',
+          params: {
+            message: message, // 直接传递字符串消息
+          },
+        });
+        
+        console.log('✅ Solana signature received:', result);
+        
+        // 返回签名
+        if (result && result.signature) {
+          return result.signature;
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('Solana signing failed:', error);
+        throw new Error(`Failed to sign Solana message: ${error.message}`);
+      }
+    }
+  }, [state.activeWalletType, state.ethereumWallet, state.hasSolanaWallet, state.solanaWallet, ethWallets, solWallets]);
+
+  // 发送测试交易（金额为0）
+  const sendTestTransaction = useCallback(async (): Promise<string> => {
+    if (state.activeWalletType === 'ethereum') {
+      if (!state.ethereumWallet?.address || !ethWallets || ethWallets.length === 0) {
+        throw new Error('No Ethereum wallet available');
+      }
+      
+      console.log('🔷 Sending Ethereum test transaction');
+      
+      try {
+        const wallet = ethWallets[0];
+        const provider = await wallet.getProvider();
+        
+        // 构建一个简单的转账交易（给自己转0 ETH）
+        const txParams = {
+          from: state.ethereumWallet.address,
+          to: state.ethereumWallet.address,
+          value: '0x0', // 0 ETH
+          gas: '0x5208', // 21000 gas
+          gasPrice: '0x9184e72a000', // 10 gwei
+        };
+        
+        console.log('📤 Sending transaction with params:', txParams);
+        
+        const txHash = await provider.request({
+          method: 'eth_sendTransaction',
+          params: [txParams],
+        });
+        
+        console.log('✅ Ethereum transaction sent:', txHash);
+        return txHash;
+      } catch (error) {
+        console.error('Ethereum transaction failed:', error);
+        throw new Error(`Failed to send Ethereum transaction: ${error.message}`);
+      }
+    } else {
+      if (!state.hasSolanaWallet || !state.solanaWallet?.address || !solWallets || solWallets.length === 0) {
+        throw new Error('No Solana wallet available');
+      }
+      
+      console.log('🌞 Sending Solana test transaction');
+      
+      try {
+        const wallet = solWallets[0];
+        const provider = await wallet.getProvider();
+        const connection = new Connection('https://api.mainnet-beta.solana.com');
+        
+        // 构建 Solana 交易
+        const fromPubkey = new PublicKey(state.solanaWallet.address);
+        const toPubkey = new PublicKey(state.solanaWallet.address);
+        
+        const transaction = new Transaction();
+        const transferInstruction = SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: 0, // 0 SOL
+        });
+        
+        transaction.add(transferInstruction);
+        
+        // 获取最新的 blockhash
+        const latestBlockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = latestBlockhash.blockhash;
+        transaction.feePayer = fromPubkey;
+        
+        console.log('📤 Solana transaction prepared, sending...');
+        
+        // 使用官方 Privy Solana API - signAndSendTransaction
+        const result = await provider.request({
+          method: 'signAndSendTransaction',
+          params: {
+            transaction,
+            connection,
+          },
+        });
+        
+        console.log('✅ Solana transaction sent:', result);
+        
+        // 返回交易签名
+        if (result && result.signature) {
+          return result.signature;
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('Solana transaction failed:', error);
+        throw new Error(`Failed to send Solana transaction: ${error.message}`);
+      }
+    }
+  }, [state.activeWalletType, state.ethereumWallet, state.hasSolanaWallet, state.solanaWallet, ethWallets, solWallets]);
+
+  // 签名测试交易
+  const signTestTransaction = useCallback(async (): Promise<any> => {
+    if (state.activeWalletType === 'ethereum') {
+      if (!state.ethereumWallet?.address || !ethWallets || ethWallets.length === 0) {
+        throw new Error('No Ethereum wallet available');
+      }
+      
+      console.log('🔷 Signing Ethereum test transaction');
+      
+      try {
+        const wallet = ethWallets[0];
+        const provider = await wallet.getProvider();
+        
+        const txParams = {
+          from: state.ethereumWallet.address,
+          to: state.ethereumWallet.address,
+          value: '0x0',
+          gas: '0x5208',
+          gasPrice: '0x9184e72a000',
+        };
+        
+        const signature = await provider.request({
+          method: 'eth_signTransaction',
+          params: [txParams],
+        });
+        
+        console.log('✅ Ethereum transaction signed:', signature);
+        return signature;
+      } catch (error) {
+        console.error('Ethereum transaction signing failed:', error);
+        throw new Error(`Failed to sign Ethereum transaction: ${error.message}`);
+      }
+    } else {
+      if (!state.hasSolanaWallet || !state.solanaWallet?.address || !solWallets || solWallets.length === 0) {
+        throw new Error('No Solana wallet available');
+      }
+      
+      console.log('🌞 Signing Solana test transaction');
+      
+      try {
+        const wallet = solWallets[0];
+        const provider = await wallet.getProvider();
+        const connection = new Connection('https://api.mainnet-beta.solana.com');
+        
+        const fromPubkey = new PublicKey(state.solanaWallet.address);
+        const toPubkey = new PublicKey(state.solanaWallet.address);
+        
+        const transaction = new Transaction();
+        const transferInstruction = SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports: 0,
+        });
+        
+        transaction.add(transferInstruction);
+        
+        const latestBlockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = latestBlockhash.blockhash;
+        transaction.feePayer = fromPubkey;
+        
+        console.log('🔏 Signing Solana transaction...');
+        
+        // 使用官方 Privy API - signTransaction
+        const result = await provider.request({
+          method: 'signTransaction',
+          params: {
+            transaction: transaction,
+            connection: connection,
+          },
+        });
+        
+        console.log('✅ Solana transaction signed:', result);
+        return result;
+      } catch (error) {
+        console.error('Solana transaction signing failed:', error);
+        throw new Error(`Failed to sign Solana transaction: ${error.message}`);
+      }
+    }
+  }, [state.activeWalletType, state.ethereumWallet, state.hasSolanaWallet, state.solanaWallet, ethWallets, solWallets]);
+
   return {
     ...state,
     switchWalletType,
@@ -199,7 +460,11 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     getActiveWallet,
     canSwitchTo,
     hasEthereumWallet: !!state.ethereumWallet?.address,
-    activeWallet: getActiveWallet()
+    activeWallet: getActiveWallet(),
+    // 新增的方法
+    signMessage,
+    sendTestTransaction,
+    signTestTransaction,
   };
 }
 
@@ -216,193 +481,4 @@ export function useMultiChainWallet() {
 export { MultiChainWalletContext };
 export type { MultiChainWalletContextType };
 
-// Solana特定操作的Hook - 使用官方 Privy Solana APIs
-// Solana特定操作的Hook - 调试版本
-export function useSolanaOperations() {
-  const { user } = usePrivy();
-  const { wallets: solWallets } = useEmbeddedSolanaWallet();
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 获取当前的 Solana 钱包
-  const getSolanaWallet = useCallback(() => {
-    if (!user || !solWallets || solWallets.length === 0) {
-      return null;
-    }
-    
-    const wallet = solWallets[0];
-    
-    // 调试：打印钱包对象结构
-    console.log('🔍 Solana Wallet Object:', wallet);
-    console.log('🔍 Wallet methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(wallet)));
-    console.log('🔍 Wallet keys:', Object.keys(wallet));
-    
-    return wallet;
-  }, [user, solWallets]);
-
-  // 签名Solana消息
-  const signMessage = useCallback(async (message: string) => {
-    const wallet = getSolanaWallet();
-    if (!wallet) {
-      throw new Error('没有可用的Solana钱包');
-    }
-
-    setIsLoading(true);
-    try {
-      const encoder = new TextEncoder();
-      const messageBytes = encoder.encode(message);
-      
-      console.log('🔍 Attempting to sign message with wallet:', wallet);
-      
-      // 方法1: 直接调用 signMessage
-      if ('signMessage' in wallet && typeof wallet.signMessage === 'function') {
-        console.log('✅ Using wallet.signMessage method');
-        const signature = await wallet.signMessage(messageBytes);
-        return signature;
-      }
-      
-      // 方法2: 使用 sign 方法
-      if ('sign' in wallet && typeof wallet.sign === 'function') {
-        console.log('✅ Using wallet.sign method');
-        const signature = await wallet.sign(messageBytes);
-        return signature;
-      }
-      
-      // 方法3: 获取 provider 并尝试
-      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
-        console.log('🔍 Trying to get provider...');
-        const provider = await wallet.getProvider();
-        console.log('🔍 Provider object:', provider);
-        console.log('🔍 Provider methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(provider)));
-        
-        if (provider && 'signMessage' in provider) {
-          console.log('✅ Using provider.signMessage method');
-          const signature = await provider.signMessage(messageBytes);
-          return signature;
-        }
-      }
-      
-      // 方法4: 使用 request 方法
-      if ('request' in wallet && typeof wallet.request === 'function') {
-        console.log('✅ Using wallet.request method');
-        const signature = await wallet.request({
-          method: 'signMessage',
-          params: {
-            message: Buffer.from(messageBytes).toString('base64'),
-            display: 'utf8'
-          }
-        });
-        return signature;
-      }
-      
-      // 方法5: 检查是否有其他签名相关的方法
-      const walletMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(wallet));
-      const signMethods = walletMethods.filter(method => 
-        method.toLowerCase().includes('sign') || 
-        method.toLowerCase().includes('message')
-      );
-      
-      console.log('🔍 Available sign-related methods:', signMethods);
-      
-      // 如果找到了其他签名方法，尝试使用它们
-      for (const method of signMethods) {
-        if (typeof wallet[method] === 'function') {
-          console.log(`🔍 Trying method: ${method}`);
-          try {
-            const result = await wallet[method](messageBytes);
-            console.log(`✅ Success with method: ${method}`);
-            return result;
-          } catch (err) {
-            console.log(`❌ Failed with method ${method}:`, err);
-          }
-        }
-      }
-      
-      throw new Error('Solana wallet does not support message signing - no compatible method found');
-    } catch (error) {
-      console.error('❌ Solana sign failed:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        wallet: wallet
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getSolanaWallet]);
-
-  // 签名Solana交易
-  const signTransaction = useCallback(async (transaction: any) => {
-    const wallet = getSolanaWallet();
-    if (!wallet) {
-      throw new Error('没有可用的Solana钱包');
-    }
-
-    setIsLoading(true);
-    try {
-      console.log('🔍 Attempting to sign transaction with wallet:', wallet);
-      
-      if ('signTransaction' in wallet && typeof wallet.signTransaction === 'function') {
-        console.log('✅ Using wallet.signTransaction method');
-        return await wallet.signTransaction(transaction);
-      }
-      
-      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
-        const provider = await wallet.getProvider();
-        if (provider && 'signTransaction' in provider) {
-          console.log('✅ Using provider.signTransaction method');
-          return await provider.signTransaction(transaction);
-        }
-      }
-      
-      throw new Error('Solana wallet does not support transaction signing');
-    } catch (error) {
-      console.error('❌ Transaction sign failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getSolanaWallet]);
-
-  // 发送交易
-  const sendTransaction = useCallback(async (transaction: any, connection: any, options?: any) => {
-    const wallet = getSolanaWallet();
-    if (!wallet) {
-      throw new Error('没有可用的Solana钱包');
-    }
-
-    setIsLoading(true);
-    try {
-      console.log('🔍 Attempting to send transaction with wallet:', wallet);
-      
-      if ('sendTransaction' in wallet && typeof wallet.sendTransaction === 'function') {
-        console.log('✅ Using wallet.sendTransaction method');
-        return await wallet.sendTransaction(transaction, connection, options);
-      }
-      
-      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
-        const provider = await wallet.getProvider();
-        if (provider && 'sendTransaction' in provider) {
-          console.log('✅ Using provider.sendTransaction method');
-          return await provider.sendTransaction(transaction, connection, options);
-        }
-      }
-      
-      throw new Error('Solana wallet does not support sending transactions');
-    } catch (error) {
-      console.error('❌ Send transaction failed:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getSolanaWallet]);
-
-  return {
-    isLoading,
-    signMessage,
-    signTransaction,
-    sendTransaction,
-    solanaWallet: getSolanaWallet()
-  };
-}
 export default useMultiChainWallet;

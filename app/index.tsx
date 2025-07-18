@@ -5,6 +5,8 @@ import LoginScreen from "@/components/LoginScreen";
 import { usePrivy } from "@privy-io/expo";
 import { RedesignedMainNavigation } from "@/components/RedesignedMainNavigation";
 import { LinearGradient } from 'expo-linear-gradient';
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
 
 export default function Index() {
   const { user } = usePrivy();
