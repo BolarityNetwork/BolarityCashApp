@@ -271,8 +271,11 @@ const RedesignedProfileScreen: React.FC = () => {
     canSwitchTo
   } = useMultiChainWallet();
 
-  // Solana操作
-  const { signMessage: signSolanaMessage } = useSolanaOperations();
+  // Solana操作 - 使用更新后的 hook
+  const { 
+    signMessage: signSolanaMessage, 
+    solanaWallet: currentSolanaWallet 
+  } = useSolanaOperations();
 
   // 复制地址到剪贴板
   const copyToClipboard = useCallback(async (address: string, walletType: string) => {
@@ -321,7 +324,19 @@ const RedesignedProfileScreen: React.FC = () => {
     try {
       const message = `Test message ${Date.now()}`;
       const signature = await signSolanaMessage(message);
-      setSignedMessages(prev => [`Solana: ${signature}`, ...prev]);
+      
+      // 将签名转换为字符串（如果它是字节数组）
+      let signatureStr = signature;
+      if (signature instanceof Uint8Array || Array.isArray(signature)) {
+        // 使用 base64 编码来显示签名
+        const base64 = btoa(String.fromCharCode(...Array.from(signature)));
+        signatureStr = base64;
+      } else if (typeof signature === 'object' && signature !== null) {
+        // 如果签名是对象，尝试转换为字符串
+        signatureStr = JSON.stringify(signature);
+      }
+      
+      setSignedMessages(prev => [`Solana: ${signatureStr}`, ...prev]);
       Alert.alert("Success", "Solana message signed successfully!");
     } catch (error) {
       console.error('Solana sign failed:', error);
@@ -647,26 +662,6 @@ const RedesignedProfileScreen: React.FC = () => {
                               {activeWalletType === 'solana' ? 'Active' : 'Switch to SOL'}
                             </Text>
                           </TouchableOpacity>
-                          
-                          <TouchableOpacity
-                            style={[styles.walletManageButton, styles.dangerButton]}
-                            onPress={() => {
-                              Alert.alert(
-                                'Confirm Delete',
-                                'Are you sure you want to delete the Solana wallet? This action cannot be undone.',
-                                [
-                                  { text: 'Cancel', style: 'cancel' },
-                                  { 
-                                    text: 'Delete', 
-                                    style: 'destructive',
-                                    onPress: removeSolanaWallet
-                                  }
-                                ]
-                              );
-                            }}
-                          >
-                            <Text style={styles.walletManageText}>Remove</Text>
-                          </TouchableOpacity>
                         </View>
                       </LinearGradient>
                     </View>
@@ -911,7 +906,7 @@ const RedesignedProfileScreen: React.FC = () => {
                     <Text style={styles.walletOptionAddress}>
                       {formatAddress(solanaWallet.address)}
                     </Text>
-                    <Text style={styles.walletOptionNetwork}>{solanaWallet.cluster}</Text>
+                    <Text style={styles.walletOptionNetwork}>mainnet-beta</Text>
                   </View>
                   {activeWalletType === 'solana' && (
                     <Text style={styles.walletOptionCheck}>✓</Text>
@@ -1226,8 +1221,8 @@ const RedesignedProfileScreen: React.FC = () => {
                 </View>
 
                 <View style={styles.walletDetailItem}>
-                  <Text style={styles.walletDetailLabel}>Cluster</Text>
-                  <Text style={styles.walletDetailText}>{solanaWallet.cluster}</Text>
+                  <Text style={styles.walletDetailLabel}>Network</Text>
+                  <Text style={styles.walletDetailText}>mainnet-beta</Text>
                 </View>
 
                 <View style={styles.walletActionsSection}>

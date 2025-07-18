@@ -5,22 +5,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   usePrivy, 
   useEmbeddedEthereumWallet,
-  getUserEmbeddedEthereumWallet 
+  getUserEmbeddedEthereumWallet,
+  useEmbeddedSolanaWallet,
+  getUserEmbeddedSolanaWallet,
 } from "@privy-io/expo";
-
-// 临时类型定义，等待Privy正式发布Solana类型
-interface SolanaWallet {
-  address: string;
-  cluster: 'mainnet-beta' | 'devnet' | 'testnet';
-  publicKey: string;
-}
 
 type WalletType = 'ethereum' | 'solana';
 
 interface MultiChainWalletState {
   activeWalletType: WalletType;
   ethereumWallet: any | null;
-  solanaWallet: SolanaWallet | null;
+  solanaWallet: any | null;
   isCreatingSolanaWallet: boolean;
   hasSolanaWallet: boolean;
 }
@@ -40,16 +35,20 @@ const MultiChainWalletContext = createContext<MultiChainWalletContextType | null
 
 // Storage keys
 const STORAGE_KEYS = {
-  SOLANA_WALLET: '@solana_wallet',
   ACTIVE_WALLET_TYPE: '@active_wallet_type',
-  HAS_SOLANA_WALLET: '@has_solana_wallet'
 };
 
 // 创建一个 hook 来管理钱包状态
 export function useMultiChainWalletState(): MultiChainWalletContextType {
   const { user } = usePrivy();
+  
+  // Ethereum wallet hooks
   const { wallets: ethWallets, create: createEthWallet } = useEmbeddedEthereumWallet();
   const ethAccount = getUserEmbeddedEthereumWallet(user);
+  
+  // Solana wallet hooks - 使用官方 Privy Solana 支持
+  const { wallets: solWallets, create: createSolWallet } = useEmbeddedSolanaWallet();
+  const solAccount = getUserEmbeddedSolanaWallet(user);
   
   const [state, setState] = useState<MultiChainWalletState>({
     activeWalletType: 'ethereum',
@@ -62,21 +61,12 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
   // 从AsyncStorage加载保存的状态
   const loadPersistedState = useCallback(async () => {
     try {
-      const [solanaWalletData, activeWalletType, hasSolanaWallet] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.SOLANA_WALLET),
-        AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_WALLET_TYPE),
-        AsyncStorage.getItem(STORAGE_KEYS.HAS_SOLANA_WALLET)
-      ]);
-
-      const persistedSolanaWallet = solanaWalletData ? JSON.parse(solanaWalletData) : null;
+      const activeWalletType = await AsyncStorage.getItem(STORAGE_KEYS.ACTIVE_WALLET_TYPE);
       const persistedActiveWalletType = activeWalletType as WalletType || 'ethereum';
-      const persistedHasSolanaWallet = hasSolanaWallet === 'true';
 
       setState(prev => ({
         ...prev,
-        solanaWallet: persistedSolanaWallet,
         activeWalletType: persistedActiveWalletType,
-        hasSolanaWallet: persistedHasSolanaWallet
       }));
     } catch (error) {
       console.error('Failed to load persisted wallet state:', error);
@@ -86,30 +76,9 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
   // 保存状态到AsyncStorage
   const persistState = useCallback(async (newState: Partial<MultiChainWalletState>) => {
     try {
-      const promises = [];
-      
-      if (newState.solanaWallet !== undefined) {
-        promises.push(
-          AsyncStorage.setItem(
-            STORAGE_KEYS.SOLANA_WALLET, 
-            JSON.stringify(newState.solanaWallet)
-          )
-        );
-      }
-      
       if (newState.activeWalletType !== undefined) {
-        promises.push(
-          AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_WALLET_TYPE, newState.activeWalletType)
-        );
+        await AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_WALLET_TYPE, newState.activeWalletType);
       }
-      
-      if (newState.hasSolanaWallet !== undefined) {
-        promises.push(
-          AsyncStorage.setItem(STORAGE_KEYS.HAS_SOLANA_WALLET, String(newState.hasSolanaWallet))
-        );
-      }
-
-      await Promise.all(promises);
     } catch (error) {
       console.error('Failed to persist wallet state:', error);
     }
@@ -122,15 +91,17 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     }
   }, [user, loadPersistedState]);
 
-  // 检查用户的钱包状态
+  // 更新钱包状态 - 使用真实的 Privy 钱包数据
   useEffect(() => {
     if (user) {
       setState(prev => ({
         ...prev,
-        ethereumWallet: ethAccount
+        ethereumWallet: ethAccount,
+        solanaWallet: solAccount,
+        hasSolanaWallet: !!solAccount
       }));
     }
-  }, [user, ethAccount]);
+  }, [user, ethAccount, solAccount]);
 
   // 切换活跃钱包类型
   const switchWalletType = useCallback((type: WalletType) => {
@@ -138,7 +109,7 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     persistState({ activeWalletType: type });
   }, [persistState]);
 
-  // 创建Solana钱包
+  // 创建Solana钱包 - 使用官方 Privy API
   const createSolanaWallet = useCallback(async () => {
     if (!user) {
       Alert.alert('错误', '请先登录');
@@ -148,110 +119,65 @@ export function useMultiChainWalletState(): MultiChainWalletContextType {
     setState(prev => ({ ...prev, isCreatingSolanaWallet: true }));
     
     try {
-      // TODO: 当Privy支持时，使用真实的创建函数
-      // const solanaWallet = await createSolanaWallet();
+      // 使用官方 Privy API 创建 Solana 钱包
+      const wallet = await createSolWallet();
       
-      // 临时模拟创建
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 生成一个看起来像真实Solana地址的模拟地址
-      const generateMockSolanaAddress = () => {
-        const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-        let result = '';
-        for (let i = 0; i < 44; i++) {
-          result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-      };
-      
-      const mockSolanaWallet: SolanaWallet = {
-        address: generateMockSolanaAddress(),
-        cluster: 'mainnet-beta',
-        publicKey: 'mock-public-key-' + Date.now()
-      };
-      
-      const newState = {
-        solanaWallet: mockSolanaWallet,
-        hasSolanaWallet: true,
-        isCreatingSolanaWallet: false,
-        activeWalletType: 'solana' as WalletType
-      };
+      if (wallet) {
+        const newState = {
+          hasSolanaWallet: true,
+          isCreatingSolanaWallet: false,
+          activeWalletType: 'solana' as WalletType
+        };
 
-      setState(prev => ({
-        ...prev,
-        ...newState
-      }));
+        setState(prev => ({
+          ...prev,
+          ...newState
+        }));
 
-      // 持久化新状态
-      await persistState(newState);
+        // 持久化新状态
+        await persistState({ activeWalletType: 'solana' });
 
-      Alert.alert('成功', 'Solana钱包创建成功！');
-      return true;
+        Alert.alert('成功', 'Solana钱包创建成功！');
+        return true;
+      } else {
+        throw new Error('Failed to create Solana wallet');
+      }
     } catch (error) {
       console.error('创建Solana钱包失败:', error);
       Alert.alert('错误', '创建Solana钱包失败');
       setState(prev => ({ ...prev, isCreatingSolanaWallet: false }));
       return false;
     }
-  }, [user, persistState]);
+  }, [user, createSolWallet, persistState]);
 
   // 删除Solana钱包
   const removeSolanaWallet = useCallback(async () => {
     Alert.alert(
       '确认删除',
-      '确定要删除Solana钱包吗？此操作不可撤销。',
+      '删除Solana钱包功能暂不支持。钱包将保持与您的账户关联。',
       [
-        { text: '取消', style: 'cancel' },
-        { 
-          text: '删除', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const newState = {
-                solanaWallet: null,
-                hasSolanaWallet: false,
-                activeWalletType: 'ethereum' as WalletType
-              };
-
-              setState(prev => ({
-                ...prev,
-                ...newState
-              }));
-
-              // 从AsyncStorage删除
-              await Promise.all([
-                AsyncStorage.removeItem(STORAGE_KEYS.SOLANA_WALLET),
-                AsyncStorage.setItem(STORAGE_KEYS.HAS_SOLANA_WALLET, 'false'),
-                AsyncStorage.setItem(STORAGE_KEYS.ACTIVE_WALLET_TYPE, 'ethereum')
-              ]);
-
-              Alert.alert('成功', 'Solana钱包已删除');
-            } catch (error) {
-              Alert.alert('错误', '删除失败');
-            }
-          }
-        }
+        { text: '确定', style: 'default' }
       ]
     );
   }, []);
 
-  // 获取当前活跃钱包信息 - 修改这里，返回iconType而不是icon emoji
+  // 获取当前活跃钱包信息
   const getActiveWallet = useCallback(() => {
     if (state.activeWalletType === 'ethereum') {
       return {
         type: 'ethereum' as const,
         address: state.ethereumWallet?.address || null,
         network: 'Ethereum Mainnet',
-        iconType: 'ethereum' as const, // 返回图标类型而不是emoji
-        fallbackIcon: '🔷' // 保留fallback emoji以防万一
+        iconType: 'ethereum' as const,
+        fallbackIcon: '🔷'
       };
     } else {
       return {
         type: 'solana' as const,
         address: state.solanaWallet?.address || null,
-        network: state.solanaWallet?.cluster || 'mainnet-beta',
-        iconType: 'solana' as const, // 返回图标类型而不是emoji
-        fallbackIcon: '🌞' // 保留fallback emoji以防万一
+        network: 'mainnet-beta',
+        iconType: 'solana' as const,
+        fallbackIcon: '🌞'
       };
     }
   }, [state]);
@@ -290,76 +216,193 @@ export function useMultiChainWallet() {
 export { MultiChainWalletContext };
 export type { MultiChainWalletContextType };
 
-// Solana特定操作的Hook
+// Solana特定操作的Hook - 使用官方 Privy Solana APIs
+// Solana特定操作的Hook - 调试版本
 export function useSolanaOperations() {
   const { user } = usePrivy();
+  const { wallets: solWallets } = useEmbeddedSolanaWallet();
   const [isLoading, setIsLoading] = useState(false);
+
+  // 获取当前的 Solana 钱包
+  const getSolanaWallet = useCallback(() => {
+    if (!user || !solWallets || solWallets.length === 0) {
+      return null;
+    }
+    
+    const wallet = solWallets[0];
+    
+    // 调试：打印钱包对象结构
+    console.log('🔍 Solana Wallet Object:', wallet);
+    console.log('🔍 Wallet methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(wallet)));
+    console.log('🔍 Wallet keys:', Object.keys(wallet));
+    
+    return wallet;
+  }, [user, solWallets]);
 
   // 签名Solana消息
   const signMessage = useCallback(async (message: string) => {
-    if (!user) {
-      throw new Error('用户未登录');
+    const wallet = getSolanaWallet();
+    if (!wallet) {
+      throw new Error('没有可用的Solana钱包');
     }
 
     setIsLoading(true);
     try {
-      // TODO: 使用真实的Privy Solana API
-      // const signature = await solanaWallet.signMessage(message);
+      const encoder = new TextEncoder();
+      const messageBytes = encoder.encode(message);
       
-      // 临时模拟
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockSignature = `mock_signature_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('🔍 Attempting to sign message with wallet:', wallet);
       
-      return mockSignature;
+      // 方法1: 直接调用 signMessage
+      if ('signMessage' in wallet && typeof wallet.signMessage === 'function') {
+        console.log('✅ Using wallet.signMessage method');
+        const signature = await wallet.signMessage(messageBytes);
+        return signature;
+      }
+      
+      // 方法2: 使用 sign 方法
+      if ('sign' in wallet && typeof wallet.sign === 'function') {
+        console.log('✅ Using wallet.sign method');
+        const signature = await wallet.sign(messageBytes);
+        return signature;
+      }
+      
+      // 方法3: 获取 provider 并尝试
+      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
+        console.log('🔍 Trying to get provider...');
+        const provider = await wallet.getProvider();
+        console.log('🔍 Provider object:', provider);
+        console.log('🔍 Provider methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(provider)));
+        
+        if (provider && 'signMessage' in provider) {
+          console.log('✅ Using provider.signMessage method');
+          const signature = await provider.signMessage(messageBytes);
+          return signature;
+        }
+      }
+      
+      // 方法4: 使用 request 方法
+      if ('request' in wallet && typeof wallet.request === 'function') {
+        console.log('✅ Using wallet.request method');
+        const signature = await wallet.request({
+          method: 'signMessage',
+          params: {
+            message: Buffer.from(messageBytes).toString('base64'),
+            display: 'utf8'
+          }
+        });
+        return signature;
+      }
+      
+      // 方法5: 检查是否有其他签名相关的方法
+      const walletMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(wallet));
+      const signMethods = walletMethods.filter(method => 
+        method.toLowerCase().includes('sign') || 
+        method.toLowerCase().includes('message')
+      );
+      
+      console.log('🔍 Available sign-related methods:', signMethods);
+      
+      // 如果找到了其他签名方法，尝试使用它们
+      for (const method of signMethods) {
+        if (typeof wallet[method] === 'function') {
+          console.log(`🔍 Trying method: ${method}`);
+          try {
+            const result = await wallet[method](messageBytes);
+            console.log(`✅ Success with method: ${method}`);
+            return result;
+          } catch (err) {
+            console.log(`❌ Failed with method ${method}:`, err);
+          }
+        }
+      }
+      
+      throw new Error('Solana wallet does not support message signing - no compatible method found');
+    } catch (error) {
+      console.error('❌ Solana sign failed:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        wallet: wallet
+      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [getSolanaWallet]);
 
   // 签名Solana交易
   const signTransaction = useCallback(async (transaction: any) => {
-    if (!user) {
-      throw new Error('用户未登录');
+    const wallet = getSolanaWallet();
+    if (!wallet) {
+      throw new Error('没有可用的Solana钱包');
     }
 
     setIsLoading(true);
     try {
-      // TODO: 使用真实的Privy Solana API
-      // return await solanaWallet.signTransaction(transaction);
+      console.log('🔍 Attempting to sign transaction with wallet:', wallet);
       
-      // 临时模拟
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      return { signature: 'mock_tx_signature' };
+      if ('signTransaction' in wallet && typeof wallet.signTransaction === 'function') {
+        console.log('✅ Using wallet.signTransaction method');
+        return await wallet.signTransaction(transaction);
+      }
+      
+      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
+        const provider = await wallet.getProvider();
+        if (provider && 'signTransaction' in provider) {
+          console.log('✅ Using provider.signTransaction method');
+          return await provider.signTransaction(transaction);
+        }
+      }
+      
+      throw new Error('Solana wallet does not support transaction signing');
+    } catch (error) {
+      console.error('❌ Transaction sign failed:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [getSolanaWallet]);
 
   // 发送交易
-  const sendTransaction = useCallback(async (transaction: any, connection: any) => {
-    if (!user) {
-      throw new Error('用户未登录');
+  const sendTransaction = useCallback(async (transaction: any, connection: any, options?: any) => {
+    const wallet = getSolanaWallet();
+    if (!wallet) {
+      throw new Error('没有可用的Solana钱包');
     }
 
     setIsLoading(true);
     try {
-      // TODO: 使用真实的Privy Solana API
-      // return await solanaWallet.sendTransaction(transaction, connection);
+      console.log('🔍 Attempting to send transaction with wallet:', wallet);
       
-      // 临时模拟
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return 'mock_transaction_hash_' + Date.now();
+      if ('sendTransaction' in wallet && typeof wallet.sendTransaction === 'function') {
+        console.log('✅ Using wallet.sendTransaction method');
+        return await wallet.sendTransaction(transaction, connection, options);
+      }
+      
+      if ('getProvider' in wallet && typeof wallet.getProvider === 'function') {
+        const provider = await wallet.getProvider();
+        if (provider && 'sendTransaction' in provider) {
+          console.log('✅ Using provider.sendTransaction method');
+          return await provider.sendTransaction(transaction, connection, options);
+        }
+      }
+      
+      throw new Error('Solana wallet does not support sending transactions');
+    } catch (error) {
+      console.error('❌ Send transaction failed:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [getSolanaWallet]);
 
   return {
     isLoading,
     signMessage,
     signTransaction,
-    sendTransaction
+    sendTransaction,
+    solanaWallet: getSolanaWallet()
   };
 }
-
 export default useMultiChainWallet;
