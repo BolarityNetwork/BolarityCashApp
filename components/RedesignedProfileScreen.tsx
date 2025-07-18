@@ -250,6 +250,7 @@ const RedesignedProfileScreen: React.FC = () => {
   const [showTransactionsModal, setShowTransactionsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showWalletSwitchModal, setShowWalletSwitchModal] = useState(false);
+  const [showNetworkModal, setShowNetworkModal] = useState(false); // 新增网络切换模态框
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -262,7 +263,7 @@ const RedesignedProfileScreen: React.FC = () => {
   const solanaAccount = getUserEmbeddedSolanaWallet(user);
   
   // 多链钱包管理 - 使用优化后的 hook
-  const {
+const {
     activeWalletType,
     ethereumWallet,
     solanaWallet,
@@ -273,7 +274,13 @@ const RedesignedProfileScreen: React.FC = () => {
     removeSolanaWallet,
     activeWallet,
     canSwitchTo,
-    // 新的官方 API 方法
+    // 添加缺失的网络相关属性
+    getCurrentEthereumNetwork,
+    getAvailableNetworks,
+    switchEthereumNetwork,
+    activeEthereumNetwork,
+    isSwitchingNetwork,
+    // 签名和交易方法
     signMessage,
     sendTestTransaction,
     signTestTransaction,
@@ -436,7 +443,7 @@ const RedesignedProfileScreen: React.FC = () => {
               ID: {formatAddress(user.id)}
             </Text>
             
-            {/* 当前活跃钱包显示 - 使用 WalletLogo 组件 */}
+            {/* 当前活跃钱包显示 - 带网络信息 */}
             <TouchableOpacity 
               style={styles.currentWalletCard}
               onPress={() => setShowWalletSwitchModal(true)}
@@ -453,7 +460,29 @@ const RedesignedProfileScreen: React.FC = () => {
                 <Text style={styles.currentWalletAddress}>
                   {activeWallet.address ? formatAddress(activeWallet.address) : 'Not connected'}
                 </Text>
-                <Text style={styles.currentWalletNetwork}>{activeWallet.network}</Text>
+                
+                {/* 网络信息显示 */}
+                <View style={styles.networkInfoContainer}>
+                  {activeWallet.type === 'ethereum' ? (
+                    <TouchableOpacity 
+                      style={styles.networkDisplayButton}
+                      onPress={() => setShowNetworkModal(true)}
+                    >
+                      <Text style={styles.networkIcon}>
+                        {getCurrentEthereumNetwork().icon}
+                      </Text>
+                      <Text style={styles.networkName}>
+                        {getCurrentEthereumNetwork().name}
+                      </Text>
+                      <Text style={styles.networkSwitchIcon}>⚙️</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.networkDisplayButton}>
+                      <Text style={styles.networkIcon}>🌞</Text>
+                      <Text style={styles.networkName}>{activeWallet.network}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
               <Text style={styles.switchIcon}>🔄</Text>
             </TouchableOpacity>
@@ -490,6 +519,22 @@ const RedesignedProfileScreen: React.FC = () => {
                 <Text style={styles.quickActionText}>Switch Wallet</Text>
               </TouchableOpacity>
 
+              {/* 网络切换按钮 - 只有Ethereum时显示 */}
+              {activeWalletType === 'ethereum' && (
+                <TouchableOpacity
+                  style={styles.quickActionButton}
+                  onPress={() => setShowNetworkModal(true)}
+                  disabled={isSwitchingNetwork}
+                >
+                  <View style={[styles.quickActionIconContainer, { backgroundColor: '#fef3c7' }]}>
+                    <Text style={styles.quickActionIcon}>🌐</Text>
+                  </View>
+                  <Text style={styles.quickActionText}>
+                    {isSwitchingNetwork ? 'Switching...' : 'Switch Network'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 style={styles.quickActionButton}
                 onPress={handleSignMessage}
@@ -506,18 +551,19 @@ const RedesignedProfileScreen: React.FC = () => {
                 onPress={handleSendTestTransaction}
                 disabled={isLoading || !activeWallet.address}
               >
-                <View style={[styles.quickActionIconContainer, { backgroundColor: '#fef3c7' }]}>
+                <View style={[styles.quickActionIconContainer, { backgroundColor: '#f3e8ff' }]}>
                   <Text style={styles.quickActionIcon}>📤</Text>
                 </View>
                 <Text style={styles.quickActionText}>Send Test TX</Text>
               </TouchableOpacity>
 
+              {/* 第二行 - 只显示一个按钮居中 */}
               <TouchableOpacity
-                style={styles.quickActionButton}
+                style={[styles.quickActionButton, { width: '47%' }]}
                 onPress={handleSignTestTransaction}
                 disabled={isLoading || !activeWallet.address}
               >
-                <View style={[styles.quickActionIconContainer, { backgroundColor: '#f3e8ff' }]}>
+                <View style={[styles.quickActionIconContainer, { backgroundColor: '#fef2f2' }]}>
                   <Text style={styles.quickActionIcon}>🔏</Text>
                 </View>
                 <Text style={styles.quickActionText}>Sign Test TX</Text>
@@ -581,6 +627,21 @@ const RedesignedProfileScreen: React.FC = () => {
                             <Text style={styles.copyIcon}>📋</Text>
                           </TouchableOpacity>
                         </View>
+                        
+                        {/* 网络信息和切换 */}
+                        <TouchableOpacity 
+                          style={styles.networkSelector}
+                          onPress={() => setShowNetworkModal(true)}
+                          disabled={isSwitchingNetwork}
+                        >
+                          <Text style={styles.networkSelectorIcon}>
+                            {getCurrentEthereumNetwork().icon}
+                          </Text>
+                          <Text style={styles.networkSelectorName}>
+                            {isSwitchingNetwork ? 'Switching...' : getCurrentEthereumNetwork().name}
+                          </Text>
+                          <Text style={styles.networkSelectorArrow}>⚙️</Text>
+                        </TouchableOpacity>
                         
                         <TouchableOpacity
                           style={styles.walletManageButton}
@@ -860,6 +921,89 @@ const RedesignedProfileScreen: React.FC = () => {
       </SafeAreaView>
 
       {/* 各种模态框保持原有样式... */}
+      {/* Network Switch Modal */}
+      <Modal
+        visible={showNetworkModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowNetworkModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Switch Network</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowNetworkModal(false)}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Choose which Ethereum network to connect to
+            </Text>
+
+            {getAvailableNetworks().map((network) => {
+              // 通过比较配置找到对应的网络键
+              const networkKey = Object.entries({
+                mainnet: { name: 'Ethereum Mainnet' },
+                sepolia: { name: 'Ethereum Sepolia' },
+                polygon: { name: 'Polygon Mainnet' },
+                bsc: { name: 'BSC Mainnet' },
+                arbitrum: { name: 'Arbitrum One' },
+                optimism: { name: 'Optimism' },
+                base: { name: 'Base Mainnet' }
+              }).find(([_, config]) => config.name === network.name)?.[0] || 'mainnet';
+              
+              const isActive = activeEthereumNetwork === networkKey;
+              
+              return (
+                <TouchableOpacity
+                  key={network.name}
+                  style={[
+                    styles.networkOption,
+                    isActive && styles.activeNetworkOption
+                  ]}
+                  onPress={async () => {
+                    try {
+                      await switchEthereumNetwork(networkKey);
+                      setShowNetworkModal(false);
+                    } catch (error) {
+                      // 错误已在 switchEthereumNetwork 中处理
+                    }
+                  }}
+                  disabled={isSwitchingNetwork}
+                >
+                  <View style={styles.networkOptionContent}>
+                    <View style={[styles.networkIconContainer, { backgroundColor: network.color + '20' }]}>
+                      <Text style={styles.networkOptionIcon}>{network.icon}</Text>
+                    </View>
+                    <View style={styles.networkOptionInfo}>
+                      <Text style={styles.networkOptionTitle}>{network.name}</Text>
+                      <Text style={styles.networkOptionDesc}>
+                        Chain ID: {network.chainId} • {network.symbol}
+                      </Text>
+                      <Text style={styles.networkOptionUrl}>{network.blockExplorer}</Text>
+                    </View>
+                    {isActive && (
+                      <Text style={styles.networkOptionCheck}>✓</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+
+            {isSwitchingNetwork && (
+              <View style={styles.switchingIndicator}>
+                <ActivityIndicator color="#667eea" size="large" />
+                <Text style={styles.switchingText}>Switching network...</Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
       {/* Wallet Switch Modal */}
       <Modal
         visible={showWalletSwitchModal}
@@ -1219,11 +1363,6 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     marginTop: 2,
   },
-  currentWalletNetwork: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginTop: 2,
-  },
   switchIcon: {
     fontSize: 20,
     color: '#667eea',
@@ -1257,6 +1396,123 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: '#e2e8f0',
     marginHorizontal: 16,
+  },
+  // 新增网络相关样式
+  networkInfoContainer: {
+    marginTop: 4,
+  },
+  networkDisplayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(100, 116, 139, 0.1)',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(100, 116, 139, 0.2)',
+  },
+  networkIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  networkName: {
+    fontSize: 11,
+    color: '#64748b',
+    flex: 1,
+  },
+  networkSwitchIcon: {
+    fontSize: 10,
+    marginLeft: 4,
+  },
+  networkSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  networkSelectorIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  networkSelectorName: {
+    fontSize: 14,
+    color: '#fff',
+    flex: 1,
+    fontWeight: '500',
+  },
+  networkSelectorArrow: {
+    fontSize: 14,
+    color: '#fff',
+  },
+  networkOption: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  activeNetworkOption: {
+    borderColor: '#667eea',
+    borderWidth: 2,
+  },
+  networkOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  networkIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  networkOptionIcon: {
+    fontSize: 24,
+  },
+  networkOptionInfo: {
+    flex: 1,
+  },
+  networkOptionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  networkOptionDesc: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  networkOptionUrl: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  networkOptionCheck: {
+    fontSize: 24,
+    color: '#667eea',
+    fontWeight: 'bold',
+  },
+  switchingIndicator: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  switchingText: {
+    fontSize: 16,
+    color: '#667eea',
+    marginTop: 12,
+    fontWeight: '500',
   },
   quickActionsSection: {
     paddingHorizontal: 20,
