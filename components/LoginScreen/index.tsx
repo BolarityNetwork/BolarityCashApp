@@ -4,8 +4,9 @@ import {
   Text,
   ScrollView,
   StatusBar,
+  TouchableOpacity,
+  Image,
 } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from "./hooks/useAuth";
 import { LoginButton } from "./components/LoginButton";
 import { OAuthButton } from "./components/OAuthButton";
@@ -26,11 +27,8 @@ export default function LoginScreen() {
 
   return (
     <>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb']}
-        style={styles.container}
-      >
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -41,23 +39,26 @@ export default function LoginScreen() {
             <PrimaryActions 
               isLoading={isLoading}
               onEmailLogin={handleEmailLogin}
-              onPasskeyLogin={handlePasskeyLogin}
             />
-            
-            <Divider />
-            
+          </View>
+          
+          <View style={styles.divider}>
+            <Text style={styles.dividerText}>Other options</Text>
+          </View>
+          
+          <View style={styles.loginCard}>
             <OAuthSection 
               providers={OAUTH_PROVIDERS}
               isLoading={isLoading || oauthLoading}
               onProviderSelect={handleOAuthLogin}
+              onPasskeyLogin={handlePasskeyLogin}
             />
-            
-            <ErrorDisplay error={error} />
           </View>
 
+          <ErrorDisplay error={error} />
           <ConfigSection />
         </ScrollView>
-      </LinearGradient>
+      </View>
     </>
   );
 }
@@ -65,62 +66,170 @@ export default function LoginScreen() {
 function Header() {
   return (
     <View style={styles.header}>
+      <Text style={styles.title}>Log in or sign up</Text>
+      
       <View style={styles.logoContainer}>
-        <Text style={styles.logoText}>⚡</Text>
+        <View style={styles.logoCircle} />
+        <Text style={styles.logoText}>bolarity</Text>
       </View>
-      <Text style={styles.title}>Welcome to Bolarity</Text>
-      <Text style={styles.subtitle}>
-        Your gateway to chain abstraction
-      </Text>
     </View>
   );
 }
 
-function PrimaryActions({ isLoading, onEmailLogin, onPasskeyLogin }: any) {
+function PrimaryActions({ isLoading, onEmailLogin }: any) {
   return (
     <View style={styles.primaryActions}>
-      <LoginButton
-        icon="📧"
-        text="Continue with Email"
+      <TouchableOpacity 
+        style={[styles.primaryButton, styles.emailButton]}
         onPress={onEmailLogin}
         disabled={isLoading}
-        loading={isLoading}
-        style={styles.emailButton}
-      />
-      <LoginButton
-        icon="🔐"
-        text="Use Passkey"
-        onPress={onPasskeyLogin}
+      >
+        <View style={styles.buttonContent}>
+          <View style={styles.emailIcon}>
+            <View style={styles.emailEnvelope}>
+              <View style={styles.emailFlap} />
+            </View>
+          </View>
+          <Text style={styles.primaryButtonText}>your@email.com</Text>
+        </View>
+        <Text style={styles.buttonArrow}>Submit</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.primaryButton, styles.emailButton]}
+        onPress={() => {/* SMS function */}}
         disabled={isLoading}
-        style={styles.passkeyButton}
+      >
+        <View style={styles.buttonContent}>
+          <View style={styles.phoneIcon}>
+            <View style={styles.phoneBody}>
+              <View style={styles.phoneScreen} />
+              <View style={styles.phoneHomeButton} />
+            </View>
+          </View>
+          <Text style={styles.primaryButtonText}>Continue with SMS</Text>
+        </View>
+        <Text style={styles.buttonArrow}>›</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+
+// Logo Components
+function GoogleLogo() {
+  return (
+    <View style={styles.oauthLogoContainer}>
+      <Image 
+        source={require('../../assets/logos/google.png')} 
+        style={styles.logoImage}
+        resizeMode="contain"
       />
     </View>
   );
 }
 
-function Divider() {
+function AppleLogo() {
   return (
-    <View style={styles.divider}>
-      <View style={styles.dividerLine} />
-      <Text style={styles.dividerText}>or continue with</Text>
-      <View style={styles.dividerLine} />
+    <View style={styles.oauthLogoContainer}>
+      <Image 
+        source={require('../../assets/logos/apple.png')} 
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
     </View>
   );
 }
 
-function OAuthSection({ providers, isLoading, onProviderSelect }: any) {
+function DiscordLogo() {
+  return (
+    <View style={styles.oauthLogoContainer}>
+      <Image 
+        source={require('../../assets/logos/discord.png')} 
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+
+function FingerprintIcon() {
+  return (
+    <View style={styles.fingerprintIcon}>
+      <View style={styles.fingerprintOuter} />
+      <View style={styles.fingerprintMiddle} />
+      <View style={styles.fingerprintInner} />
+      <View style={styles.fingerprintCore} />
+    </View>
+  );
+}
+
+function WalletIcon() {
+  return (
+    <View style={styles.walletIcon}>
+      <View style={styles.walletBody}>
+        <View style={styles.walletFlap} />
+        <View style={styles.walletCard} />
+      </View>
+    </View>
+  );
+}
+
+function OAuthSection({ providers, isLoading, onProviderSelect, onPasskeyLogin }: any) {
+  const renderProviderIcon = (providerName: string) => {
+    switch (providerName) {
+      case 'google':
+        return <GoogleLogo />;
+      case 'apple':
+        return <AppleLogo />;
+      case 'discord':
+        return <DiscordLogo />;
+      default:
+        return <Text style={styles.oauthIcon}>{providers.find((p: any) => p.name === providerName)?.icon}</Text>;
+    }
+  };
+
   return (
     <View style={styles.oauthContainer}>
-      {providers.map((provider: any, index: number) => (
-        <OAuthButton
+      {providers.map((provider: any) => (
+        <TouchableOpacity
           key={provider.name}
-          provider={provider}
+          style={styles.oauthButton}
           onPress={() => onProviderSelect(provider.name)}
           disabled={isLoading}
-          loading={isLoading}
-          isLast={index === providers.length - 1}
-        />
+        >
+          <View style={styles.oauthContent}>
+            {renderProviderIcon(provider.name)}
+            <Text style={styles.oauthText}>{provider.label}</Text>
+          </View>
+          {provider.name === 'google' && (
+            <View style={styles.recentBadge}>
+              <Text style={styles.recentText}>Recent</Text>
+            </View>
+          )}
+          <Text style={styles.buttonArrow}>›</Text>
+        </TouchableOpacity>
       ))}
+      
+      <TouchableOpacity 
+        style={styles.oauthButton}
+        onPress={onPasskeyLogin}
+        disabled={isLoading}
+      >
+        <View style={styles.oauthContent}>
+          <FingerprintIcon />
+          <Text style={styles.oauthText}>Continue with Passkey</Text>
+        </View>
+        <Text style={styles.buttonArrow}>›</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity style={[styles.oauthButton, styles.oauthButtonLast]}>
+        <View style={styles.oauthContent}>
+          <WalletIcon />
+          <Text style={styles.oauthText}>Continue with a wallet</Text>
+        </View>
+        <Text style={styles.buttonArrow}>›</Text>
+      </TouchableOpacity>
     </View>
   );
 }
