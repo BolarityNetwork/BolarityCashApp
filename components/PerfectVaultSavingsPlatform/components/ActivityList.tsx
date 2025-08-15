@@ -28,6 +28,7 @@ const ActivityList: React.FC<ActivityListProps> = () => {
     currentChain
   } = useTransactionHistory();
 
+
   // 获取交易类型对应的图标
   const getTransactionIcon = (type: string) => {
     switch (type.toLowerCase()) {
@@ -233,15 +234,20 @@ const styles = StyleSheet.create({
   },
   activityInfo: {
     flex: 1,
+    minWidth: 0, // Allow text to wrap properly
   },
   activityType: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#111827',
+    flexShrink: 1,
+    flexWrap: 'nowrap',
   },
   activityDetails: {
     fontSize: 14,
     color: '#6b7280',
+    flexShrink: 1,
+    flexWrap: 'nowrap',
   },
   activityRight: {
     alignItems: 'flex-end',

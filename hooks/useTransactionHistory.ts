@@ -24,7 +24,7 @@ interface TransactionHistoryState {
 // DeFi 协议合约地址映射
 const PROTOCOL_CONTRACTS = {
   ethereum: {
-    aave: ['0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9', '0x87870bace4f8b4a9c2a8c86aa6b1c9b0f1b52b75'],
+    aave: ['0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9', '0x87870bace4f8b4a9c2a8c86aa6b1c9b0f1b52b75', '0xa238dd80c259a72e81d7e4664a9801593f98d1c5'],
     compound: ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b', '0xc3d688b66703497daa19211eedff47f25384cdc3'],
     uniswap: ['0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45']
   },
@@ -35,51 +35,60 @@ const PROTOCOL_CONTRACTS = {
   }
 };
 
-// 模拟真实交易数据（实际应该从区块链获取）
-const mockRealTransactions: RealTransaction[] = [
-  {
-    hash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12',
-    type: 'Deposit',
-    amount: '1000.00',
-    token: 'USDC',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30分钟前
-    protocol: 'AAVE',
-    status: 'success',
-    gasUsed: '0.0023',
-    isPositive: false
-  },
-  {
-    hash: '0x2b3c4d5e6f7890abcdef1234567890abcdef1234',
-    type: 'Interest Earned',
-    amount: '12.45',
-    token: 'USDC',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2小时前
-    protocol: 'AAVE',
-    status: 'success',
-    isPositive: true
-  },
-  {
-    hash: '0x3c4d5e6f7890abcdef1234567890abcdef123456',
-    type: 'Withdraw',
-    amount: '500.00',
-    token: 'USDC',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1天前
-    protocol: 'Compound',
-    status: 'success',
-    gasUsed: '0.0034',
-    isPositive: true
-  },
-  {
-    hash: 'Abc123def456ghi789jkl012mno345pqr678stu9vw',
-    type: 'Deposit',
-    amount: '2000.00',
-    token: 'SOL',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2天前
-    protocol: 'Drift',
-    status: 'success',
-    isPositive: false
-  }
+// Whitelist of legitimate tokens - Unix way: explicit is better than implicit
+const LEGITIMATE_TOKENS = new Set([
+  'ETH', 'WETH', 'USDC', 'USDT', 'DAI', 'WBTC', 'LINK', 'UNI', 'AAVE', 'COMP'
+]);
+
+// Scam token detection patterns
+const SCAM_PATTERNS = [
+  /^[A-Z]+\d+$/,           // Random letters + numbers (e.g., ABC123)
+  /[\u4e00-\u9fff]/,       // Chinese characters
+  /[\u0600-\u06ff]/,       // Arabic characters  
+  /[\u0400-\u04ff]/,       // Cyrillic characters
+  /(.)\1{3,}/,             // Repeated characters (e.g., AAAA)
+  /^.{1,2}$/,              // Too short (1-2 chars)
+  /^.{15,}$/,              // Too long (15+ chars)
 ];
+
+// Clean token filter - reject garbage
+function isLegitimateToken(tokenSymbol: string): boolean {
+  if (!tokenSymbol) return false;
+  
+  // Whitelist check first
+  if (LEGITIMATE_TOKENS.has(tokenSymbol.toUpperCase())) {
+    return true;
+  }
+  
+  // Reject obvious scam patterns
+  for (const pattern of SCAM_PATTERNS) {
+    if (pattern.test(tokenSymbol)) {
+      return false;
+    }
+  }
+  
+  // Reject tokens with weird characters
+  if (!/^[A-Za-z0-9]+$/.test(tokenSymbol)) {
+    return false;
+  }
+  
+  return true;
+}
+
+// Simple protocol detection - Unix way: direct lookup
+function getProtocolFromAddress(address: string): string {
+  const addr = address.toLowerCase();
+  
+  for (const [protocol, addresses] of Object.entries(PROTOCOL_CONTRACTS.ethereum)) {
+    if (addresses.some(contractAddr => contractAddr.toLowerCase() === addr)) {
+      return protocol.toUpperCase();
+    }
+  }
+  
+  return 'Ethereum';
+}
+
+// Real blockchain transaction fetching - no fake data
 
 export function useTransactionHistory() {
   const { activeChain, ethereumAddress, solanaAddress } = useMultiChainWallet();
@@ -120,39 +129,181 @@ export function useTransactionHistory() {
     }
   }, [activeChain]);
 
-  // 获取 Ethereum 交易记录
+  // Direct Alchemy Base RPC - efficient asset transfer API
   const fetchEthereumTransactions = async (address: string, offset: number): Promise<RealTransaction[]> => {
-    // 模拟 API 调用延迟
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // 实际实现应该调用 Etherscan 或 Alchemy API
-    // const response = await fetch(`https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${API_KEY}`);
-    
-    return mockRealTransactions.filter(tx => 
-      ['AAVE', 'Compound', 'Uniswap'].includes(tx.protocol)
-    ).slice(offset, offset + 10);
+    try {
+      const rpcUrl = 'https://base-mainnet.g.alchemy.com/v2/sxUAcWibwUCvJpaatUFXbX_khrwgsAT6';
+      
+      // Get transfers FROM the address (outgoing)
+      const outgoingResponse = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'alchemy_getAssetTransfers',
+          params: [{
+            fromAddress: address,
+            category: ['external', 'erc20', 'erc721', 'erc1155'],
+            order: 'desc',
+            maxCount: '0x14' // 20 results
+          }],
+          id: 1
+        })
+      });
+      
+      // Get transfers TO the address (incoming)
+      const incomingResponse = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'alchemy_getAssetTransfers',
+          params: [{
+            toAddress: address,
+            category: ['external', 'erc20', 'erc721', 'erc1155'],
+            order: 'desc',
+            maxCount: '0x14' // 20 results
+          }],
+          id: 2
+        })
+      });
+      
+      const [outgoingData, incomingData] = await Promise.all([
+        outgoingResponse.json(),
+        incomingResponse.json()
+      ]);
+      
+      
+      const allTransfers = [
+        ...(outgoingData.result?.transfers || []),
+        ...(incomingData.result?.transfers || [])
+      ];
+      
+      // Remove duplicates and sort by block number
+      const uniqueTransfers = allTransfers.filter((transfer, index, self) => 
+        index === self.findIndex(t => t.hash === transfer.hash)
+      ).sort((a, b) => parseInt(b.blockNum, 16) - parseInt(a.blockNum, 16));
+      
+      
+      const transactions: RealTransaction[] = uniqueTransfers
+        .filter(transfer => {
+          // Filter out scam tokens - Unix principle: fail early
+          const tokenSymbol = transfer.asset || 'ETH';
+          const isLegit = isLegitimateToken(tokenSymbol);
+          
+          if (!isLegit) {
+            return false;
+          }
+          
+          return true;
+        })
+        .map(transfer => {
+          const protocol = getProtocolFromAddress(transfer.to);
+          const isIncoming = transfer.to.toLowerCase() === address.toLowerCase();
+          const isDefi = protocol !== 'Ethereum';
+          
+          // Determine transaction type
+          let type = 'Transfer';
+          if (isDefi) {
+            if (protocol === 'AAVE') {
+              type = transfer.asset === 'ETH' ? 'AAVE Deposit' : 'AAVE Token';
+            } else {
+              type = `${protocol} Transaction`;
+            }
+          } else {
+            type = isIncoming ? 'Received' : 'Sent';
+          }
+          
+          
+          return {
+            hash: transfer.hash,
+            type,
+            amount: transfer.value?.toString() || '0',
+            token: transfer.asset || 'ETH',
+            timestamp: new Date(parseInt(transfer.blockNum, 16) * 12 * 1000), // Approximate timestamp
+            protocol,
+            status: 'success' as const,
+            isPositive: isIncoming || isDefi
+          };
+        });
+      
+      return transactions.slice(offset, offset + 20);
+      
+    } catch (error) {
+      return [];
+    }
   };
 
   // 获取 Solana 交易记录
   const fetchSolanaTransactions = async (address: string, offset: number): Promise<RealTransaction[]> => {
-    // 模拟 API 调用延迟
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // 实际实现应该调用 Solana RPC API
-    // const response = await fetch('https://api.mainnet-beta.solana.com', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     jsonrpc: '2.0',
-    //     id: 1,
-    //     method: 'getSignaturesForAddress',
-    //     params: [address, { limit: 10, before: offset }]
-    //   })
-    // });
-    
-    return mockRealTransactions.filter(tx => 
-      ['Drift', 'Solend', 'Raydium'].includes(tx.protocol)
-    ).slice(offset, offset + 10);
+    try {
+      // 直接调用 Solana RPC 获取真实交易签名
+      const sigResponse = await fetch('https://api.mainnet-beta.solana.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getSignaturesForAddress',
+          params: [address, { limit: 10 }]
+        })
+      });
+      
+      if (!sigResponse.ok) {
+        throw new Error(`HTTP ${sigResponse.status}`);
+      }
+      
+      const sigData = await sigResponse.json();
+      
+      if (sigData.error || !sigData.result) {
+        return [];
+      }
+      
+      // 获取每个交易的详细信息
+      const transactions: RealTransaction[] = [];
+      
+      for (const sig of sigData.result.slice(0, 10)) {
+        try {
+          const txResponse = await fetch('https://api.mainnet-beta.solana.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              id: 1,
+              method: 'getTransaction',
+              params: [sig.signature, { encoding: 'json', maxSupportedTransactionVersion: 0 }]
+            })
+          });
+          
+          const txData = await txResponse.json();
+          
+          if (txData.result) {
+            const tx = txData.result;
+            const preBalance = tx.meta?.preBalances?.[0] || 0;
+            const postBalance = tx.meta?.postBalances?.[0] || 0;
+            const balanceChange = (postBalance - preBalance) / 1000000000; // lamports to SOL
+            
+            transactions.push({
+              hash: sig.signature,
+              type: balanceChange > 0 ? 'Deposit' : 'Withdraw',
+              amount: Math.abs(balanceChange).toFixed(6),
+              token: 'SOL',
+              timestamp: new Date((sig.blockTime || 0) * 1000),
+              protocol: 'Solana',
+              status: sig.err ? 'failed' : 'success',
+              isPositive: balanceChange > 0
+            });
+          }
+        } catch (txError) {
+          console.error(`Failed to fetch transaction ${sig.signature}:`, txError);
+        }
+      }
+      
+      return transactions;
+    } catch (error) {
+      console.error('Solana API failed:', error);
+      return [];
+    }
   };
 
   // 加载交易记录
