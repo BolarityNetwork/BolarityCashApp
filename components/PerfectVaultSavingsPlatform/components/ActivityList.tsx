@@ -5,51 +5,174 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
 } from 'react-native';
 import IconComponent from './IconComponent';
-import { Transaction } from '../constants';
+import { useTransactionHistory } from '../../../hooks/useTransactionHistory';
 
 interface ActivityListProps {
-  transactions: Transaction[];
+  // 保持向后兼容，但现在从 hook 获取真实数据
 }
 
-const ActivityList: React.FC<ActivityListProps> = ({ transactions }) => {
+const ActivityList: React.FC<ActivityListProps> = () => {
+  const { 
+    formattedTransactions, 
+    isLoading, 
+    error, 
+    refreshTransactions,
+    loadMoreTransactions,
+    hasMore,
+    currentAddress,
+    currentChain
+  } = useTransactionHistory();
+
+  // 获取交易类型对应的图标
+  const getTransactionIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'deposit':
+        return { name: "ArrowDown", color: "#2563eb" };
+      case 'withdraw':
+        return { name: "ArrowUp", color: "#dc2626" };
+      case 'interest earned':
+      case 'interest':
+        return { name: "Percent", color: "#059669" };
+      case 'swap':
+        return { name: "ArrowLeftRight", color: "#7c3aed" };
+      default:
+        return { name: "DollarSign", color: "#6b7280" };
+    }
+  };
+
+  // 如果没有连接钱包
+  if (!currentAddress) {
+    return (
+      <View style={styles.activitySection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+        </View>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>Connect wallet to view transactions</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // 错误状态
+  if (error && formattedTransactions.length === 0) {
+    return (
+      <View style={styles.activitySection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <TouchableOpacity onPress={refreshTransactions}>
+            <Text style={styles.sectionAction}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.errorState}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={refreshTransactions}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={styles.activitySection}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <TouchableOpacity>
-          <Text style={styles.sectionAction}>View All</Text>
+        <TouchableOpacity onPress={refreshTransactions}>
+          <Text style={styles.sectionAction}>
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.activityList}>
-        {transactions.map((transaction, index) => (
-          <View key={index} style={styles.activityItem}>
-            <View style={styles.activityLeft}>
-              <View style={styles.activityIcon}>
-                <IconComponent 
-                  name={transaction.type === 'Interest Earned' ? "Percent" : "DollarSign"} 
-                  size={20} 
-                  color={transaction.type === 'Interest Earned' ? "#059669" : "#2563eb"} 
-                />
+      {/* 加载状态 */}
+      {isLoading && formattedTransactions.length === 0 ? (
+        <View style={styles.loadingState}>
+          <ActivityIndicator size="large" color="#059669" />
+          <Text style={styles.loadingText}>Loading transactions...</Text>
+        </View>
+      ) : formattedTransactions.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>No transactions found</Text>
+          <Text style={styles.emptyStateSubtext}>
+            Start using DeFi protocols to see your activity here
+          </Text>
+        </View>
+      ) : (
+        <ScrollView 
+          style={styles.activityList}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={refreshTransactions}
+              colors={['#059669']}
+              tintColor="#059669"
+            />
+          }
+        >
+          {formattedTransactions.map((transaction, index) => {
+            const icon = getTransactionIcon(transaction.type);
+            return (
+              <View key={`${transaction.hash || index}`} style={styles.activityItem}>
+                <View style={styles.activityLeft}>
+                  <View style={[
+                    styles.activityIcon,
+                    { backgroundColor: `${icon.color}15` }
+                  ]}>
+                    <IconComponent 
+                      name={icon.name} 
+                      size={20} 
+                      color={icon.color} 
+                    />
+                  </View>
+                  <View style={styles.activityInfo}>
+                    <Text style={styles.activityType}>{transaction.type}</Text>
+                    <Text style={styles.activityDetails}>
+                      {transaction.vault} • {transaction.date}
+                    </Text>
+                    {transaction.hash && (
+                      <Text style={styles.activityHash}>
+                        {transaction.hash.substring(0, 8)}...{transaction.hash.substring(transaction.hash.length - 6)}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.activityRight}>
+                  <Text style={[
+                    styles.activityAmount,
+                    { color: transaction.isPositive ? "#059669" : "#2563eb" }
+                  ]}>
+                    {transaction.amount}
+                  </Text>
+                  {transaction.token && (
+                    <Text style={styles.activityToken}>{transaction.token}</Text>
+                  )}
+                </View>
               </View>
-              <View>
-                <Text style={styles.activityType}>{transaction.type}</Text>
-                <Text style={styles.activityDetails}>
-                  {transaction.vault} • {transaction.date}
-                </Text>
-              </View>
-            </View>
-            <Text style={[
-              styles.activityAmount,
-              { color: transaction.isPositive ? "#059669" : "#2563eb" }
-            ]}>
-              {transaction.amount}
-            </Text>
-          </View>
-        ))}
-      </View>
+            );
+          })}
+          
+          {/* 加载更多按钮 */}
+          {hasMore && (
+            <TouchableOpacity 
+              style={styles.loadMoreButton}
+              onPress={loadMoreTransactions}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#059669" />
+              ) : (
+                <Text style={styles.loadMoreText}>Load More</Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -77,7 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   activityList: {
-    gap: 12,
+    maxHeight: 400, // 限制高度，使其可滚动
   },
   activityItem: {
     backgroundColor: '#fff',
@@ -93,6 +216,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: '#f3f4f6',
+    marginBottom: 12,
   },
   activityLeft: {
     flexDirection: 'row',
@@ -102,11 +226,13 @@ const styles = StyleSheet.create({
   activityIcon: {
     width: 48,
     height: 48,
-    backgroundColor: '#f0f9ff',
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+  },
+  activityInfo: {
+    flex: 1,
   },
   activityType: {
     fontSize: 16,
@@ -117,9 +243,84 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6b7280',
   },
+  activityRight: {
+    alignItems: 'flex-end',
+  },
   activityAmount: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  activityToken: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  activityHash: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontFamily: 'monospace',
+    marginTop: 2,
+  },
+  
+  // 状态样式
+  loadingState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 12,
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  errorState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#dc2626',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#dc2626',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  loadMoreButton: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 12,
+    marginHorizontal: 4,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    color: '#059669',
+    fontWeight: '600',
   },
 });
 

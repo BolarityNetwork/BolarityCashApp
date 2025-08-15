@@ -28,7 +28,6 @@ import {
   vaultOptions,
   timeVaultOptions,
   vaultProducts,
-  savingsHistory,
   VaultOption,
   TimeVaultOption,
   VaultProduct,
@@ -207,7 +206,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         />
 
         {/* Recent Activity */}
-        <ActivityList transactions={savingsHistory} />
+        <ActivityList />
 
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />
