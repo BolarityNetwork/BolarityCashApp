@@ -1,5 +1,6 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -46,16 +47,13 @@ config.resolver.resolveRequest = resolveRequestWithPackageExports;
 // 添加对 @noble/hashes 的别名解析
 config.resolver.alias = {
   ...config.resolver.alias,
-  '@noble/hashes/crypto': '@noble/hashes/crypto.js',
+  "@noble/hashes/crypto": "@noble/hashes/crypto.js",
 };
 
 // 添加对 .mjs 文件的支持
-config.resolver.sourceExts = [
-  ...config.resolver.sourceExts,
-  'mjs',
-];
+config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs"];
 
 // 添加对 crypto polyfills 的支持
-config.resolver.platforms = ['ios', 'android', 'native', 'web'];
+config.resolver.platforms = ["ios", "android", "native", "web"];
 
-module.exports = config;
+module.exports = withNativeWind(config, { input: "./global.css" });
