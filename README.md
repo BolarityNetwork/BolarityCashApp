@@ -1,63 +1,25 @@
-# Privy Expo Starter
+# BolarityCashApp
 
-This demonstrates a minimal working installation of the privy sdk in a fresh expo app. We recommend reading the [documentation](https://docs.privy.io/guide/expo/dashboard) for a more detailed guide.
+## Requirements
+
+**Node.js 20.18.0** is required for development.
 
 ## Setup
 
-1. Install dependencies
-
-   ```sh
-   npm i
+1. Install dependencies:
+   ```bash
+   npm install
    ```
 
-2. Configure an app client in your [Dashboard](https://dashboard.privy.io/apps?page=settings&setting=clients), and add your Privy app ID and app client ID in `app.json`
-
-   ```json
-   ...
-    "extra": {
-      "privyAppId": "<your-app-id>",
-      "privyClientId": "<your-client-id>"
-    }
-   ...
+2. Start development server:
+   ```bash
+   npm start
    ```
 
-   If you are using Expo go, be sure to add `host.exp.Exponent` to Allowed app identifiers under app clients in your [Dashboard]('https://dashboard.privy.io/apps?page=settings&setting=clients')
+## Available Scripts
 
-3. Configure your application identifier in `app.json`. This should match the bundle identifier for your app in the app store.
-
-   ```json
-   ...
-    "ios": {
-      "bundleIdentifier": "com.example.myapp"
-    },
-    "android": {
-      "package": "com.example.myapp"
-    }
-   ...
-   ```
-
-4. If you are making use of passkeys, ensure that you have an [associated website](https://docs.privy.io/guide/expo/setup/passkey#_3-update-native-app-settings) for your application. Once you have this your `app.json` should be updated as follows:
-
-   ```json
-   ...
-   "associatedDomains": ["webcredentials:<your-associated-domain>"],
-   ...
-   "extra": {
-      ...
-      "passkeyAssociatedDomain": "https://<your-associated-domain>"
-    },
-   ...
-   ```
-
-## Run the app
-
-```sh
-# expo go
-npm run start
-
-# ios
-npm run ios
-
-# android
-npm run android
-```
+- `npm start` - Start development server
+- `npm run android` - Run on Android device
+- `npm run ios` - Run on iOS device
+- `npm run lint` - Run ESLint checks
+- `npm run lint:fix` - Auto-fix ESLint issues
