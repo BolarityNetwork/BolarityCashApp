@@ -12,7 +12,6 @@ import {
   usePrivy,
   useLinkWithOAuth,
   useEmbeddedEthereumWallet,
-  useEmbeddedSolanaWallet,
 } from '@privy-io/expo';
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
 import Constants from 'expo-constants';
@@ -32,7 +31,7 @@ export default function RedesignedProfileScreen() {
   const { linkWithPasskey } = useLinkWithPasskey();
   const oauth = useLinkWithOAuth();
   const { create } = useEmbeddedEthereumWallet();
-  const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
+  // const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
 
   const {
     activeWalletType,
