@@ -11,7 +11,10 @@ export function ProfileHeader({ onSettingsPress }: ProfileHeaderProps) {
     <View style={styles.header}>
       <View style={styles.headerContent}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.settingsIconButton} onPress={onSettingsPress}>
+        <TouchableOpacity
+          style={styles.settingsIconButton}
+          onPress={onSettingsPress}
+        >
           <Text style={styles.settingsIcon}>⚙️</Text>
         </TouchableOpacity>
       </View>

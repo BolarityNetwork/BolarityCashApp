@@ -1,13 +1,6 @@
 // components/PerfectVaultSavingsPlatform/components/Header.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  SafeAreaView,
-  Image,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import IconComponent from './IconComponent';
 import { bolarityLogo } from '../assets/logos';
 
@@ -22,17 +15,18 @@ interface HeaderProps {
   formatAddress: (address: string) => string;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, currentWalletInfo, formatAddress }) => {
+const Header: React.FC<HeaderProps> = ({
+  user,
+  currentWalletInfo,
+  formatAddress,
+}) => {
   return (
     <View style={styles.headerContent}>
       <View style={styles.headerTop}>
         <View style={styles.logoSection}>
           <View style={styles.logoContainer}>
             {bolarityLogo ? (
-              <Image 
-                source={bolarityLogo} 
-                style={styles.logoImage}
-              />
+              <Image source={bolarityLogo} style={styles.logoImage} />
             ) : (
               <IconComponent name="Vault" size={24} color="#fff" />
             )}

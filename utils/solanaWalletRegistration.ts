@@ -94,7 +94,7 @@ class RegisterWalletEvent extends Event implements WindowRegisterWalletEvent {
     super('wallet-standard:register-wallet', {
       bubbles: false,
       cancelable: false,
-      composed: false
+      composed: false,
     });
     this.#detail = callback;
   }
@@ -105,20 +105,30 @@ class RegisterWalletEvent extends Event implements WindowRegisterWalletEvent {
  * This function dispatches the appropriate events to make the wallet available to other applications
  */
 export function registerWallet(wallet: Wallet): void {
-  const callback: WindowRegisterWalletEventCallback = ({ register }) => register(wallet);
-  
+  const callback: WindowRegisterWalletEventCallback = ({ register }) =>
+    register(wallet);
+
   try {
-    (window as WalletEventsWindow).dispatchEvent(new RegisterWalletEvent(callback));
-  } catch (error) {
-    console.error('wallet-standard:register-wallet event could not be dispatched\n', error);
-  }
-  
-  try {
-    (window as WalletEventsWindow).addEventListener('wallet-standard:app-ready', ({ detail: api }) =>
-      callback(api)
+    (window as WalletEventsWindow).dispatchEvent(
+      new RegisterWalletEvent(callback)
     );
   } catch (error) {
-    console.error('wallet-standard:app-ready event listener could not be added\n', error);
+    console.error(
+      'wallet-standard:register-wallet event could not be dispatched\n',
+      error
+    );
+  }
+
+  try {
+    (window as WalletEventsWindow).addEventListener(
+      'wallet-standard:app-ready',
+      ({ detail: api }) => callback(api)
+    );
+  } catch (error) {
+    console.error(
+      'wallet-standard:app-ready event listener could not be added\n',
+      error
+    );
   }
 }
 
@@ -141,13 +151,21 @@ export function createPrivySolanaWallet(
           try {
             // Connect logic here - implement based on your Privy wallet interface
             console.log('Connecting Privy Solana wallet...');
-            
+
             // Mock implementation - replace with actual Privy Solana connection
             const mockAccount: SolanaAccount = {
               address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgHvp',
               publicKey: new Uint8Array(32), // Replace with actual public key
-              chains: ['solana:mainnet-beta', 'solana:testnet', 'solana:devnet'],
-              features: ['solana:signMessage', 'solana:signTransaction', 'solana:signAndSendTransaction']
+              chains: [
+                'solana:mainnet-beta',
+                'solana:testnet',
+                'solana:devnet',
+              ],
+              features: [
+                'solana:signMessage',
+                'solana:signTransaction',
+                'solana:signAndSendTransaction',
+              ],
             };
 
             return { accounts: [mockAccount] };
@@ -155,7 +173,7 @@ export function createPrivySolanaWallet(
             console.error('Failed to connect Privy Solana wallet:', error);
             throw error;
           }
-        }
+        },
       },
 
       'standard:disconnect': {
@@ -167,14 +185,14 @@ export function createPrivySolanaWallet(
             console.error('Failed to disconnect Privy Solana wallet:', error);
             throw error;
           }
-        }
+        },
       },
 
       'solana:signMessage': {
-        async signMessage({ account, message }) {
+        async signMessage({ message }) {
           try {
             console.log('Signing message with Privy Solana wallet...');
-            
+
             // Mock implementation - replace with actual Privy signing
             const signature = new Uint8Array(64);
             // Fill with mock signature data
@@ -182,52 +200,56 @@ export function createPrivySolanaWallet(
               signature[i] = Math.floor(Math.random() * 256);
             }
 
-            return [{
-              signedMessage: message,
-              signature
-            }];
+            return [
+              {
+                signedMessage: message,
+                signature,
+              },
+            ];
           } catch (error) {
             console.error('Failed to sign message:', error);
             throw error;
           }
-        }
+        },
       },
 
       'solana:signTransaction': {
-        async signTransaction({ transaction, chain, account }) {
+        async signTransaction({ transaction }) {
           try {
             console.log('Signing transaction with Privy Solana wallet...');
-            
+
             // Mock implementation - replace with actual Privy transaction signing
             const signedTransaction = new Uint8Array(transaction.length);
             signedTransaction.set(transaction);
-            
+
             return [{ signedTransaction }];
           } catch (error) {
             console.error('Failed to sign transaction:', error);
             throw error;
           }
-        }
+        },
       },
 
       'solana:signAndSendTransaction': {
-        async signAndSendTransaction({ transaction, chain, account }) {
+        async signAndSendTransaction() {
           try {
-            console.log('Signing and sending transaction with Privy Solana wallet...');
-            
+            console.log(
+              'Signing and sending transaction with Privy Solana wallet...'
+            );
+
             // Mock implementation - replace with actual implementation
             const signature = Array.from(new Uint8Array(64))
               .map(b => b.toString(16).padStart(2, '0'))
               .join('');
-              
+
             return { signature };
           } catch (error) {
             console.error('Failed to sign and send transaction:', error);
             throw error;
           }
-        }
-      }
-    }
+        },
+      },
+    },
   };
 }
 
@@ -235,7 +257,10 @@ export function createPrivySolanaWallet(
  * Register Privy wallet with Solana Wallet Standard
  * Call this function after initializing your Privy wallet
  */
-export function registerPrivySolanaWallet(privyWallet: any, accounts: SolanaAccount[] = []) {
+export function registerPrivySolanaWallet(
+  privyWallet: any,
+  accounts: SolanaAccount[] = []
+) {
   const wallet = createPrivySolanaWallet(privyWallet, accounts);
   registerWallet(wallet);
   console.log('Privy Solana wallet registered with Wallet Standard');
@@ -266,11 +291,7 @@ export function uint8ArrayToHex(bytes: Uint8Array): string {
  * Get supported Solana chains
  */
 export function getSupportedSolanaChains(): string[] {
-  return [
-    'solana:mainnet-beta',
-    'solana:testnet', 
-    'solana:devnet'
-  ];
+  return ['solana:mainnet-beta', 'solana:testnet', 'solana:devnet'];
 }
 
 /**
@@ -288,5 +309,5 @@ export type {
   StandardDisconnectFeature,
   SolanaSignMessageFeature,
   SolanaSignTransactionFeature,
-  SolanaSignAndSendTransactionFeature
+  SolanaSignAndSendTransactionFeature,
 };

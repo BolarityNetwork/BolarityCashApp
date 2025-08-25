@@ -39,48 +39,48 @@ export interface Transaction {
 }
 
 export const vaultOptions: VaultOption[] = [
-  { 
-    name: 'AAVE', 
-    apy: '8.2%', 
+  {
+    name: 'AAVE',
+    apy: '8.2%',
     description: 'Decentralized lending protocol',
     tvl: '$12.5B',
-    risk: 'Medium'
+    risk: 'Medium',
   },
-  { 
-    name: 'Drift', 
-    apy: '11.8%', 
+  {
+    name: 'Drift',
+    apy: '11.8%',
     description: 'Solana-based DeFi protocol',
     tvl: '$2.1B',
-    risk: 'Medium-High'
+    risk: 'Medium-High',
   },
-  { 
-    name: 'Compound', 
-    apy: '6.5%', 
+  {
+    name: 'Compound',
+    apy: '6.5%',
     description: 'Ethereum money markets',
     tvl: '$8.7B',
-    risk: 'Low-Medium'
+    risk: 'Low-Medium',
   },
-  { 
-    name: 'Solend', 
-    apy: '9.3%', 
+  {
+    name: 'Solend',
+    apy: '9.3%',
     description: 'Solana lending protocol',
     tvl: '$1.8B',
-    risk: 'Medium'
+    risk: 'Medium',
   },
-  { 
-    name: 'Navi', 
-    apy: '12.4%', 
+  {
+    name: 'Navi',
+    apy: '12.4%',
     description: 'Sui ecosystem lending',
     tvl: '$890M',
-    risk: 'High'
+    risk: 'High',
   },
-  { 
-    name: 'Huma', 
-    apy: '7.9%', 
+  {
+    name: 'Huma',
+    apy: '7.9%',
     description: 'Real-world asset protocol',
     tvl: '$450M',
-    risk: 'Medium'
-  }
+    risk: 'Medium',
+  },
 ];
 
 export const timeVaultOptions: TimeVaultOption[] = [
@@ -92,7 +92,7 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$85M',
     risk: 'Medium',
     lockPeriod: '54 days',
-    protocol: 'Ratex Protocol'
+    protocol: 'Ratex Protocol',
   },
   {
     name: 'Ratex USD*-2510',
@@ -102,7 +102,7 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$142M',
     risk: 'Medium',
     lockPeriod: '115 days',
-    protocol: 'Ratex Protocol'
+    protocol: 'Ratex Protocol',
   },
   {
     name: 'Ratex USDe-2507',
@@ -112,7 +112,7 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$67M',
     risk: 'Low-Medium',
     lockPeriod: '26 days',
-    protocol: 'Ratex Protocol'
+    protocol: 'Ratex Protocol',
   },
   {
     name: 'Pendle sUSP',
@@ -122,7 +122,7 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$98M',
     risk: 'Medium-High',
     lockPeriod: '53 days',
-    protocol: 'Pendle Finance'
+    protocol: 'Pendle Finance',
   },
   {
     name: 'Pendle reUSDe',
@@ -132,7 +132,7 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$156M',
     risk: 'Medium',
     lockPeriod: '165 days',
-    protocol: 'Pendle Finance'
+    protocol: 'Pendle Finance',
   },
   {
     name: 'Pendle sYUSD',
@@ -142,8 +142,8 @@ export const timeVaultOptions: TimeVaultOption[] = [
     tvl: '$89M',
     risk: 'Medium',
     lockPeriod: '60 days',
-    protocol: 'Pendle Finance'
-  }
+    protocol: 'Pendle Finance',
+  },
 ];
 
 export const vaultProducts: VaultProduct[] = [
@@ -155,7 +155,7 @@ export const vaultProducts: VaultProduct[] = [
     minimum: '$100',
     features: ['Instant withdrawals', 'No lock-up period', 'Daily compounding'],
     gradientColors: ['#667eea', '#5a67d8'],
-    icon: 'Zap'
+    icon: 'Zap',
   },
   {
     name: 'TimeVault Pro',
@@ -165,7 +165,7 @@ export const vaultProducts: VaultProduct[] = [
     minimum: '$1,000',
     features: ['12-month term', 'Guaranteed returns', 'Monthly interest'],
     gradientColors: ['#764ba2', '#9f7aea'],
-    icon: 'Clock'
+    icon: 'Clock',
   },
   {
     name: 'MaxVault Elite',
@@ -175,15 +175,39 @@ export const vaultProducts: VaultProduct[] = [
     minimum: '$10,000',
     features: ['18-month term', 'Premium rates', 'Priority support'],
     gradientColors: ['#c084fc', '#f093fb'],
-    icon: 'Star'
-  }
+    icon: 'Star',
+  },
 ];
 
 export const savingsHistory: Transaction[] = [
-  { type: 'Interest Earned', amount: '+$47.83', date: 'Today', vault: 'FlexiVault', isPositive: true },
-  { type: 'Interest Earned', amount: '+$156.24', date: 'Yesterday', vault: 'TimeVault Pro', isPositive: true },
-  { type: 'Deposit', amount: '+$5,000', date: 'Dec 15', vault: 'FlexiVault', isPositive: false },
-  { type: 'Interest Earned', amount: '+$89.45', date: 'Dec 14', vault: 'MaxVault Elite', isPositive: true }
+  {
+    type: 'Interest Earned',
+    amount: '+$47.83',
+    date: 'Today',
+    vault: 'FlexiVault',
+    isPositive: true,
+  },
+  {
+    type: 'Interest Earned',
+    amount: '+$156.24',
+    date: 'Yesterday',
+    vault: 'TimeVault Pro',
+    isPositive: true,
+  },
+  {
+    type: 'Deposit',
+    amount: '+$5,000',
+    date: 'Dec 15',
+    vault: 'FlexiVault',
+    isPositive: false,
+  },
+  {
+    type: 'Interest Earned',
+    amount: '+$89.45',
+    date: 'Dec 14',
+    vault: 'MaxVault Elite',
+    isPositive: true,
+  },
 ];
 
 export const getBarHeight = (index: number): number => {

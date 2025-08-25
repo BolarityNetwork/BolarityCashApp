@@ -3,20 +3,19 @@
 
 import { VaultManagerImpl } from './VaultManager';
 import { AaveVault } from './AaveVault';
-import { BaseVault } from './types';
 
 // Factory function to create vault manager with all vaults
 export function createVaultManager(userAddress: string): VaultManagerImpl {
   const manager = new VaultManagerImpl(userAddress);
-  
+
   // Register all available vaults
   manager.registerVault(new AaveVault());
-  
+
   // Future vaults would be added here:
   // manager.registerVault(new CompoundVault());
   // manager.registerVault(new LidoVault());
   // manager.registerVault(new UniswapV3Vault());
-  
+
   return manager;
 }
 

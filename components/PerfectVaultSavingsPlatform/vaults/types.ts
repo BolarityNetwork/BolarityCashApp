@@ -44,20 +44,20 @@ export interface VaultOperationResult {
 // Base vault interface - every vault must implement this
 export interface BaseVault {
   config: VaultConfig;
-  
+
   // Core operations
   deposit(amount: string, token: string): Promise<VaultOperationResult>;
   withdraw(amount: string): Promise<VaultOperationResult>;
   claim(): Promise<VaultOperationResult>;
-  
+
   // Data fetching
   getBalance(userAddress: string): Promise<VaultBalance>;
   getTransactions(userAddress: string): Promise<VaultTransaction[]>;
-  
+
   // Validation
   canDeposit(amount: string, token: string): Promise<boolean>;
   canWithdraw(amount: string): Promise<boolean>;
-  
+
   // Lifecycle
   initialize(userAddress: string): Promise<void>;
   cleanup(): Promise<void>;
@@ -68,11 +68,15 @@ export interface VaultManager {
   registerVault(vault: BaseVault): void;
   getVault(vaultId: string): BaseVault | null;
   getAllVaults(): BaseVault[];
-  
+
   // Operations
-  deposit(vaultId: string, amount: string, token: string): Promise<VaultOperationResult>;
+  deposit(
+    vaultId: string,
+    amount: string,
+    token: string
+  ): Promise<VaultOperationResult>;
   withdraw(vaultId: string, amount: string): Promise<VaultOperationResult>;
-  
+
   // Data aggregation
   getTotalBalance(userAddress: string): Promise<string>;
   getAllTransactions(userAddress: string): Promise<VaultTransaction[]>;

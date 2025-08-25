@@ -9,7 +9,11 @@ interface VaultLogoProps {
   style?: any;
 }
 
-const VaultLogo: React.FC<VaultLogoProps> = ({ vaultName, size = 24, style = {} }) => {
+const VaultLogo: React.FC<VaultLogoProps> = ({
+  vaultName,
+  size = 24,
+  style = {},
+}) => {
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -23,23 +27,23 @@ const VaultLogo: React.FC<VaultLogoProps> = ({ vaultName, size = 24, style = {} 
 
   if (!logoSrc || imageError) {
     return (
-      <Text style={{ fontSize: size, color: '#fff' }}>
-        {fallbackIcon}
-      </Text>
+      <Text style={{ fontSize: size, color: '#fff' }}>{fallbackIcon}</Text>
     );
   }
 
   return (
     <View style={[{ position: 'relative' }, style]}>
       {loading && (
-        <View style={[
-          styles.loadingPlaceholder,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 8,
-          }
-        ]} />
+        <View
+          style={[
+            styles.loadingPlaceholder,
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 8,
+            },
+          ]}
+        />
       )}
       <Image
         source={logoSrc}
@@ -48,8 +52,8 @@ const VaultLogo: React.FC<VaultLogoProps> = ({ vaultName, size = 24, style = {} 
           {
             width: size,
             height: size,
-            opacity: loading ? 0 : 1
-          }
+            opacity: loading ? 0 : 1,
+          },
         ]}
         onLoad={() => setLoading(false)}
         onError={() => {
@@ -68,7 +72,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     tintColor: '#fff', // 🎯 关键：将黑色logo反转为白色
-  }
+  },
 });
 
 export default VaultLogo;

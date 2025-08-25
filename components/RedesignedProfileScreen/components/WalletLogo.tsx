@@ -8,36 +8,41 @@ interface WalletLogoProps {
 }
 
 const LOGOS = {
-  ethereum: { 
+  ethereum: {
     src: require('../../../assets/logos/ethereum.png'),
-    fallback: '🔷'
+    fallback: '🔷',
   },
-  solana: { 
+  solana: {
     src: require('../../../assets/logos/solana.png'),
-    fallback: '🌞'
-  }
+    fallback: '🌞',
+  },
 };
 
 export function WalletLogo({ type, size = 32, style = {} }: WalletLogoProps) {
   const [failed, setFailed] = useState(false);
   const logo = LOGOS[type];
-  
+
   useEffect(() => {
     setFailed(false);
   }, [type]);
 
   if (failed || !logo.src) {
     return (
-      <View style={[{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: '#f3f4f6',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#e5e7eb'
-      }, style]}>
+      <View
+        style={[
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: '#f3f4f6',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: '#e5e7eb',
+          },
+          style,
+        ]}
+      >
         <Text style={{ fontSize: size * 0.6 }}>{logo.fallback}</Text>
       </View>
     );
@@ -46,13 +51,16 @@ export function WalletLogo({ type, size = 32, style = {} }: WalletLogoProps) {
   return (
     <Image
       source={logo.src}
-      style={[{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
-      }, style]}
+      style={[
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: 1,
+          borderColor: '#e5e7eb',
+        },
+        style,
+      ]}
       onError={() => setFailed(true)}
     />
   );

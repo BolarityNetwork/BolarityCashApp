@@ -6,16 +6,16 @@ export function formatAddress(address: string): string {
 }
 
 export function toMainIdentifier(account: any): string {
-  if (account.type === "phone") {
+  if (account.type === 'phone') {
     return account.phoneNumber;
   }
-  if (account.type === "email" || account.type === "wallet") {
+  if (account.type === 'email' || account.type === 'wallet') {
     return account.address;
   }
-  if (account.type === "twitter_oauth" || account.type === "tiktok_oauth") {
+  if (account.type === 'twitter_oauth' || account.type === 'tiktok_oauth') {
     return account.username;
   }
-  if (account.type === "custom_auth") {
+  if (account.type === 'custom_auth') {
     return account.custom_user_id;
   }
   return account.type;
@@ -38,7 +38,10 @@ try {
   solanaProviderLogo = null;
 }
 
-export function getProviderIcon(type: string, size: number = 18): React.ReactElement {
+export function getProviderIcon(
+  type: string,
+  size: number = 18
+): React.ReactElement {
   // For ethereum and solana, return PNG image components if available
   if (type === 'ethereum' && ethereumProviderLogo) {
     return (
@@ -55,7 +58,7 @@ export function getProviderIcon(type: string, size: number = 18): React.ReactEle
       />
     );
   }
-  
+
   if (type === 'solana' && solanaProviderLogo) {
     return (
       <Image
@@ -71,28 +74,24 @@ export function getProviderIcon(type: string, size: number = 18): React.ReactEle
       />
     );
   }
-  
+
   // For other types or PNG loading failure, return emoji components
   const icons: { [key: string]: string } = {
-    email: "📧",
-    phone: "📱",
-    wallet: "💼",
-    solana: "🌞",      // fallback
-    ethereum: "🔷",    // fallback
-    twitter_oauth: "🐦",
-    tiktok_oauth: "🎵",
-    google: "🔍",
-    github: "⚡",
-    discord: "🎮",
-    apple: "🍎",
-    custom_auth: "🔐",
+    email: '📧',
+    phone: '📱',
+    wallet: '💼',
+    solana: '🌞', // fallback
+    ethereum: '🔷', // fallback
+    twitter_oauth: '🐦',
+    tiktok_oauth: '🎵',
+    google: '🔍',
+    github: '⚡',
+    discord: '🎮',
+    apple: '🍎',
+    custom_auth: '🔐',
   };
-  
-  const icon = icons[type] || "🔗";
-  
-  return (
-    <Text style={{ fontSize: size * 0.9 }}>
-      {icon}
-    </Text>
-  );
+
+  const icon = icons[type] || '🔗';
+
+  return <Text style={{ fontSize: size * 0.9 }}>{icon}</Text>;
 }

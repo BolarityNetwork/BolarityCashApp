@@ -9,7 +9,11 @@ interface ProtocolLogoProps {
   style?: any;
 }
 
-const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocol, size = 32, style = {} }) => {
+const ProtocolLogo: React.FC<ProtocolLogoProps> = ({
+  protocol,
+  size = 32,
+  style = {},
+}) => {
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -25,18 +29,18 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocol, size = 32, style 
   // 如果没有logo文件或加载失败，显示emoji备用
   if (!logoSrc || imageError) {
     return (
-      <View style={[
-        styles.fallbackContainer,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        },
-        style
-      ]}>
-        <Text style={{ fontSize: size * 0.6 }}>
-          {fallbackLogo}
-        </Text>
+      <View
+        style={[
+          styles.fallbackContainer,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+          },
+          style,
+        ]}
+      >
+        <Text style={{ fontSize: size * 0.6 }}>{fallbackLogo}</Text>
       </View>
     );
   }
@@ -44,14 +48,16 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocol, size = 32, style 
   return (
     <View style={[{ position: 'relative' }, style]}>
       {loading && (
-        <View style={[
-          styles.loadingPlaceholder,
-          {
-            width: size,
-            height: size,
-            borderRadius: size / 2,
-          }
-        ]} />
+        <View
+          style={[
+            styles.loadingPlaceholder,
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+            },
+          ]}
+        />
       )}
       <Image
         source={logoSrc}
@@ -61,8 +67,8 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocol, size = 32, style 
             width: size,
             height: size,
             borderRadius: size / 2,
-            opacity: loading ? 0 : 1
-          }
+            opacity: loading ? 0 : 1,
+          },
         ]}
         onLoad={() => setLoading(false)}
         onError={() => {
@@ -80,18 +86,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#e5e7eb'
+    borderColor: '#e5e7eb',
   },
   loadingPlaceholder: {
     position: 'absolute',
     backgroundColor: '#e5e7eb',
     borderWidth: 1,
-    borderColor: '#e5e7eb'
+    borderColor: '#e5e7eb',
   },
   logo: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
-  }
+  },
 });
 
 export default ProtocolLogo;

@@ -26,26 +26,21 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
 
   return (
     <>
-      <Animated.View 
-        style={[
-          styles.actionMenuOverlay,
-          { opacity }
-        ]}
-      />
+      <Animated.View style={[styles.actionMenuOverlay, { opacity }]} />
       <Animated.View
         style={[
           styles.actionMenuContainer,
           {
             opacity,
-            transform: [{ scale }]
-          }
+            transform: [{ scale }],
+          },
         ]}
       >
         <View style={styles.actionMenuBackground}>
           {/* Action buttons arranged in arc */}
           <View style={styles.actionMenuContent}>
             {/* Save - Top Left */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionButton, { left: '25%', top: '45%' }]}
               activeOpacity={0.8}
             >
@@ -58,7 +53,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
             </TouchableOpacity>
 
             {/* Invest - Top Right */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionButton, { right: '25%', top: '45%' }]}
               activeOpacity={0.8}
             >
@@ -71,12 +66,20 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
             </TouchableOpacity>
 
             {/* Deposit - Center Top (Larger) */}
-            <TouchableOpacity 
-              style={[styles.actionButton, { left: '50%', top: '35%', marginLeft: -32 }]}
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                { left: '50%', top: '35%', marginLeft: -32 },
+              ]}
               activeOpacity={0.8}
             >
               <View style={styles.actionButtonContainer}>
-                <View style={[styles.actionButtonIcon, styles.actionButtonIconLarge]}>
+                <View
+                  style={[
+                    styles.actionButtonIcon,
+                    styles.actionButtonIconLarge,
+                  ]}
+                >
                   <IconComponent name="Plus" size={32} color="#fff" />
                 </View>
                 <Text style={styles.actionButtonLabel}>Deposit</Text>
@@ -84,8 +87,11 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
             </TouchableOpacity>
 
             {/* Actions - Center Bottom */}
-            <TouchableOpacity 
-              style={[styles.actionButton, { left: '50%', bottom: '25%', marginLeft: -28 }]}
+            <TouchableOpacity
+              style={[
+                styles.actionButton,
+                { left: '50%', bottom: '25%', marginLeft: -28 },
+              ]}
               onPress={onClose}
               activeOpacity={0.8}
             >
@@ -98,7 +104,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
             </TouchableOpacity>
 
             {/* Transfer - Bottom Left */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionButton, { left: '20%', bottom: '30%' }]}
               activeOpacity={0.8}
             >
@@ -111,7 +117,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
             </TouchableOpacity>
 
             {/* Refer a Friend - Bottom Right */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionButton, { right: '20%', bottom: '30%' }]}
               activeOpacity={0.8}
             >

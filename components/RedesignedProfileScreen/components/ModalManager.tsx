@@ -1,5 +1,12 @@
 import React from 'react';
-import { Modal, SafeAreaView, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  Modal,
+  SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { ModalType } from '../types';
 import { styles } from '../styles';
 
@@ -9,7 +16,11 @@ interface ModalManagerProps {
   children: React.ReactNode;
 }
 
-export function ModalManager({ activeModal, onClose, children }: ModalManagerProps) {
+export function ModalManager({
+  activeModal,
+  onClose,
+  children,
+}: ModalManagerProps) {
   if (!activeModal) return null;
 
   return (
@@ -19,9 +30,7 @@ export function ModalManager({ activeModal, onClose, children }: ModalManagerPro
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.modalContainer}>
-        {children}
-      </SafeAreaView>
+      <SafeAreaView style={styles.modalContainer}>{children}</SafeAreaView>
     </Modal>
   );
 }

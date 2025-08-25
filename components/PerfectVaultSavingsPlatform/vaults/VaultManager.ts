@@ -1,7 +1,12 @@
 // vaults/VaultManager.ts - Central vault registry and operations
 // Linux principle: Single point of control, simple interface
 
-import { BaseVault, VaultManager, VaultOperationResult, VaultTransaction } from './types';
+import {
+  BaseVault,
+  VaultManager,
+  VaultOperationResult,
+  VaultTransaction,
+} from './types';
 
 export class VaultManagerImpl implements VaultManager {
   private vaults = new Map<string, BaseVault>();
@@ -25,7 +30,11 @@ export class VaultManagerImpl implements VaultManager {
   }
 
   // Vault operations - delegate to specific vault
-  async deposit(vaultId: string, amount: string, token: string): Promise<VaultOperationResult> {
+  async deposit(
+    vaultId: string,
+    amount: string,
+    token: string
+  ): Promise<VaultOperationResult> {
     const vault = this.getVault(vaultId);
     if (!vault) {
       return { success: false, error: `Vault ${vaultId} not found` };
@@ -39,7 +48,10 @@ export class VaultManagerImpl implements VaultManager {
     return vault.deposit(amount, token);
   }
 
-  async withdraw(vaultId: string, amount: string): Promise<VaultOperationResult> {
+  async withdraw(
+    vaultId: string,
+    amount: string
+  ): Promise<VaultOperationResult> {
     const vault = this.getVault(vaultId);
     if (!vault) {
       return { success: false, error: `Vault ${vaultId} not found` };
@@ -83,7 +95,9 @@ export class VaultManagerImpl implements VaultManager {
   }
 
   getVaultsByProtocol(protocol: string): BaseVault[] {
-    return this.getAllVaults().filter(vault => vault.config.protocol === protocol);
+    return this.getAllVaults().filter(
+      vault => vault.config.protocol === protocol
+    );
   }
 
   async initializeAllVaults(): Promise<void> {
@@ -93,8 +107,6 @@ export class VaultManagerImpl implements VaultManager {
   }
 
   async cleanupAllVaults(): Promise<void> {
-    await Promise.all(
-      this.getAllVaults().map(vault => vault.cleanup())
-    );
+    await Promise.all(this.getAllVaults().map(vault => vault.cleanup()));
   }
 }

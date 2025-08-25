@@ -1,6 +1,6 @@
-import React from "react";
-import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
-import { styles } from "../styles";
+import React from 'react';
+import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { styles } from '../styles';
 
 interface LoginButtonProps {
   icon: string;
@@ -11,7 +11,14 @@ interface LoginButtonProps {
   style?: any;
 }
 
-export function LoginButton({ icon, text, onPress, disabled, loading, style }: LoginButtonProps) {
+export function LoginButton({
+  icon,
+  text,
+  onPress,
+  disabled,
+  loading,
+  style,
+}: LoginButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.primaryButton, style]}

@@ -1,11 +1,6 @@
 // components/PerfectVaultSavingsPlatform/components/ChartSection.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getBarHeight } from '../constants';
 
@@ -21,23 +16,27 @@ const ChartSection: React.FC = () => {
             <Text style={styles.yAxisLabel}>10k</Text>
             <Text style={styles.yAxisLabel}>8k</Text>
           </View>
-          
+
           <View style={styles.chartBars}>
             {dates.map((date, index) => (
               <View key={index} style={styles.barContainer}>
                 <View style={styles.barWrapper}>
                   <LinearGradient
-                    colors={index === 3 ? ['#3b82f6', '#1e40af'] : 
-                           index === 4 ? ['transparent', 'transparent'] :
-                           ['#93c5fd', '#60a5fa']}
+                    colors={
+                      index === 3
+                        ? ['#3b82f6', '#1e40af']
+                        : index === 4
+                          ? ['transparent', 'transparent']
+                          : ['#93c5fd', '#60a5fa']
+                    }
                     style={[
                       styles.bar,
-                      { 
+                      {
                         height: getBarHeight(index),
                         borderWidth: index === 4 ? 2 : 0,
                         borderColor: index === 4 ? '#d1d5db' : 'transparent',
-                        borderStyle: index === 4 ? 'dashed' : 'solid'
-                      }
+                        borderStyle: index === 4 ? 'dashed' : 'solid',
+                      },
                     ]}
                   />
                   {index === 3 && (
@@ -46,14 +45,20 @@ const ChartSection: React.FC = () => {
                     </View>
                   )}
                 </View>
-                <Text style={[
-                  styles.barLabel,
-                  { 
-                    color: index === 3 ? '#111827' : 
-                           index === 4 ? '#9ca3af' : '#6b7280',
-                    fontWeight: index === 3 ? '600' : '400'
-                  }
-                ]}>
+                <Text
+                  style={[
+                    styles.barLabel,
+                    {
+                      color:
+                        index === 3
+                          ? '#111827'
+                          : index === 4
+                            ? '#9ca3af'
+                            : '#6b7280',
+                      fontWeight: index === 3 ? '600' : '400',
+                    },
+                  ]}
+                >
                   {date}
                 </Text>
               </View>

@@ -35,10 +35,7 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
       <SafeAreaView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>TimeVault Pro Options</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>×</Text>
           </TouchableOpacity>
         </View>
@@ -56,10 +53,15 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
                 onPress={() => onSelect(vault)}
               >
                 <View style={styles.modalVaultLeft}>
-                  <ProtocolLogo protocol={getProtocolFromVaultName(vault.name)} size={40} />
+                  <ProtocolLogo
+                    protocol={getProtocolFromVaultName(vault.name)}
+                    size={40}
+                  />
                   <View style={styles.modalVaultInfo}>
                     <Text style={styles.modalVaultName}>{vault.name}</Text>
-                    <Text style={styles.modalTimeVaultMaturity}>{vault.maturity}</Text>
+                    <Text style={styles.modalTimeVaultMaturity}>
+                      {vault.maturity}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.modalVaultRight}>

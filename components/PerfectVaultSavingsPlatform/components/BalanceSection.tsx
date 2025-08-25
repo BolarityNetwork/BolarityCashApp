@@ -30,7 +30,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
               formatOptions={{
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-                prefix: '$'  // ✅ 正确的字符串
+                prefix: '$', // ✅ 正确的字符串
               }}
             />
             <View style={styles.earningsRow}>
@@ -43,7 +43,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
                   formatOptions={{
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                    prefix: '+$'  // ✅ 正确的字符串
+                    prefix: '+$', // ✅ 正确的字符串
                   }}
                 />
                 <Text style={styles.earningsLabel}>today</Text>
@@ -57,7 +57,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
                   formatOptions={{
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
-                    prefix: '+$'  // ✅ 正确的字符串
+                    prefix: '+$', // ✅ 正确的字符串
                   }}
                 />
                 <Text style={styles.earningsLabel}>this month</Text>

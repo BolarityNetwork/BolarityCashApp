@@ -1,9 +1,21 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { usePrivy, useLinkWithOAuth, useEmbeddedEthereumWallet, useEmbeddedSolanaWallet, getUserEmbeddedEthereumWallet, getUserEmbeddedSolanaWallet } from "@privy-io/expo";
-import { useLinkWithPasskey } from "@privy-io/expo/passkey";
-import Constants from "expo-constants";
+import {
+  usePrivy,
+  useLinkWithOAuth,
+  useEmbeddedEthereumWallet,
+  useEmbeddedSolanaWallet,
+} from '@privy-io/expo';
+import { useLinkWithPasskey } from '@privy-io/expo/passkey';
+import Constants from 'expo-constants';
 import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
 import { useProfileState } from './hooks/useProfileState';
 import { useWalletActions } from './hooks/useWalletActions';
@@ -19,10 +31,8 @@ export default function RedesignedProfileScreen() {
   const { logout, user } = usePrivy();
   const { linkWithPasskey } = useLinkWithPasskey();
   const oauth = useLinkWithOAuth();
-  const { wallets: ethWallets, create } = useEmbeddedEthereumWallet();
-  const { wallets: solWallets } = useEmbeddedSolanaWallet();
-  const account = getUserEmbeddedEthereumWallet(user);
-  const solanaAccount = getUserEmbeddedSolanaWallet(user);
+  const { create } = useEmbeddedEthereumWallet();
+  const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
 
   const {
     activeWalletType,
@@ -54,11 +64,14 @@ export default function RedesignedProfileScreen() {
 
   const handleWalletAction = (actionType: 'sign' | 'sendTx' | 'signTx') => {
     profileState.setLoading(true);
-    
+
     const actions = {
-      sign: () => walletActions.handleSignMessage(profileState.addSignedMessage),
-      sendTx: () => walletActions.handleSendTransaction(profileState.addTransaction),
-      signTx: () => walletActions.handleSignTransaction(profileState.addTransaction),
+      sign: () =>
+        walletActions.handleSignMessage(profileState.addSignedMessage),
+      sendTx: () =>
+        walletActions.handleSendTransaction(profileState.addTransaction),
+      signTx: () =>
+        walletActions.handleSignTransaction(profileState.addTransaction),
     };
 
     actions[actionType]().finally(() => {
@@ -69,9 +82,11 @@ export default function RedesignedProfileScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ProfileHeader onSettingsPress={() => profileState.openModal('settings')} />
-        
-        <ScrollView 
+        <ProfileHeader
+          onSettingsPress={() => profileState.openModal('settings')}
+        />
+
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -84,42 +99,46 @@ export default function RedesignedProfileScreen() {
                 style={styles.avatar}
               >
                 <Text style={styles.avatarText}>
-                  {user.email?.address ? user.email.address.charAt(0).toUpperCase() : '👤'}
+                  {user.email?.address
+                    ? user.email.address.charAt(0).toUpperCase()
+                    : '👤'}
                 </Text>
               </LinearGradient>
               <View style={styles.statusIndicator}>
                 <View style={styles.statusDot} />
               </View>
             </View>
-            
+
             <Text style={styles.profileName}>
               {user.email?.address || 'Bolarity User'}
             </Text>
-            <Text style={styles.profileId}>
-              ID: {formatAddress(user.id)}
-            </Text>
-            
+            <Text style={styles.profileId}>ID: {formatAddress(user.id)}</Text>
+
             {/* Current Wallet Display */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.currentWalletCard}
               onPress={() => profileState.openModal('walletSwitch')}
             >
-              <WalletLogo 
+              <WalletLogo
                 type={activeWallet.type === 'ethereum' ? 'ethereum' : 'solana'}
-                size={28} 
-                style={{ marginRight: 12 }} 
+                size={28}
+                style={{ marginRight: 12 }}
               />
               <View style={styles.currentWalletInfo}>
                 <Text style={styles.currentWalletType}>
-                  {activeWallet.type === 'ethereum' ? 'Ethereum Wallet' : 'Solana Wallet'}
+                  {activeWallet.type === 'ethereum'
+                    ? 'Ethereum Wallet'
+                    : 'Solana Wallet'}
                 </Text>
                 <Text style={styles.currentWalletAddress}>
-                  {activeWallet.address ? formatAddress(activeWallet.address) : 'Not connected'}
+                  {activeWallet.address
+                    ? formatAddress(activeWallet.address)
+                    : 'Not connected'}
                 </Text>
-                
+
                 {/* Network info for Ethereum */}
                 {activeWallet.type === 'ethereum' && (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.networkDisplayButton}
                     onPress={() => profileState.openModal('network')}
                   >
@@ -135,20 +154,26 @@ export default function RedesignedProfileScreen() {
               </View>
               <Text style={styles.switchIcon}>🔄</Text>
             </TouchableOpacity>
-            
+
             <View style={styles.profileStats}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{user.linked_accounts.length}</Text>
+                <Text style={styles.statNumber}>
+                  {user.linked_accounts.length}
+                </Text>
                 <Text style={styles.statLabel}>Accounts</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{profileState.signedMessages.length}</Text>
+                <Text style={styles.statNumber}>
+                  {profileState.signedMessages.length}
+                </Text>
                 <Text style={styles.statLabel}>Messages</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{profileState.transactionResults.length}</Text>
+                <Text style={styles.statNumber}>
+                  {profileState.transactionResults.length}
+                </Text>
                 <Text style={styles.statLabel}>Transactions</Text>
               </View>
             </View>
@@ -181,7 +206,9 @@ export default function RedesignedProfileScreen() {
                 text="Sign Message"
                 onPress={() => handleWalletAction('sign')}
                 backgroundColor="#ecfdf5"
-                disabled={profileState.isLoading || !walletActions.canPerformActions}
+                disabled={
+                  profileState.isLoading || !walletActions.canPerformActions
+                }
               />
 
               <QuickAction
@@ -189,7 +216,9 @@ export default function RedesignedProfileScreen() {
                 text="Send Test TX"
                 onPress={() => handleWalletAction('sendTx')}
                 backgroundColor="#f3e8ff"
-                disabled={profileState.isLoading || !walletActions.canPerformActions}
+                disabled={
+                  profileState.isLoading || !walletActions.canPerformActions
+                }
               />
 
               <QuickAction
@@ -197,7 +226,9 @@ export default function RedesignedProfileScreen() {
                 text="Sign Test TX"
                 onPress={() => handleWalletAction('signTx')}
                 backgroundColor="#fef2f2"
-                disabled={profileState.isLoading || !walletActions.canPerformActions}
+                disabled={
+                  profileState.isLoading || !walletActions.canPerformActions
+                }
               />
             </View>
           </View>
@@ -225,8 +256,14 @@ export default function RedesignedProfileScreen() {
                 <View style={styles.walletSection}>
                   <View style={styles.walletSectionHeader}>
                     <View style={styles.walletTitleContainer}>
-                      <WalletLogo type="ethereum" size={24} style={{ marginRight: 8 }} />
-                      <Text style={styles.walletSectionTitle}>Ethereum Wallet</Text>
+                      <WalletLogo
+                        type="ethereum"
+                        size={24}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={styles.walletSectionTitle}>
+                        Ethereum Wallet
+                      </Text>
                     </View>
                     {activeWalletType === 'ethereum' && (
                       <View style={styles.activeWalletBadge}>
@@ -234,13 +271,13 @@ export default function RedesignedProfileScreen() {
                       </View>
                     )}
                   </View>
-                  
+
                   <WalletCard
                     wallet={{
                       address: ethereumWallet?.address,
                       type: 'ethereum',
                       iconType: 'ethereum',
-                      network: getCurrentEthereumNetwork().name
+                      network: getCurrentEthereumNetwork().name,
                     }}
                     isActive={activeWalletType === 'ethereum'}
                     onPress={() => {
@@ -253,7 +290,9 @@ export default function RedesignedProfileScreen() {
                         create();
                       }
                     }}
-                    onCopyAddress={(address) => walletActions.copyToClipboard(address, 'Ethereum')}
+                    onCopyAddress={address =>
+                      walletActions.copyToClipboard(address, 'Ethereum')
+                    }
                     onNetworkPress={() => profileState.openModal('network')}
                   />
                 </View>
@@ -262,8 +301,14 @@ export default function RedesignedProfileScreen() {
                 <View style={styles.walletSection}>
                   <View style={styles.walletSectionHeader}>
                     <View style={styles.walletTitleContainer}>
-                      <WalletLogo type="solana" size={24} style={{ marginRight: 8 }} />
-                      <Text style={styles.walletSectionTitle}>Solana Wallet</Text>
+                      <WalletLogo
+                        type="solana"
+                        size={24}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={styles.walletSectionTitle}>
+                        Solana Wallet
+                      </Text>
                     </View>
                     {activeWalletType === 'solana' && (
                       <View style={styles.activeWalletBadge}>
@@ -271,13 +316,13 @@ export default function RedesignedProfileScreen() {
                       </View>
                     )}
                   </View>
-                  
+
                   <WalletCard
                     wallet={{
                       address: solanaWallet?.address,
                       type: 'solana',
                       iconType: 'solana',
-                      network: 'mainnet-beta'
+                      network: 'mainnet-beta',
                     }}
                     isActive={activeWalletType === 'solana'}
                     onPress={() => {
@@ -289,7 +334,9 @@ export default function RedesignedProfileScreen() {
                         createSolanaWallet();
                       }
                     }}
-                    onCopyAddress={(address) => walletActions.copyToClipboard(address, 'Solana')}
+                    onCopyAddress={address =>
+                      walletActions.copyToClipboard(address, 'Solana')
+                    }
                     isCreating={isCreatingSolanaWallet}
                   />
                 </View>
@@ -320,7 +367,8 @@ export default function RedesignedProfileScreen() {
                   style={styles.securityOption}
                   onPress={() =>
                     linkWithPasskey({
-                      relyingParty: Constants.expoConfig?.extra?.passkeyAssociatedDomain,
+                      relyingParty:
+                        Constants.expoConfig?.extra?.passkeyAssociatedDomain,
                     })
                   }
                 >
@@ -329,7 +377,9 @@ export default function RedesignedProfileScreen() {
                   </View>
                   <View style={styles.securityInfo}>
                     <Text style={styles.securityTitle}>Passkey Security</Text>
-                    <Text style={styles.securityDesc}>Enhanced biometric authentication</Text>
+                    <Text style={styles.securityDesc}>
+                      Enhanced biometric authentication
+                    </Text>
                   </View>
                   <TouchableOpacity style={styles.linkButton}>
                     <Text style={styles.linkButtonText}>Link</Text>
@@ -345,7 +395,9 @@ export default function RedesignedProfileScreen() {
                   </View>
                   <View style={styles.securityInfo}>
                     <Text style={styles.securityTitle}>Signed Messages</Text>
-                    <Text style={styles.securityDesc}>View your message signatures</Text>
+                    <Text style={styles.securityDesc}>
+                      View your message signatures
+                    </Text>
                   </View>
                   <TouchableOpacity style={styles.viewButton}>
                     <Text style={styles.viewButtonText}>View</Text>
@@ -360,8 +412,12 @@ export default function RedesignedProfileScreen() {
                     <Text style={styles.securityOptionIcon}>📊</Text>
                   </View>
                   <View style={styles.securityInfo}>
-                    <Text style={styles.securityTitle}>Transaction History</Text>
-                    <Text style={styles.securityDesc}>View your test transactions</Text>
+                    <Text style={styles.securityTitle}>
+                      Transaction History
+                    </Text>
+                    <Text style={styles.securityDesc}>
+                      View your test transactions
+                    </Text>
                   </View>
                   <TouchableOpacity style={styles.viewButton}>
                     <Text style={styles.viewButtonText}>View</Text>
@@ -383,7 +439,9 @@ export default function RedesignedProfileScreen() {
                 </View>
                 <Text style={styles.sectionTitleText}>Connected Accounts</Text>
                 <View style={styles.accountsBadge}>
-                  <Text style={styles.accountsBadgeText}>{user.linked_accounts.length}</Text>
+                  <Text style={styles.accountsBadgeText}>
+                    {user.linked_accounts.length}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.expandIcon}>
@@ -400,7 +458,9 @@ export default function RedesignedProfileScreen() {
                     </View>
                     <View style={styles.accountInfo}>
                       <Text style={styles.accountType}>
-                        {accountItem.type.replace('_oauth', '').replace('_', ' ')}
+                        {accountItem.type
+                          .replace('_oauth', '')
+                          .replace('_', ' ')}
                       </Text>
                       <Text style={styles.accountId}>
                         {toMainIdentifier(accountItem)}
@@ -411,7 +471,7 @@ export default function RedesignedProfileScreen() {
                     </View>
                   </View>
                 ))}
-                
+
                 {user.linked_accounts.length > 3 && (
                   <TouchableOpacity
                     style={styles.viewAllButton}
@@ -426,12 +486,12 @@ export default function RedesignedProfileScreen() {
                 <View style={styles.linkNewSection}>
                   <Text style={styles.linkNewTitle}>Link New Account</Text>
                   <View style={styles.providerGrid}>
-                    {["google", "github", "discord", "apple"].map((provider) => (
+                    {['google', 'github', 'discord', 'apple'].map(provider => (
                       <TouchableOpacity
                         key={provider}
                         style={styles.providerButton}
                         onPress={() => oauth.link({ provider } as any)}
-                        disabled={oauth.state.status === "loading"}
+                        disabled={oauth.state.status === 'loading'}
                       >
                         {getProviderIcon(provider, 16)}
                         <Text style={styles.providerName}>
@@ -468,38 +528,45 @@ export default function RedesignedProfileScreen() {
           Choose which Ethereum network to connect to
         </Text>
 
-        {getAvailableNetworks().map((network) => {
-          const networkKey = Object.entries({
-            mainnet: { name: 'Ethereum Mainnet' },
-            sepolia: { name: 'Ethereum Sepolia' },
-            polygon: { name: 'Polygon Mainnet' },
-            bsc: { name: 'BSC Mainnet' },
-            arbitrum: { name: 'Arbitrum One' },
-            optimism: { name: 'Optimism' },
-            base: { name: 'Base Mainnet' }
-          }).find(([_, config]) => config.name === network.name)?.[0] || 'mainnet';
-          
+        {getAvailableNetworks().map(network => {
+          const networkKey =
+            Object.entries({
+              mainnet: { name: 'Ethereum Mainnet' },
+              sepolia: { name: 'Ethereum Sepolia' },
+              polygon: { name: 'Polygon Mainnet' },
+              bsc: { name: 'BSC Mainnet' },
+              arbitrum: { name: 'Arbitrum One' },
+              optimism: { name: 'Optimism' },
+              base: { name: 'Base Mainnet' },
+            }).find(([_, config]) => config.name === network.name)?.[0] ||
+            'mainnet';
+
           const isActive = activeEthereumNetwork === networkKey;
-          
+
           return (
             <TouchableOpacity
               key={network.name}
               style={[
                 styles.networkOption,
-                isActive && styles.activeNetworkOption
+                isActive && styles.activeNetworkOption,
               ]}
               onPress={async () => {
                 try {
                   await switchEthereumNetwork(networkKey);
                   profileState.closeModal();
-                } catch (error) {
+                } catch (_) {
                   // Error handled in hook
                 }
               }}
               disabled={isSwitchingNetwork}
             >
               <View style={styles.networkOptionContent}>
-                <View style={[styles.networkIconContainer, { backgroundColor: network.color + '20' }]}>
+                <View
+                  style={[
+                    styles.networkIconContainer,
+                    { backgroundColor: network.color + '20' },
+                  ]}
+                >
                   <Text style={styles.networkOptionIcon}>{network.icon}</Text>
                 </View>
                 <View style={styles.networkOptionInfo}>
@@ -507,11 +574,11 @@ export default function RedesignedProfileScreen() {
                   <Text style={styles.networkOptionDesc}>
                     Chain ID: {network.chainId} • {network.symbol}
                   </Text>
-                  <Text style={styles.networkOptionUrl}>{network.blockExplorer}</Text>
+                  <Text style={styles.networkOptionUrl}>
+                    {network.blockExplorer}
+                  </Text>
                 </View>
-                {isActive && (
-                  <Text style={styles.networkOptionCheck}>✓</Text>
-                )}
+                {isActive && <Text style={styles.networkOptionCheck}>✓</Text>}
               </View>
             </TouchableOpacity>
           );
@@ -540,7 +607,7 @@ export default function RedesignedProfileScreen() {
           <TouchableOpacity
             style={[
               styles.walletOption,
-              activeWalletType === 'ethereum' && styles.activeWalletOption
+              activeWalletType === 'ethereum' && styles.activeWalletOption,
             ]}
             onPress={() => {
               switchWalletType('ethereum');
@@ -548,7 +615,11 @@ export default function RedesignedProfileScreen() {
             }}
           >
             <View style={styles.walletOptionContent}>
-              <WalletLogo type="ethereum" size={32} style={{ marginRight: 12 }} />
+              <WalletLogo
+                type="ethereum"
+                size={32}
+                style={{ marginRight: 12 }}
+              />
               <View style={styles.walletOptionInfo}>
                 <Text style={styles.walletOptionTitle}>Ethereum Wallet</Text>
                 <Text style={styles.walletOptionAddress}>
@@ -568,7 +639,7 @@ export default function RedesignedProfileScreen() {
           <TouchableOpacity
             style={[
               styles.walletOption,
-              activeWalletType === 'solana' && styles.activeWalletOption
+              activeWalletType === 'solana' && styles.activeWalletOption,
             ]}
             onPress={() => {
               switchWalletType('solana');
@@ -594,7 +665,7 @@ export default function RedesignedProfileScreen() {
         {/* Create New Wallet Section */}
         <View style={styles.createWalletSection}>
           <Text style={styles.createWalletTitle}>Create New Wallet</Text>
-          
+
           {!ethereumWallet?.address && (
             <TouchableOpacity
               style={styles.createWalletButton}
@@ -603,8 +674,14 @@ export default function RedesignedProfileScreen() {
                 profileState.closeModal();
               }}
             >
-              <WalletLogo type="ethereum" size={24} style={{ marginRight: 12 }} />
-              <Text style={styles.createWalletText}>Create Ethereum Wallet</Text>
+              <WalletLogo
+                type="ethereum"
+                size={24}
+                style={{ marginRight: 12 }}
+              />
+              <Text style={styles.createWalletText}>
+                Create Ethereum Wallet
+              </Text>
             </TouchableOpacity>
           )}
 
@@ -619,7 +696,9 @@ export default function RedesignedProfileScreen() {
             >
               <WalletLogo type="solana" size={24} style={{ marginRight: 12 }} />
               <Text style={styles.createWalletText}>
-                {isCreatingSolanaWallet ? 'Creating...' : 'Create Solana Wallet'}
+                {isCreatingSolanaWallet
+                  ? 'Creating...'
+                  : 'Create Solana Wallet'}
               </Text>
             </TouchableOpacity>
           )}

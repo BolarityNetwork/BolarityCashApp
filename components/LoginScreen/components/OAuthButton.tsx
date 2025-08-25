@@ -1,7 +1,7 @@
-import React from "react";
-import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import React from 'react';
+import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from "../styles";
+import { styles } from '../styles';
 
 interface OAuthButtonProps {
   provider: {
@@ -16,7 +16,13 @@ interface OAuthButtonProps {
   isLast?: boolean;
 }
 
-export function OAuthButton({ provider, onPress, disabled, loading, isLast }: OAuthButtonProps) {
+export function OAuthButton({
+  provider,
+  onPress,
+  disabled,
+  loading,
+  isLast,
+}: OAuthButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.oauthButton, { marginBottom: isLast ? 0 : 12 }]}

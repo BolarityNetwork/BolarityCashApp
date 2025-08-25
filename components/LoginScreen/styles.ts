@@ -1,6 +1,4 @@
-import { StyleSheet, Dimensions } from "react-native";
-
-const { width, height } = Dimensions.get('window');
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
@@ -351,7 +349,7 @@ export const styles = StyleSheet.create({
     width: 18,
     height: 18,
   },
-  
+
   // Fingerprint Icon Styles
   fingerprintIcon: {
     width: 20,
@@ -392,7 +390,7 @@ export const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#6b7280',
   },
-  
+
   // Wallet Icon Styles
   walletIcon: {
     width: 20,

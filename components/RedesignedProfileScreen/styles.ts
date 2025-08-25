@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 120,
   },
-  
+
   // Header
   header: {
     backgroundColor: '#ffffff',
@@ -152,7 +152,7 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     color: '#667eea',
   },
-  
+
   // Stats
   profileStats: {
     flexDirection: 'row',

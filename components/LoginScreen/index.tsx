@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
@@ -6,48 +6,46 @@ import {
   StatusBar,
   TouchableOpacity,
   Image,
-} from "react-native";
-import { useAuth } from "./hooks/useAuth";
-import { LoginButton } from "./components/LoginButton";
-import { OAuthButton } from "./components/OAuthButton";
-import { ErrorDisplay } from "./components/ErrorDisplay";
-import { ConfigSection } from "./components/ConfigSection";
-import { OAUTH_PROVIDERS } from "./constants";
-import { styles } from "./styles";
+} from 'react-native';
+import { useAuth } from './hooks/useAuth';
+import { ErrorDisplay } from './components/ErrorDisplay';
+import { ConfigSection } from './components/ConfigSection';
+import { OAUTH_PROVIDERS } from './constants';
+import { styles } from './styles';
 
 export default function LoginScreen() {
-  const { 
-    isLoading, 
-    error, 
+  const {
+    isLoading,
+    error,
     oauthLoading,
-    handleEmailLogin, 
-    handlePasskeyLogin, 
-    handleOAuthLogin 
+    handleEmailLogin,
+    handlePasskeyLogin,
+    handleOAuthLogin,
   } = useAuth();
 
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <Header />
-          
+
           <View style={styles.loginCard}>
-            <PrimaryActions 
+            <PrimaryActions
               isLoading={isLoading}
               onEmailLogin={handleEmailLogin}
             />
           </View>
-          
+
           <View style={styles.divider}>
             <Text style={styles.dividerText}>Other options</Text>
           </View>
-          
+
           <View style={styles.loginCard}>
-            <OAuthSection 
+            <OAuthSection
               providers={OAUTH_PROVIDERS}
               isLoading={isLoading || oauthLoading}
               onProviderSelect={handleOAuthLogin}
@@ -67,7 +65,7 @@ function Header() {
   return (
     <View style={styles.header}>
       <Text style={styles.title}>Log in or sign up</Text>
-      
+
       <View style={styles.logoContainer}>
         <View style={styles.logoCircle} />
         <Text style={styles.logoText}>bolarity</Text>
@@ -79,7 +77,7 @@ function Header() {
 function PrimaryActions({ isLoading, onEmailLogin }: any) {
   return (
     <View style={styles.primaryActions}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.primaryButton, styles.emailButton]}
         onPress={onEmailLogin}
         disabled={isLoading}
@@ -94,10 +92,12 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         </View>
         <Text style={styles.buttonArrow}>Submit</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={[styles.primaryButton, styles.emailButton]}
-        onPress={() => {/* SMS function */}}
+        onPress={() => {
+          /* SMS function */
+        }}
         disabled={isLoading}
       >
         <View style={styles.buttonContent}>
@@ -115,13 +115,12 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
   );
 }
 
-
 // Logo Components
 function GoogleLogo() {
   return (
     <View style={styles.oauthLogoContainer}>
-      <Image 
-        source={require('../../assets/logos/google.png')} 
+      <Image
+        source={require('../../assets/logos/google.png')}
         style={styles.logoImage}
         resizeMode="contain"
       />
@@ -132,8 +131,8 @@ function GoogleLogo() {
 function AppleLogo() {
   return (
     <View style={styles.oauthLogoContainer}>
-      <Image 
-        source={require('../../assets/logos/apple.png')} 
+      <Image
+        source={require('../../assets/logos/apple.png')}
         style={styles.logoImage}
         resizeMode="contain"
       />
@@ -144,8 +143,8 @@ function AppleLogo() {
 function DiscordLogo() {
   return (
     <View style={styles.oauthLogoContainer}>
-      <Image 
-        source={require('../../assets/logos/discord.png')} 
+      <Image
+        source={require('../../assets/logos/discord.png')}
         style={styles.logoImage}
         resizeMode="contain"
       />
@@ -175,7 +174,12 @@ function WalletIcon() {
   );
 }
 
-function OAuthSection({ providers, isLoading, onProviderSelect, onPasskeyLogin }: any) {
+function OAuthSection({
+  providers,
+  isLoading,
+  onProviderSelect,
+  onPasskeyLogin,
+}: any) {
   const renderProviderIcon = (providerName: string) => {
     switch (providerName) {
       case 'google':
@@ -185,7 +189,11 @@ function OAuthSection({ providers, isLoading, onProviderSelect, onPasskeyLogin }
       case 'discord':
         return <DiscordLogo />;
       default:
-        return <Text style={styles.oauthIcon}>{providers.find((p: any) => p.name === providerName)?.icon}</Text>;
+        return (
+          <Text style={styles.oauthIcon}>
+            {providers.find((p: any) => p.name === providerName)?.icon}
+          </Text>
+        );
     }
   };
 
@@ -210,8 +218,8 @@ function OAuthSection({ providers, isLoading, onProviderSelect, onPasskeyLogin }
           <Text style={styles.buttonArrow}>›</Text>
         </TouchableOpacity>
       ))}
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.oauthButton}
         onPress={onPasskeyLogin}
         disabled={isLoading}
@@ -222,7 +230,7 @@ function OAuthSection({ providers, isLoading, onProviderSelect, onPasskeyLogin }
         </View>
         <Text style={styles.buttonArrow}>›</Text>
       </TouchableOpacity>
-      
+
       <TouchableOpacity style={[styles.oauthButton, styles.oauthButtonLast]}>
         <View style={styles.oauthContent}>
           <WalletIcon />

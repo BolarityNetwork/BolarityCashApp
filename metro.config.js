@@ -1,13 +1,13 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
 const resolveRequestWithPackageExports = (context, moduleName, platform) => {
   // Package exports in `isows` are incorrect, so we need to disable them
-  if (moduleName === "isows") {
+  if (moduleName === 'isows') {
     const ctx = {
       ...context,
       unstable_enablePackageExports: false,
@@ -15,7 +15,7 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
   // Package exports in `zustand@4` are incorrect, so we need to disable them
-  if (moduleName.startsWith("zustand")) {
+  if (moduleName.startsWith('zustand')) {
     const ctx = {
       ...context,
       unstable_enablePackageExports: false,
@@ -23,15 +23,15 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
   // Package exports in `jose` are incorrect, so we need to force the browser version
-  if (moduleName === "jose") {
+  if (moduleName === 'jose') {
     const ctx = {
       ...context,
-      unstable_conditionNames: ["browser"],
+      unstable_conditionNames: ['browser'],
     };
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
   // Package exports in `@noble/hashes` have issues with crypto.js
-  if (moduleName === "@noble/hashes/crypto") {
+  if (moduleName === '@noble/hashes/crypto') {
     const ctx = {
       ...context,
       unstable_enablePackageExports: false,
@@ -47,13 +47,13 @@ config.resolver.resolveRequest = resolveRequestWithPackageExports;
 // 添加对 @noble/hashes 的别名解析
 config.resolver.alias = {
   ...config.resolver.alias,
-  "@noble/hashes/crypto": "@noble/hashes/crypto.js",
+  '@noble/hashes/crypto': '@noble/hashes/crypto.js',
 };
 
 // 添加对 .mjs 文件的支持
-config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs"];
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs'];
 
 // 添加对 crypto polyfills 的支持
-config.resolver.platforms = ["ios", "android", "native", "web"];
+config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
-module.exports = withNativeWind(config, { input: "./global.css" });
+module.exports = withNativeWind(config, { input: './global.css' });

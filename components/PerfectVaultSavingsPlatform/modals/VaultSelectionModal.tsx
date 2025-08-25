@@ -35,10 +35,7 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
       <SafeAreaView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Choose Your Vault</Text>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>×</Text>
           </TouchableOpacity>
         </View>
@@ -59,7 +56,9 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
                   <ProtocolLogo protocol={vault.name} size={40} />
                   <View style={styles.modalVaultInfo}>
                     <Text style={styles.modalVaultName}>{vault.name}</Text>
-                    <Text style={styles.modalVaultDesc}>{vault.description}</Text>
+                    <Text style={styles.modalVaultDesc}>
+                      {vault.description}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.modalVaultRight}>

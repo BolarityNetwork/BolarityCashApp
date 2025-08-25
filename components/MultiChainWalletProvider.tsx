@@ -1,16 +1,17 @@
 // components/MultiChainWalletProvider.tsx
 import React from 'react';
-import { 
-  MultiChainWalletContext, 
+import {
+  MultiChainWalletContext,
   useMultiChainWalletState,
-  type MultiChainWalletContextType 
 } from '@/hooks/useMultiChainWallet';
 
 interface MultiChainWalletProviderProps {
   children: React.ReactNode;
 }
 
-export function MultiChainWalletProvider({ children }: MultiChainWalletProviderProps) {
+export function MultiChainWalletProvider({
+  children,
+}: MultiChainWalletProviderProps) {
   const walletState = useMultiChainWalletState();
 
   return (

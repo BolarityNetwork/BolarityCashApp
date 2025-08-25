@@ -1,9 +1,9 @@
 // app/index.tsx
-import { SafeAreaView, Text, View, StyleSheet } from "react-native";
-import Constants from "expo-constants";
-import LoginScreen from "@/components/LoginScreen";
-import { usePrivy } from "@privy-io/expo";
-import { RedesignedMainNavigation } from "@/components/RedesignedMainNavigation";
+import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
+import Constants from 'expo-constants';
+import LoginScreen from '@/components/LoginScreen';
+import { usePrivy } from '@privy-io/expo';
+import { RedesignedMainNavigation } from '@/components/RedesignedMainNavigation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Buffer } from 'buffer';
 global.Buffer = Buffer;
@@ -37,7 +37,7 @@ export default function Index() {
   // Check if Privy Client ID is valid
   if (
     !(Constants.expoConfig?.extra?.privyClientId as string).startsWith(
-      "client-"
+      'client-'
     )
   ) {
     return (

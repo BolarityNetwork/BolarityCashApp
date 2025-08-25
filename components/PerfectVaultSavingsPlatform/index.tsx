@@ -7,7 +7,7 @@ import {
   Animated,
   SafeAreaView,
 } from 'react-native';
-import { usePrivy } from "@privy-io/expo";
+import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '../../hooks/useMultiChainWallet';
 
 // Import Components
@@ -36,24 +36,20 @@ import { styles } from './styles';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
-  const [showBalance, setShowBalance] = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showVaultListModal, setShowVaultListModal] = useState(false);
   const [showTimeVaultListModal, setShowTimeVaultListModal] = useState(false);
   const [selectedVault, setSelectedVault] = useState<VaultProduct | null>(null);
-  const [selectedSpecificVault, setSelectedSpecificVault] = useState<VaultOption | TimeVaultOption | null>(null);
+  const [selectedSpecificVault, setSelectedSpecificVault] = useState<
+    VaultOption | TimeVaultOption | null
+  >(null);
   const [totalBalance, setTotalBalance] = useState(127845.67);
   const [todayEarnings, setTodayEarnings] = useState(293.52);
   const [monthlyEarnings, setMonthlyEarnings] = useState(8247.18);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
   // 多链钱包状态
-  const {
-    activeWalletType,
-    ethereumWallet,
-    solanaWallet,
-    activeWallet
-  } = useMultiChainWallet();
+  const { activeWallet } = useMultiChainWallet();
 
   // 动画值
   const actionMenuOpacity = new Animated.Value(0);
@@ -64,10 +60,10 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     const interval = setInterval(() => {
       const increment = Math.random() * 0.04 + 0.01;
       setTotalBalance(prev => prev + increment);
-      
+
       // 🎯 今日收益的增量与总余额增量保持一致
       setTodayEarnings(prev => prev + increment);
-      
+
       // 月度收益可以是总余额增量的略微倍数（模拟累积效果）
       const monthlyIncrement = increment * (Math.random() * 0.5 + 1.2); // 1.2-1.7倍
       setMonthlyEarnings(prev => prev + monthlyIncrement);
@@ -135,14 +131,14 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         address: activeWallet.address,
         type: activeWallet.type === 'ethereum' ? 'ETH' : 'SOL',
         icon: activeWallet.icon,
-        network: activeWallet.network
+        network: activeWallet.network,
       };
     }
     return {
       address: null,
       type: 'Not Connected',
       icon: '💼',
-      network: 'N/A'
+      network: 'N/A',
     };
   };
 
@@ -173,12 +169,12 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#667eea" />
-      
+
       {/* Fixed Header */}
       <View style={styles.fixedHeader}>
         <SafeAreaView>
-          <Header 
-            user={user} 
+          <Header
+            user={user}
             currentWalletInfo={currentWalletInfo}
             formatAddress={formatAddress}
           />
@@ -191,7 +187,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView 
+      <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -200,7 +196,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         <ChartSection />
 
         {/* Vault Products */}
-        <VaultList 
+        <VaultList
           vaultProducts={vaultProducts}
           onVaultPress={handleVaultPress}
         />
@@ -213,7 +209,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       </ScrollView>
 
       {/* Actions Menu */}
-      <ActionsMenu 
+      <ActionsMenu
         visible={showActionsMenu}
         onClose={() => setShowActionsMenu(false)}
         opacity={actionMenuOpacity}

@@ -7,7 +7,7 @@ export const QuickAction: React.FC<QuickActionProps> = ({
   text,
   onPress,
   backgroundColor = '#f0f9ff',
-  disabled = false
+  disabled = false,
 }) => {
   return (
     <TouchableOpacity

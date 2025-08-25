@@ -15,119 +15,153 @@ import RedesignedProfileScreen from './RedesignedProfileScreen';
 type TabType = 'home' | 'actions' | 'profile';
 
 // 线条图标组件
-const LineIcon = ({ name, isActive, size = 20 }: { name: string, isActive: boolean, size?: number }) => {
+const LineIcon = ({
+  name,
+  isActive,
+  size = 20,
+}: {
+  name: string;
+  isActive: boolean;
+  size?: number;
+}) => {
   const iconColor = isActive ? '#fff' : '#6b7280';
-  
+
   switch (name) {
     case 'home':
       return (
         <View style={[styles.lineIcon, { width: size, height: size }]}>
           {/* 房子图标 */}
-          <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+          <View
+            style={{
+              position: 'relative',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {/* 三角形屋顶 */}
-            <View style={{
-              position: 'absolute',
-              top: 0,
-              width: 0,
-              height: 0,
-              borderStyle: 'solid',
-              borderLeftWidth: size * 0.35,
-              borderRightWidth: size * 0.35,
-              borderBottomWidth: size * 0.3,
-              borderLeftColor: 'transparent',
-              borderRightColor: 'transparent',
-              borderBottomColor: iconColor,
-            }} />
-            
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                width: 0,
+                height: 0,
+                borderStyle: 'solid',
+                borderLeftWidth: size * 0.35,
+                borderRightWidth: size * 0.35,
+                borderBottomWidth: size * 0.3,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                borderBottomColor: iconColor,
+              }}
+            />
+
             {/* 房子主体 */}
-            <View style={{
-              marginTop: size * 0.25,
-              width: size * 0.55,
-              height: size * 0.45,
-              borderColor: iconColor,
-              borderWidth: 1.5,
-              borderTopWidth: 0,
-            }} />
-            
+            <View
+              style={{
+                marginTop: size * 0.25,
+                width: size * 0.55,
+                height: size * 0.45,
+                borderColor: iconColor,
+                borderWidth: 1.5,
+                borderTopWidth: 0,
+              }}
+            />
+
             {/* 门 */}
-            <View style={{
-              position: 'absolute',
-              bottom: 0,
-              width: size * 0.18,
-              height: size * 0.25,
-              borderColor: iconColor,
-              borderWidth: 1.5,
-              borderTopWidth: 0,
-            }} />
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                width: size * 0.18,
+                height: size * 0.25,
+                borderColor: iconColor,
+                borderWidth: 1.5,
+                borderTopWidth: 0,
+              }}
+            />
           </View>
         </View>
       );
-      
+
     case 'actions':
       return (
         <View style={[styles.lineIcon, { width: size, height: size }]}>
           {/* 闪电图标 */}
-          <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+          <View
+            style={{
+              position: 'relative',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {/* 上半部分闪电 */}
-            <View style={{
-              width: 0,
-              height: 0,
-              borderStyle: 'solid',
-              borderTopWidth: size * 0.35,
-              borderBottomWidth: 0,
-              borderLeftWidth: size * 0.15,
-              borderRightWidth: size * 0.25,
-              borderTopColor: iconColor,
-              borderLeftColor: 'transparent',
-              borderRightColor: 'transparent',
-              marginBottom: -1,
-            }} />
+            <View
+              style={{
+                width: 0,
+                height: 0,
+                borderStyle: 'solid',
+                borderTopWidth: size * 0.35,
+                borderBottomWidth: 0,
+                borderLeftWidth: size * 0.15,
+                borderRightWidth: size * 0.25,
+                borderTopColor: iconColor,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                marginBottom: -1,
+              }}
+            />
             {/* 下半部分闪电 */}
-            <View style={{
-              width: 0,
-              height: 0,
-              borderStyle: 'solid',
-              borderTopWidth: 0,
-              borderBottomWidth: size * 0.35,
-              borderLeftWidth: size * 0.25,
-              borderRightWidth: size * 0.15,
-              borderBottomColor: iconColor,
-              borderLeftColor: 'transparent',
-              borderRightColor: 'transparent',
-              marginLeft: size * 0.1,
-            }} />
+            <View
+              style={{
+                width: 0,
+                height: 0,
+                borderStyle: 'solid',
+                borderTopWidth: 0,
+                borderBottomWidth: size * 0.35,
+                borderLeftWidth: size * 0.25,
+                borderRightWidth: size * 0.15,
+                borderBottomColor: iconColor,
+                borderLeftColor: 'transparent',
+                borderRightColor: 'transparent',
+                marginLeft: size * 0.1,
+              }}
+            />
           </View>
         </View>
       );
-      
+
     case 'profile':
       return (
         <View style={[styles.lineIcon, { width: size, height: size }]}>
           {/* 用户图标 */}
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             {/* 头部 */}
-            <View style={{
-              width: size * 0.35,
-              height: size * 0.35,
-              borderRadius: size * 0.175,
-              borderColor: iconColor,
-              borderWidth: 1.5,
-              marginBottom: 2,
-            }} />
+            <View
+              style={{
+                width: size * 0.35,
+                height: size * 0.35,
+                borderRadius: size * 0.175,
+                borderColor: iconColor,
+                borderWidth: 1.5,
+                marginBottom: 2,
+              }}
+            />
             {/* 身体 */}
-            <View style={{
-              width: size * 0.65,
-              height: size * 0.35,
-              borderTopLeftRadius: size * 0.325,
-              borderTopRightRadius: size * 0.325,
-              borderColor: iconColor,
-              borderWidth: 1.5,
-              borderBottomWidth: 0,
-            }} />
+            <View
+              style={{
+                width: size * 0.65,
+                height: size * 0.35,
+                borderTopLeftRadius: size * 0.325,
+                borderTopRightRadius: size * 0.325,
+                borderColor: iconColor,
+                borderWidth: 1.5,
+                borderBottomWidth: 0,
+              }}
+            />
           </View>
         </View>
       );
-      
+
     default:
       return <View style={{ width: size, height: size }} />;
   }
@@ -152,11 +186,9 @@ const RedesignedMainNavigation = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      
+
       {/* Main Content */}
-      <View style={styles.content}>
-        {renderContent()}
-      </View>
+      <View style={styles.content}>{renderContent()}</View>
 
       {/* Bottom Navigation */}
       <SafeAreaView style={styles.bottomNavSafeArea}>
@@ -167,45 +199,95 @@ const RedesignedMainNavigation = () => {
           >
             {/* Home Tab */}
             <TouchableOpacity
-              style={[styles.navTab, activeTab === 'home' && styles.activeNavTab]}
+              style={[
+                styles.navTab,
+                activeTab === 'home' && styles.activeNavTab,
+              ]}
               onPress={() => setActiveTab('home')}
               activeOpacity={0.8}
             >
-              <View style={[styles.navIconContainer, activeTab === 'home' && styles.activeNavIconContainer]}>
-                <LineIcon name="home" isActive={activeTab === 'home'} size={16} />
+              <View
+                style={[
+                  styles.navIconContainer,
+                  activeTab === 'home' && styles.activeNavIconContainer,
+                ]}
+              >
+                <LineIcon
+                  name="home"
+                  isActive={activeTab === 'home'}
+                  size={16}
+                />
               </View>
-              <Text style={[styles.navText, activeTab === 'home' && styles.activeNavText]}>
+              <Text
+                style={[
+                  styles.navText,
+                  activeTab === 'home' && styles.activeNavText,
+                ]}
+              >
                 Home
               </Text>
             </TouchableOpacity>
 
             {/* Actions Tab - 中间的特殊按钮 */}
             <TouchableOpacity
-              style={[styles.actionsTab, activeTab === 'actions' && styles.activeActionsTab]}
+              style={[
+                styles.actionsTab,
+                activeTab === 'actions' && styles.activeActionsTab,
+              ]}
               onPress={() => setActiveTab('actions')}
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={activeTab === 'actions' ? ['#667eea', '#764ba2'] : ['#f3f4f6', '#e5e7eb']}
+                colors={
+                  activeTab === 'actions'
+                    ? ['#667eea', '#764ba2']
+                    : ['#f3f4f6', '#e5e7eb']
+                }
                 style={styles.actionsButton}
               >
-                <LineIcon name="actions" isActive={activeTab === 'actions'} size={20} />
+                <LineIcon
+                  name="actions"
+                  isActive={activeTab === 'actions'}
+                  size={20}
+                />
               </LinearGradient>
-              <Text style={[styles.navText, activeTab === 'actions' && styles.activeNavText]}>
+              <Text
+                style={[
+                  styles.navText,
+                  activeTab === 'actions' && styles.activeNavText,
+                ]}
+              >
                 Actions
               </Text>
             </TouchableOpacity>
 
             {/* Profile Tab */}
             <TouchableOpacity
-              style={[styles.navTab, activeTab === 'profile' && styles.activeNavTab]}
+              style={[
+                styles.navTab,
+                activeTab === 'profile' && styles.activeNavTab,
+              ]}
               onPress={() => setActiveTab('profile')}
               activeOpacity={0.8}
             >
-              <View style={[styles.navIconContainer, activeTab === 'profile' && styles.activeNavIconContainer]}>
-                <LineIcon name="profile" isActive={activeTab === 'profile'} size={16} />
+              <View
+                style={[
+                  styles.navIconContainer,
+                  activeTab === 'profile' && styles.activeNavIconContainer,
+                ]}
+              >
+                <LineIcon
+                  name="profile"
+                  isActive={activeTab === 'profile'}
+                  size={16}
+                />
               </View>
-              <Text style={[styles.navText, activeTab === 'profile' && styles.activeNavText]}>
+              <Text
+                style={[
+                  styles.navText,
+                  activeTab === 'profile' && styles.activeNavText,
+                ]}
+              >
                 Profile
               </Text>
             </TouchableOpacity>
@@ -316,7 +398,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#667eea',
     transform: [{ scale: 1.1 }],
   },
-  
+
   // 线条图标样式
   lineIcon: {
     alignItems: 'center',

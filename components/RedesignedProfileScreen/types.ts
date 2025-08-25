@@ -1,6 +1,6 @@
-export type ModalType = 
+export type ModalType =
   | 'wallet'
-  | 'accounts' 
+  | 'accounts'
   | 'messages'
   | 'transactions'
   | 'settings'

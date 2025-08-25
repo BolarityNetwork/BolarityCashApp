@@ -1,12 +1,19 @@
 import React from 'react';
-import { Modal, SafeAreaView, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  Modal,
+  SafeAreaView,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { ModalProps } from '../types';
 
 export const BaseModal: React.FC<ModalProps> = ({
   visible,
   onClose,
   title,
-  children
+  children,
 }) => {
   return (
     <Modal
@@ -15,25 +22,31 @@ export const BaseModal: React.FC<ModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{
-        flex: 1,
-        backgroundColor: '#f8fafc',
-      }}>
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 20,
-          paddingVertical: 16,
-          backgroundColor: '#fff',
-          borderBottomWidth: 1,
-          borderBottomColor: '#f1f5f9',
-        }}>
-          <Text style={{
-            fontSize: 18,
-            fontWeight: 'bold',
-            color: '#1e293b',
-          }}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: '#f8fafc',
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+            backgroundColor: '#fff',
+            borderBottomWidth: 1,
+            borderBottomColor: '#f1f5f9',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              color: '#1e293b',
+            }}
+          >
             {title}
           </Text>
           <TouchableOpacity
@@ -47,19 +60,23 @@ export const BaseModal: React.FC<ModalProps> = ({
             }}
             onPress={onClose}
           >
-            <Text style={{
-              fontSize: 16,
-              color: '#64748b',
-            }}>
+            <Text
+              style={{
+                fontSize: 16,
+                color: '#64748b',
+              }}
+            >
               ✕
             </Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{
-          flex: 1,
-          padding: 20,
-        }}>
+        <ScrollView
+          style={{
+            flex: 1,
+            padding: 20,
+          }}
+        >
           {children}
         </ScrollView>
       </SafeAreaView>

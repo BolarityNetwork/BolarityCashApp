@@ -23,9 +23,9 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     prefix: '$',
-    suffix: ''
+    suffix: '',
   },
-  onAnimationComplete
+  onAnimationComplete,
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
   const startValueRef = useRef(value);
@@ -48,9 +48,9 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
       // 使用 easeOutCubic 缓动函数让动画更自然
       const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      const currentValue = startValueRef.current + 
-        (value - startValueRef.current) * easeProgress;
+
+      const currentValue =
+        startValueRef.current + (value - startValueRef.current) * easeProgress;
 
       setDisplayValue(currentValue);
 

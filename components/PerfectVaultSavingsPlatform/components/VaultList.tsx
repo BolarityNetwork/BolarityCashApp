@@ -1,11 +1,6 @@
 // components/PerfectVaultSavingsPlatform/components/VaultList.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import VaultLogo from './VaultLogo';
 import { VaultProduct } from '../constants';
@@ -15,7 +10,10 @@ interface VaultListProps {
   onVaultPress: (vault: VaultProduct) => void;
 }
 
-const VaultList: React.FC<VaultListProps> = ({ vaultProducts, onVaultPress }) => {
+const VaultList: React.FC<VaultListProps> = ({
+  vaultProducts,
+  onVaultPress,
+}) => {
   return (
     <View style={styles.vaultSection}>
       <View style={styles.sectionHeader}>
@@ -28,7 +26,7 @@ const VaultList: React.FC<VaultListProps> = ({ vaultProducts, onVaultPress }) =>
       <View style={styles.vaultList}>
         {vaultProducts.map((vault, index) => (
           <TouchableOpacity
-            key={index} 
+            key={index}
             style={styles.vaultCardBorder}
             onPress={() => onVaultPress(vault)}
           >
@@ -43,7 +41,9 @@ const VaultList: React.FC<VaultListProps> = ({ vaultProducts, onVaultPress }) =>
                   </LinearGradient>
                   <View>
                     <Text style={styles.vaultName}>{vault.name}</Text>
-                    <Text style={styles.vaultDescription}>{vault.description}</Text>
+                    <Text style={styles.vaultDescription}>
+                      {vault.description}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.vaultApy}>
@@ -51,7 +51,7 @@ const VaultList: React.FC<VaultListProps> = ({ vaultProducts, onVaultPress }) =>
                   <Text style={styles.vaultApyLabel}>APY</Text>
                 </View>
               </View>
-              
+
               <View style={styles.vaultFooter}>
                 <View style={styles.vaultDetails}>
                   <View>

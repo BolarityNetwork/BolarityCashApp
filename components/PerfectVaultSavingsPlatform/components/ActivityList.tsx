@@ -17,32 +17,30 @@ interface ActivityListProps {
 }
 
 const ActivityList: React.FC<ActivityListProps> = () => {
-  const { 
-    formattedTransactions, 
-    isLoading, 
-    error, 
+  const {
+    formattedTransactions,
+    isLoading,
+    error,
     refreshTransactions,
     loadMoreTransactions,
     hasMore,
     currentAddress,
-    currentChain
   } = useTransactionHistory();
-
 
   // 获取交易类型对应的图标
   const getTransactionIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case 'deposit':
-        return { name: "ArrowDown", color: "#2563eb" };
+        return { name: 'ArrowDown', color: '#2563eb' };
       case 'withdraw':
-        return { name: "ArrowUp", color: "#dc2626" };
+        return { name: 'ArrowUp', color: '#dc2626' };
       case 'interest earned':
       case 'interest':
-        return { name: "Percent", color: "#059669" };
+        return { name: 'Percent', color: '#059669' };
       case 'swap':
-        return { name: "ArrowLeftRight", color: "#7c3aed" };
+        return { name: 'ArrowLeftRight', color: '#7c3aed' };
       default:
-        return { name: "DollarSign", color: "#6b7280" };
+        return { name: 'DollarSign', color: '#6b7280' };
     }
   };
 
@@ -54,7 +52,9 @@ const ActivityList: React.FC<ActivityListProps> = () => {
           <Text style={styles.sectionTitle}>Recent Activity</Text>
         </View>
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Connect wallet to view transactions</Text>
+          <Text style={styles.emptyStateText}>
+            Connect wallet to view transactions
+          </Text>
         </View>
       </View>
     );
@@ -72,7 +72,10 @@ const ActivityList: React.FC<ActivityListProps> = () => {
         </View>
         <View style={styles.errorState}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={refreshTransactions}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={refreshTransactions}
+          >
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -104,7 +107,7 @@ const ActivityList: React.FC<ActivityListProps> = () => {
           </Text>
         </View>
       ) : (
-        <ScrollView 
+        <ScrollView
           style={styles.activityList}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -119,16 +122,21 @@ const ActivityList: React.FC<ActivityListProps> = () => {
           {formattedTransactions.map((transaction, index) => {
             const icon = getTransactionIcon(transaction.type);
             return (
-              <View key={`${transaction.hash || index}`} style={styles.activityItem}>
+              <View
+                key={`${transaction.hash || index}`}
+                style={styles.activityItem}
+              >
                 <View style={styles.activityLeft}>
-                  <View style={[
-                    styles.activityIcon,
-                    { backgroundColor: `${icon.color}15` }
-                  ]}>
-                    <IconComponent 
-                      name={icon.name} 
-                      size={20} 
-                      color={icon.color} 
+                  <View
+                    style={[
+                      styles.activityIcon,
+                      { backgroundColor: `${icon.color}15` },
+                    ]}
+                  >
+                    <IconComponent
+                      name={icon.name}
+                      size={20}
+                      color={icon.color}
                     />
                   </View>
                   <View style={styles.activityInfo}>
@@ -138,29 +146,36 @@ const ActivityList: React.FC<ActivityListProps> = () => {
                     </Text>
                     {transaction.hash && (
                       <Text style={styles.activityHash}>
-                        {transaction.hash.substring(0, 8)}...{transaction.hash.substring(transaction.hash.length - 6)}
+                        {transaction.hash.substring(0, 8)}...
+                        {transaction.hash.substring(
+                          transaction.hash.length - 6
+                        )}
                       </Text>
                     )}
                   </View>
                 </View>
                 <View style={styles.activityRight}>
-                  <Text style={[
-                    styles.activityAmount,
-                    { color: transaction.isPositive ? "#059669" : "#2563eb" }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.activityAmount,
+                      { color: transaction.isPositive ? '#059669' : '#2563eb' },
+                    ]}
+                  >
                     {transaction.amount}
                   </Text>
                   {transaction.token && (
-                    <Text style={styles.activityToken}>{transaction.token}</Text>
+                    <Text style={styles.activityToken}>
+                      {transaction.token}
+                    </Text>
                   )}
                 </View>
               </View>
             );
           })}
-          
+
           {/* 加载更多按钮 */}
           {hasMore && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.loadMoreButton}
               onPress={loadMoreTransactions}
               disabled={isLoading}
@@ -267,7 +282,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     marginTop: 2,
   },
-  
+
   // 状态样式
   loadingState: {
     alignItems: 'center',

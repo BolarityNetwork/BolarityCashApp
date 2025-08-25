@@ -1,118 +1,126 @@
 // components/PerfectVaultSavingsPlatform/assets/logos.ts
 
 // 🖼️ 安全导入本地logo图片 - 带try-catch处理
-let aaveLogo, compoundLogo, driftLogo, solendLogo, naviLogo, humaLogo, ratexLogo, pendleLogo, bolarityLogo;
+let aaveLogo,
+  compoundLogo,
+  driftLogo,
+  solendLogo,
+  naviLogo,
+  humaLogo,
+  ratexLogo,
+  pendleLogo,
+  bolarityLogo;
 let flexiVaultLogo, timeVaultLogo, maxVaultLogo;
 
 try {
   aaveLogo = require('../../../assets/logos/aave.png');
-} catch (e) {
+} catch (_) {
   console.warn('AAVE logo not found');
 }
 
 try {
   compoundLogo = require('../../../assets/logos/compound.png');
-} catch (e) {
+} catch (_) {
   console.warn('Compound logo not found');
 }
 
 try {
   driftLogo = require('../../../assets/logos/drift.png');
-} catch (e) {
+} catch (_) {
   console.warn('Drift logo not found');
 }
 
 try {
   solendLogo = require('../../../assets/logos/solend.png');
-} catch (e) {
+} catch (_) {
   console.warn('Solend logo not found');
 }
 
 try {
   naviLogo = require('../../../assets/logos/navi.png');
-} catch (e) {
+} catch (_) {
   console.warn('Navi logo not found');
 }
 
 try {
   humaLogo = require('../../../assets/logos/huma.png');
-} catch (e) {
+} catch (_) {
   console.warn('Huma logo not found');
 }
 
 try {
   ratexLogo = require('../../../assets/logos/ratex.png');
-} catch (e) {
+} catch (_) {
   console.warn('Ratex logo not found');
 }
 
 try {
   pendleLogo = require('../../../assets/logos/pendle.png');
-} catch (e) {
+} catch (_) {
   console.warn('Pendle logo not found');
 }
 
 try {
   bolarityLogo = require('../../../assets/logos/bolarity.png');
-} catch (e) {
+} catch (_) {
   console.warn('Bolarity logo not found');
 }
 
 // 🎯 Vault 产品专用 Logo
 try {
   flexiVaultLogo = require('../../../assets/logos/flexivault.png');
-} catch (e) {
+} catch (_) {
   console.warn('FlexiVault logo not found');
 }
 
 try {
   timeVaultLogo = require('../../../assets/logos/timevault.png');
-} catch (e) {
+} catch (_) {
   console.warn('TimeVault logo not found');
 }
 
 try {
   maxVaultLogo = require('../../../assets/logos/maxvault.png');
-} catch (e) {
+} catch (_) {
   console.warn('MaxVault logo not found');
 }
 
 // Protocol Logo映射
 export const PROTOCOL_LOGOS = {
-  'AAVE': aaveLogo,
-  'Drift': driftLogo,
-  'Compound': compoundLogo,
-  'Solend': solendLogo,
-  'Navi': naviLogo,
-  'Huma': humaLogo,
-  'Ratex': ratexLogo,
-  'Pendle': pendleLogo
+  AAVE: aaveLogo,
+  Drift: driftLogo,
+  Compound: compoundLogo,
+  Solend: solendLogo,
+  Navi: naviLogo,
+  Huma: humaLogo,
+  Ratex: ratexLogo,
+  Pendle: pendleLogo,
 };
 
 // Vault Logo映射
 export const VAULT_LOGOS = {
-  'FlexiVault': flexiVaultLogo,
+  FlexiVault: flexiVaultLogo,
   'TimeVault Pro': timeVaultLogo,
-  'MaxVault Elite': maxVaultLogo
+  'MaxVault Elite': maxVaultLogo,
 };
 
 // Vault图标映射
 export const VAULT_FALLBACK_ICONS = {
-  'FlexiVault': '⚡',
+  FlexiVault: '⚡',
   'TimeVault Pro': '⏰',
-  'MaxVault Elite': '⭐'
+  'MaxVault Elite': '⭐',
 };
 
 // Protocol备用图标
 export const PROTOCOL_FALLBACK_ICONS = {
-  'AAVE': '🏛️',
-  'Drift': '🌊',
-  'Compound': '🔷',
-  'Solend': '☀️',
-  'Navi': '🧭',
-  'Huma': '🌍',
-  'Ratex': '💎',
-  'Pendle': '🔮'
+  AAVE: '🏛️',
+  Drift: '🌊',
+  Compound: '🔷',
+  Solend: '☀️',
+  Navi: '🧭',
+  Huma: '🌍',
+  Ratex: '💎',
+  Pendle: '🔮',
 };
 
 // 其他logo

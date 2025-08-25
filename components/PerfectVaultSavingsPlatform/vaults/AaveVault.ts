@@ -2,7 +2,13 @@
 // Linux principle: One vault, one responsibility
 
 import { ethers } from 'ethers';
-import { BaseVault, VaultConfig, VaultBalance, VaultTransaction, VaultOperationResult } from './types';
+import {
+  BaseVault,
+  VaultConfig,
+  VaultBalance,
+  VaultTransaction,
+  VaultOperationResult,
+} from './types';
 
 export class AaveVault implements BaseVault {
   config: VaultConfig = {
@@ -19,8 +25,8 @@ export class AaveVault implements BaseVault {
     ui: {
       icon: 'DollarSign',
       gradientColors: ['#667eea', '#5a67d8'],
-      supportedTokens: ['USDC']
-    }
+      supportedTokens: ['USDC'],
+    },
   };
 
   private userAddress: string = '';
@@ -34,8 +40,8 @@ export class AaveVault implements BaseVault {
     base: {
       POOL_ADDRESS: '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5',
       USDC_ADDRESS: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-      AUSDC_ADDRESS: '0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB'
-    }
+      AUSDC_ADDRESS: '0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB',
+    },
   };
 
   async initialize(userAddress: string): Promise<void> {
@@ -51,10 +57,10 @@ export class AaveVault implements BaseVault {
       }
 
       const weiAmount = ethers.utils.parseUnits(amount, 6);
-      
+
       // Check allowance
       const currentAllowance = await this.usdcContract.allowance(
-        this.userAddress, 
+        this.userAddress,
         this.CONTRACTS.base.POOL_ADDRESS
       );
 
@@ -62,7 +68,7 @@ export class AaveVault implements BaseVault {
       if (currentAllowance.lt(weiAmount)) {
         const usdcWithSigner = this.usdcContract.connect(this.signer);
         const approveTx = await usdcWithSigner.approve(
-          this.CONTRACTS.base.POOL_ADDRESS, 
+          this.CONTRACTS.base.POOL_ADDRESS,
           weiAmount
         );
         await approveTx.wait();
@@ -81,13 +87,12 @@ export class AaveVault implements BaseVault {
 
       return {
         success: true,
-        transactionHash: receipt.transactionHash
+        transactionHash: receipt.transactionHash,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -95,7 +100,7 @@ export class AaveVault implements BaseVault {
   async withdraw(amount: string): Promise<VaultOperationResult> {
     try {
       const weiAmount = ethers.utils.parseUnits(amount, 6);
-      
+
       const poolWithSigner = this.poolContract.connect(this.signer);
       const withdrawTx = await poolWithSigner.withdraw(
         this.CONTRACTS.base.USDC_ADDRESS,
@@ -107,13 +112,12 @@ export class AaveVault implements BaseVault {
 
       return {
         success: true,
-        transactionHash: receipt.transactionHash
+        transactionHash: receipt.transactionHash,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -141,27 +145,26 @@ export class AaveVault implements BaseVault {
         deposited,
         earned,
         totalValue: deposited,
-        apy: this.config.apy
+        apy: this.config.apy,
       };
-
-    } catch (error) {
+    } catch (_) {
       return {
         deposited: '0',
         earned: '0',
         totalValue: '0',
-        apy: '0%'
+        apy: '0%',
       };
     }
   }
 
-  async getTransactions(userAddress: string): Promise<VaultTransaction[]> {
+  async getTransactions(_: string): Promise<VaultTransaction[]> {
     // Would fetch from transaction history or events
     return [];
   }
 
   async canDeposit(amount: string, token: string): Promise<boolean> {
     if (token !== 'USDC') return false;
-    
+
     const minDeposit = parseFloat(this.config.minimumDeposit);
     return parseFloat(amount) >= minDeposit;
   }

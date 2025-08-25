@@ -23,21 +23,21 @@ export function useProfileState() {
   const toggleSection = useCallback((section: string) => {
     setState(prev => ({
       ...prev,
-      expandedSection: prev.expandedSection === section ? null : section
+      expandedSection: prev.expandedSection === section ? null : section,
     }));
   }, []);
 
   const addSignedMessage = useCallback((message: string) => {
     setState(prev => ({
       ...prev,
-      signedMessages: [message, ...prev.signedMessages]
+      signedMessages: [message, ...prev.signedMessages],
     }));
   }, []);
 
   const addTransaction = useCallback((tx: string) => {
     setState(prev => ({
       ...prev,
-      transactionResults: [tx, ...prev.transactionResults]
+      transactionResults: [tx, ...prev.transactionResults],
     }));
   }, []);
 
