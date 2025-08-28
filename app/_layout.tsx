@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { PrivyProvider } from '@privy-io/expo';
 import { PrivyElements } from '@privy-io/expo/ui';
 import { MultiChainWalletProvider } from '@/components/MultiChainWalletProvider';
+import { ThemeProvider } from '@/components/theme/ThemeContext';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -85,17 +86,19 @@ export default function RootLayout() {
     >
       {/* 将 MultiChainWalletProvider 包装在 PrivyProvider 内部 */}
       <MultiChainWalletProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            statusBarStyle: 'light',
-            statusBarTranslucent: true,
-            statusBarBackgroundColor: 'transparent',
-          }}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
-        <PrivyElements />
+        <ThemeProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              statusBarStyle: 'light',
+              statusBarTranslucent: true,
+              statusBarBackgroundColor: 'transparent',
+            }}
+          >
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
+          <PrivyElements />
+        </ThemeProvider>
       </MultiChainWalletProvider>
     </PrivyProvider>
   );

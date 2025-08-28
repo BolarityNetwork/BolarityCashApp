@@ -797,6 +797,17 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Settings
+  settingsSection: {
+    marginBottom: 24,
+  },
+  settingsSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 16,
+  },
+
   // Wallet Option
   walletOption: {
     backgroundColor: '#fff',
