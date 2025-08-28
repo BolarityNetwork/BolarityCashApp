@@ -10,6 +10,7 @@ import {
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
+import '@/i18n';
 
 export default function RootLayout() {
   useFonts({
