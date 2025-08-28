@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BolarityCashApp",
-    "slug": "BolarityCashApp",
+    "name": "BolarityCash",
+    "slug": "BolarityCash",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -21,7 +21,8 @@
           "NSAllowsArbitraryLoads": true
         },
         "UIViewControllerBasedStatusBarAppearance": false
-      }
+      },
+      "appleTeamId": "RB28JD2Z57"
     },
     "android": {
       "adaptiveIcon": {
