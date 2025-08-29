@@ -12,7 +12,8 @@
     "ios": "expo run:ios",
     "lint": "expo lint",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "quick-update": "EXPO_USE_CHUNKED_REQUESTS=1 EAS_BUILD_GRAPHQL_TIMEOUT=300000 node scripts/quick-update.js"
   },
   "husky": {
     "hooks": {
@@ -85,7 +86,8 @@
     "tailwindcss": "^3.4.17",
     "viem": "^2.31.7",
     "wagmi": "^2.15.6",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "expo-updates": "~0.28.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

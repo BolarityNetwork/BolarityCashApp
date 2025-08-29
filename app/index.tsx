@@ -6,10 +6,45 @@ import { usePrivy } from '@privy-io/expo';
 import { RedesignedMainNavigation } from '@/components/RedesignedMainNavigation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Buffer } from 'buffer';
+import { useEffect } from 'react';
+import * as Updates from 'expo-updates';
+import UpdateModal from '@/components/UpdateModal';
+import { useUpdateModal } from '@/hooks/useUpdateModal';
 global.Buffer = Buffer;
 
 export default function Index() {
   const { user } = usePrivy();
+  const {
+    isVisible,
+    updateInfo,
+    showUpdateModal,
+    hideUpdateModal,
+    handleUpdate,
+  } = useUpdateModal();
+
+  // Check for OTA update and show modal if available
+  useEffect(() => {
+    const checkUpdate = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          console.log('OTA update available:', update);
+          showUpdateModal({
+            version: 'New',
+            description:
+              'A new version is available with the latest features and improvements!',
+            isMandatory: false,
+          });
+        }
+      } catch (e) {
+        console.log('Failed to check OTA update', e);
+      }
+    };
+
+    // 延迟检查，避免影响应用启动性能
+    const timer = setTimeout(checkUpdate, 3000);
+    return () => clearTimeout(timer);
+  }, [showUpdateModal]);
 
   // Check if Privy App ID is valid
   if ((Constants.expoConfig?.extra?.privyAppId as string).length !== 25) {
@@ -62,7 +97,19 @@ export default function Index() {
   }
 
   // Return appropriate screen based on authentication status
-  return !user ? <LoginScreen /> : <RedesignedMainNavigation />;
+  return (
+    <>
+      {!user ? <LoginScreen /> : <RedesignedMainNavigation />}
+
+      {/* Update Modal */}
+      <UpdateModal
+        visible={isVisible}
+        updateInfo={updateInfo}
+        onUpdate={handleUpdate}
+        onClose={hideUpdateModal}
+      />
+    </>
+  );
 }
 
 const styles = StyleSheet.create({

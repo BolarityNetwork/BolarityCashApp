@@ -33,7 +33,12 @@
     },
     "extra": {
       "privyAppId": "cmb4ld7xg00qclg0n0ocxmp9l",
-      "privyClientId": "client-WY6Lz4usDuw3YiQgxVEbvUJcwvAc2Tg4QkwDcPXkJNPt7"
+      "privyClientId": "client-WY6Lz4usDuw3YiQgxVEbvUJcwvAc2Tg4QkwDcPXkJNPt7",
+      "updateTime": "2025-08-29 11:43:22",
+      "router": {},
+      "eas": {
+        "projectId": "61da145a-964f-461b-a442-f6fac68e723f"
+      }
     },
     "plugins": [
       "expo-router",
@@ -57,6 +62,12 @@
     },
     "web": {
       "bundler": "metro"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/61da145a-964f-461b-a442-f6fac68e723f"
     }
   }
 }
