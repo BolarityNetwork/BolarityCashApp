@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useAuth } from './hooks/useAuth';
 import { ErrorDisplay } from './components/ErrorDisplay';
-import { ConfigSection } from './components/ConfigSection';
 import { OAUTH_PROVIDERS } from './constants';
 import { styles } from './styles';
 
@@ -54,7 +53,6 @@ export default function LoginScreen() {
           </View>
 
           <ErrorDisplay error={error} />
-          <ConfigSection />
         </ScrollView>
       </View>
     </>
