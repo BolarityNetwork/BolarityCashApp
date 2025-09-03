@@ -13,7 +13,8 @@
     "lint": "expo lint",
     "lint:fix": "eslint . --fix",
     "prepare": "husky install",
-    "quick-update": "EXPO_USE_CHUNKED_REQUESTS=1 EAS_BUILD_GRAPHQL_TIMEOUT=300000 node scripts/quick-update.js"
+    "quick-update": "EXPO_USE_CHUNKED_REQUESTS=1 EAS_BUILD_GRAPHQL_TIMEOUT=300000 node scripts/quick-update.js",
+    "eas-build-android": "eas build --platform android --local --profile production"
   },
   "husky": {
     "hooks": {
@@ -62,6 +63,7 @@
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-system-ui": "~5.0.10",
+    "expo-updates": "~0.28.17",
     "expo-web-browser": "~14.2.0",
     "framer-motion": "^12.23.0",
     "i18next": "^25.4.2",
@@ -86,8 +88,7 @@
     "tailwindcss": "^3.4.17",
     "viem": "^2.31.7",
     "wagmi": "^2.15.6",
-    "zustand": "^5.0.6",
-    "expo-updates": "~0.28.17"
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
