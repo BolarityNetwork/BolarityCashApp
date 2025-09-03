@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { useMultiChainWallet } from '../../../hooks/useMultiChainWallet';
+import { useMultiChainWallet } from '../useMultiChainWallet';
 
 export function useWalletActions() {
   const {

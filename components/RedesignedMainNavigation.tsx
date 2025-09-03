@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import PerfectVaultSavingsPlatform from './PerfectVaultSavingsPlatform';
-import RedesignedProfileScreen from './RedesignedProfileScreen';
+import RedesignedProfileScreen from '@/app/(tabs)/profile';
 
 type TabType = 'home' | 'actions' | 'profile';
 

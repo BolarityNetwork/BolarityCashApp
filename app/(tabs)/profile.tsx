@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -15,23 +16,99 @@ import {
 } from '@privy-io/expo';
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
-import { useProfileState } from './hooks/useProfileState';
-import { useWalletActions } from './hooks/useWalletActions';
-import { WalletLogo } from './components/WalletLogo';
-import { ProfileHeader } from './components/ProfileHeader';
-import { QuickAction } from './components/QuickAction';
-import { WalletCard } from './components/WalletCard';
-import { BaseModal } from './components/BaseModal';
-import { formatAddress, toMainIdentifier, getProviderIcon } from './utils';
-import { styles } from './styles';
+import { useProfileState } from '@/hooks/profile/useProfileState';
+import { useWalletActions } from '@/hooks/profile/useWalletActions';
+import { WalletLogo } from '@/components/profile/components/WalletLogo';
+import { ProfileHeader } from '@/components/profile/components/ProfileHeader';
+import { QuickAction } from '@/components/profile/components/QuickAction';
+import { BaseModal } from '@/components/profile/components/BaseModal';
+import { formatAddress, toMainIdentifier } from '@/utils/profile';
+import { styles } from '@/components/Profile/styles';
+import { WalletCard } from '@/components/profile/components/WalletCard';
 
-export default function RedesignedProfileScreen() {
+// Provider icon logos
+let ethereumProviderLogo: any, solanaProviderLogo: any;
+
+try {
+  ethereumProviderLogo = require('../../assets/logos/ethereum.png');
+} catch (e) {
+  console.warn('❌ Ethereum provider logo not found:', e);
+  ethereumProviderLogo = null;
+}
+
+try {
+  solanaProviderLogo = require('../../assets/logos/solana.png');
+} catch (e) {
+  console.warn('❌ Solana provider logo not found:', e);
+  solanaProviderLogo = null;
+}
+
+export function getProviderIcon(
+  type: string,
+  size: number = 18
+): React.ReactElement {
+  // For ethereum and solana, return PNG image components if available
+  if (type === 'ethereum' && ethereumProviderLogo) {
+    return (
+      <Image
+        source={ethereumProviderLogo}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        onError={() => {
+          console.log('❌ Ethereum provider icon failed to load');
+        }}
+      />
+    );
+  }
+
+  if (type === 'solana' && solanaProviderLogo) {
+    return (
+      <Image
+        source={solanaProviderLogo}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        }}
+        onError={() => {
+          console.log('❌ Solana provider icon failed to load');
+        }}
+      />
+    );
+  }
+
+  // For other types or PNG loading failure, return emoji components
+  const icons: { [key: string]: string } = {
+    email: '📧',
+    phone: '📱',
+    wallet: '💼',
+    solana: '🌞', // fallback
+    ethereum: '🔷', // fallback
+    twitter_oauth: '🐦',
+    tiktok_oauth: '🎵',
+    google: '🔍',
+    github: '⚡',
+    discord: '🎮',
+    apple: '🍎',
+    custom_auth: '🔐',
+  };
+
+  const icon = icons[type] || '🔗';
+
+  return <Text style={{ fontSize: size * 0.9 }}>{icon}</Text>;
+}
+
+export default function ProfileScreen() {
   const { logout, user } = usePrivy();
   const { linkWithPasskey } = useLinkWithPasskey();
   const oauth = useLinkWithOAuth();
   const { create } = useEmbeddedEthereumWallet();
-  // const { create: createSolanaWallet } = useEmbeddedSolanaWallet();
+  const router = useRouter();
 
   const {
     activeWalletType,
@@ -228,6 +305,13 @@ export default function RedesignedProfileScreen() {
                 disabled={
                   profileState.isLoading || !walletActions.canPerformActions
                 }
+              />
+
+              <QuickAction
+                icon="⚙️"
+                text="Settings"
+                onPress={() => router.push('/settings')}
+                backgroundColor="#f8fafc"
               />
             </View>
           </View>

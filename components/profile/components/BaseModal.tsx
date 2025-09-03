@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { ModalProps } from '../types';
+import { ModalProps } from '@/interfaces/profile';
 
 export const BaseModal: React.FC<ModalProps> = ({
   visible,

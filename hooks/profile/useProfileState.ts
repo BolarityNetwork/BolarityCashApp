@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ModalType, ProfileState } from '../types';
+import { ModalType, ProfileState } from '@/interfaces/profile';
 
 const initialState: ProfileState = {
   activeModal: null,

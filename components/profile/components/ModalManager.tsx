@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { ModalType } from '../types';
+import { ModalType } from '@/interfaces/profile';
 import { styles } from '../styles';
 
 interface ModalManagerProps {

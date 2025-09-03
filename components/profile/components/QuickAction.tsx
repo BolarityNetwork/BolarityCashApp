@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
-import { QuickActionProps } from '../types';
+import { QuickActionProps } from '@/interfaces/profile';
 
 export const QuickAction: React.FC<QuickActionProps> = ({
   icon,
