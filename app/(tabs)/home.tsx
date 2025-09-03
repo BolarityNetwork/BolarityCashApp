@@ -23,11 +23,10 @@ import TimeVaultModal from '@/components/modals/TimeVaultModal';
 import DepositModal from '@/components/modals/DepositModal';
 import ActionsMenu from '@/components/modals/ActionsMenu';
 
-// Import Constants and Styles
+// Import Constants
 import { vaultOptions, timeVaultOptions, vaultProducts } from '@/utils/home';
 
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
-import { styles } from '@/components/home/styles';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
@@ -162,11 +161,11 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-50">
       <StatusBar barStyle="light-content" backgroundColor="#667eea" />
 
       {/* Fixed Header */}
-      <View style={styles.fixedHeader}>
+      <View className="absolute top-0 left-0 right-0 bg-white z-20 shadow-lg">
         <SafeAreaView>
           <Header
             user={user}
@@ -183,8 +182,8 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
 
       {/* Scrollable Content */}
       <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ paddingTop: 250, paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Chart */}
@@ -200,7 +199,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         <ActivityList />
 
         {/* Bottom Padding */}
-        <View style={styles.bottomPadding} />
+        <View className="h-5" />
       </ScrollView>
 
       {/* Actions Menu */}

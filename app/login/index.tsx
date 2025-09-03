@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { ErrorDisplay } from '@/components/login/ErrorDisplay';
-import { styles } from '@/components/login/styles';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -47,25 +46,32 @@ export default function LoginScreen() {
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.container}>
+      <View className="flex-1 bg-gray-50">
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 24,
+            paddingTop: 80,
+            paddingBottom: 40,
+          }}
           showsVerticalScrollIndicator={false}
         >
           <Header />
 
-          <View style={styles.loginCard}>
+          <View className="bg-white rounded-2xl mx-1 shadow-sm overflow-hidden">
             <PrimaryActions
               isLoading={isLoading}
               onEmailLogin={handleEmailLogin}
             />
           </View>
 
-          <View style={styles.divider}>
-            <Text style={styles.dividerText}>Other options</Text>
+          <View className="py-6 px-6 bg-gray-50">
+            <Text className="text-sm text-gray-500 font-medium text-center">
+              Other options
+            </Text>
           </View>
 
-          <View style={styles.loginCard}>
+          <View className="bg-white rounded-2xl mx-1 shadow-sm overflow-hidden">
             <OAuthSection
               providers={OAUTH_PROVIDERS}
               isLoading={isLoading || oauthLoading}
@@ -83,12 +89,16 @@ export default function LoginScreen() {
 
 function Header() {
   return (
-    <View style={styles.header}>
-      <Text style={styles.title}>Log in or sign up</Text>
+    <View className="items-center mb-12">
+      <Text className="text-3xl font-semibold text-gray-500 text-center mb-8 tracking-tight">
+        Log in or sign up
+      </Text>
 
-      <View style={styles.logoContainer}>
-        <View style={styles.logoCircle} />
-        <Text style={styles.logoText}>bolarity</Text>
+      <View className="flex-row items-center mb-8">
+        <View className="w-8 h-8 rounded-full bg-black mr-3" />
+        <Text className="text-3xl font-bold text-black tracking-tight">
+          bolarity
+        </Text>
       </View>
     </View>
   );
@@ -96,40 +106,44 @@ function Header() {
 
 function PrimaryActions({ isLoading, onEmailLogin }: any) {
   return (
-    <View style={styles.primaryActions}>
+    <View className="p-0">
       <TouchableOpacity
-        style={[styles.primaryButton, styles.emailButton]}
+        className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
         onPress={onEmailLogin}
         disabled={isLoading}
       >
-        <View style={styles.buttonContent}>
-          <View style={styles.emailIcon}>
-            <View style={styles.emailEnvelope}>
-              <View style={styles.emailFlap} />
+        <View className="flex-row items-center flex-1">
+          <View className="w-5 h-5 mr-4 items-center justify-center">
+            <View className="w-4.5 h-3.5 border-2 border-gray-500 rounded bg-transparent relative items-center justify-center">
+              <View className="absolute top-0.5 w-0 h-0 border-l-1.5 border-r-1.5 border-t-1 border-l-transparent border-r-transparent border-t-gray-500" />
             </View>
           </View>
-          <Text style={styles.primaryButtonText}>your@email.com</Text>
+          <Text className="text-base font-medium text-gray-900 flex-1">
+            your@email.com
+          </Text>
         </View>
-        <Text style={styles.buttonArrow}>Submit</Text>
+        <Text className="text-lg text-gray-400">Submit</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.primaryButton, styles.emailButton]}
+        className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
         onPress={() => {
           /* SMS function */
         }}
         disabled={isLoading}
       >
-        <View style={styles.buttonContent}>
-          <View style={styles.phoneIcon}>
-            <View style={styles.phoneBody}>
-              <View style={styles.phoneScreen} />
-              <View style={styles.phoneHomeButton} />
+        <View className="flex-row items-center flex-1">
+          <View className="w-5 h-5 mr-4 items-center justify-center">
+            <View className="w-3 h-4.5 border-2 border-gray-500 rounded-sm bg-transparent items-center justify-between py-0.5">
+              <View className="w-1.75 h-2.5 bg-gray-100 rounded-sm" />
+              <View className="w-0.75 h-0.75 rounded-full border border-gray-500 bg-transparent" />
             </View>
           </View>
-          <Text style={styles.primaryButtonText}>Continue with SMS</Text>
+          <Text className="text-base font-medium text-gray-900 flex-1">
+            Continue with SMS
+          </Text>
         </View>
-        <Text style={styles.buttonArrow}>›</Text>
+        <Text className="text-lg text-gray-400">›</Text>
       </TouchableOpacity>
     </View>
   );
@@ -138,10 +152,10 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
 // Logo Components
 function GoogleLogo() {
   return (
-    <View style={styles.oauthLogoContainer}>
+    <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/google.png')}
-        style={styles.logoImage}
+        className="w-4.5 h-4.5"
         resizeMode="contain"
       />
     </View>
@@ -150,10 +164,10 @@ function GoogleLogo() {
 
 function AppleLogo() {
   return (
-    <View style={styles.oauthLogoContainer}>
+    <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/apple.png')}
-        style={styles.logoImage}
+        className="w-4.5 h-4.5"
         resizeMode="contain"
       />
     </View>
@@ -162,10 +176,10 @@ function AppleLogo() {
 
 function DiscordLogo() {
   return (
-    <View style={styles.oauthLogoContainer}>
+    <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/discord.png')}
-        style={styles.logoImage}
+        className="w-4.5 h-4.5"
         resizeMode="contain"
       />
     </View>
@@ -174,21 +188,21 @@ function DiscordLogo() {
 
 function FingerprintIcon() {
   return (
-    <View style={styles.fingerprintIcon}>
-      <View style={styles.fingerprintOuter} />
-      <View style={styles.fingerprintMiddle} />
-      <View style={styles.fingerprintInner} />
-      <View style={styles.fingerprintCore} />
+    <View className="w-5 h-5 mr-4 items-center justify-center">
+      <View className="absolute w-4 h-4 rounded-full border-2 border-gray-500 border-dashed" />
+      <View className="absolute w-3 h-3 rounded-full border-2 border-gray-500" />
+      <View className="absolute w-2 h-2 rounded-full border-2 border-gray-500" />
+      <View className="absolute w-1 h-1 rounded-full bg-gray-500" />
     </View>
   );
 }
 
 function WalletIcon() {
   return (
-    <View style={styles.walletIcon}>
-      <View style={styles.walletBody}>
-        <View style={styles.walletFlap} />
-        <View style={styles.walletCard} />
+    <View className="w-5 h-5 mr-4 items-center justify-center">
+      <View className="w-4 h-3 border-2 border-gray-500 rounded-sm bg-transparent relative">
+        <View className="absolute -top-0.5 left-0.5 right-0.5 h-0.75 bg-gray-50 border-t-2 border-l-2 border-r-2 border-gray-500 rounded-t-sm" />
+        <View className="absolute bottom-0.5 left-0.5 w-2 h-0.5 bg-gray-500 rounded-sm" />
       </View>
     </View>
   );
@@ -210,7 +224,7 @@ function OAuthSection({
         return <DiscordLogo />;
       default:
         return (
-          <Text style={styles.oauthIcon}>
+          <Text className="text-xl mr-4">
             {providers.find((p: any) => p.name === providerName)?.icon}
           </Text>
         );
@@ -218,45 +232,51 @@ function OAuthSection({
   };
 
   return (
-    <View style={styles.oauthContainer}>
+    <View className="bg-white">
       {providers.map((provider: any) => (
         <TouchableOpacity
           key={provider.name}
-          style={styles.oauthButton}
+          className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
           onPress={() => onProviderSelect(provider.name)}
           disabled={isLoading}
         >
-          <View style={styles.oauthContent}>
+          <View className="flex-row items-center flex-1">
             {renderProviderIcon(provider.name)}
-            <Text style={styles.oauthText}>{provider.label}</Text>
+            <Text className="text-base font-medium text-gray-900 flex-1">
+              {provider.label}
+            </Text>
           </View>
           {provider.name === 'google' && (
-            <View style={styles.recentBadge}>
-              <Text style={styles.recentText}>Recent</Text>
+            <View className="bg-gray-100 rounded-xl px-3 py-1 mr-2">
+              <Text className="text-xs text-gray-500 font-medium">Recent</Text>
             </View>
           )}
-          <Text style={styles.buttonArrow}>›</Text>
+          <Text className="text-lg text-gray-400">›</Text>
         </TouchableOpacity>
       ))}
 
       <TouchableOpacity
-        style={styles.oauthButton}
+        className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
         onPress={onPasskeyLogin}
         disabled={isLoading}
       >
-        <View style={styles.oauthContent}>
+        <View className="flex-row items-center flex-1">
           <FingerprintIcon />
-          <Text style={styles.oauthText}>Continue with Passkey</Text>
+          <Text className="text-base font-medium text-gray-900 flex-1">
+            Continue with Passkey
+          </Text>
         </View>
-        <Text style={styles.buttonArrow}>›</Text>
+        <Text className="text-lg text-gray-400">›</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.oauthButton, styles.oauthButtonLast]}>
-        <View style={styles.oauthContent}>
+      <TouchableOpacity className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white">
+        <View className="flex-row items-center flex-1">
           <WalletIcon />
-          <Text style={styles.oauthText}>Continue with a wallet</Text>
+          <Text className="text-base font-medium text-gray-900 flex-1">
+            Continue with a wallet
+          </Text>
         </View>
-        <Text style={styles.buttonArrow}>›</Text>
+        <Text className="text-lg text-gray-400">›</Text>
       </TouchableOpacity>
     </View>
   );

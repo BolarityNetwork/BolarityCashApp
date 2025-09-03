@@ -1,5 +1,5 @@
 // app/index.tsx
-import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import LoginScreen from '@/app/login';
 import { usePrivy } from '@privy-io/expo';
@@ -49,18 +49,17 @@ export default function Index() {
   // Check if Privy App ID is valid
   if ((Constants.expoConfig?.extra?.privyAppId as string).length !== 25) {
     return (
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.errorContainer}
-      >
-        <SafeAreaView style={styles.errorSafeArea}>
-          <View style={styles.errorContent}>
-            <Text style={styles.errorIcon}>⚠️</Text>
-            <Text style={styles.errorTitle}>Configuration Error</Text>
-            <Text style={styles.errorText}>
+      <LinearGradient colors={['#667eea', '#764ba2']} className="flex-1">
+        <SafeAreaView className="flex-1">
+          <View className="flex-1 items-center justify-center px-10">
+            <Text className="text-6xl mb-5">⚠️</Text>
+            <Text className="text-2xl font-bold text-white text-center mb-4">
+              Configuration Error
+            </Text>
+            <Text className="text-base text-white/90 text-center leading-6 mb-3">
               You have not set a valid `privyAppId` in app.json
             </Text>
-            <Text style={styles.errorHint}>
+            <Text className="text-sm text-white/70 text-center italic">
               Please check your app configuration and try again.
             </Text>
           </View>
@@ -76,18 +75,17 @@ export default function Index() {
     )
   ) {
     return (
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.errorContainer}
-      >
-        <SafeAreaView style={styles.errorSafeArea}>
-          <View style={styles.errorContent}>
-            <Text style={styles.errorIcon}>⚠️</Text>
-            <Text style={styles.errorTitle}>Configuration Error</Text>
-            <Text style={styles.errorText}>
+      <LinearGradient colors={['#667eea', '#764ba2']} className="flex-1">
+        <SafeAreaView className="flex-1">
+          <View className="flex-1 items-center justify-center px-10">
+            <Text className="text-6xl mb-5">⚠️</Text>
+            <Text className="text-2xl font-bold text-white text-center mb-4">
+              Configuration Error
+            </Text>
+            <Text className="text-base text-white/90 text-center leading-6 mb-3">
               You have not set a valid `privyClientId` in app.json
             </Text>
-            <Text style={styles.errorHint}>
+            <Text className="text-sm text-white/70 text-center italic">
               Please check your app configuration and try again.
             </Text>
           </View>
@@ -111,42 +109,3 @@ export default function Index() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  errorContainer: {
-    flex: 1,
-  },
-  errorSafeArea: {
-    flex: 1,
-  },
-  errorContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  errorIcon: {
-    fontSize: 60,
-    marginBottom: 20,
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  errorHint: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-});

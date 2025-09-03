@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // 线条图标组件
@@ -17,14 +17,11 @@ const LineIcon = ({
   switch (name) {
     case 'home':
       return (
-        <View style={[styles.lineIcon, { width: size, height: size }]}>
-          <View
-            style={{
-              position: 'relative',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <View
+          className="items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <View className="relative items-center justify-center">
             {/* 三角形屋顶 */}
             <View
               style={{
@@ -70,14 +67,11 @@ const LineIcon = ({
 
     case 'actions':
       return (
-        <View style={[styles.lineIcon, { width: size, height: size }]}>
-          <View
-            style={{
-              position: 'relative',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <View
+          className="items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <View className="relative items-center justify-center">
             {/* 上半部分闪电 */}
             <View
               style={{
@@ -116,8 +110,11 @@ const LineIcon = ({
 
     case 'profile':
       return (
-        <View style={[styles.lineIcon, { width: size, height: size }]}>
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          className="items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <View className="items-center justify-center">
             {/* 头部 */}
             <View
               style={{
@@ -169,7 +166,7 @@ export default function TabLayout() {
         tabBarBackground: () => (
           <LinearGradient
             colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,1)']}
-            style={styles.tabBarBackground}
+            className="flex-1 rounded-2xl shadow-lg border border-white/20"
           />
         ),
         tabBarItemStyle: {
@@ -196,10 +193,9 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ focused }) => (
             <View
-              style={[
-                styles.navIconContainer,
-                focused && styles.activeNavIconContainer,
-              ]}
+              className={`w-7 h-7 rounded-full items-center justify-center ${
+                focused ? 'bg-indigo-500 scale-110' : 'bg-slate-100'
+              }`}
             >
               <LineIcon name="home" isActive={focused} size={16} />
             </View>
@@ -211,12 +207,12 @@ export default function TabLayout() {
         options={{
           title: 'Actions',
           tabBarIcon: ({ focused }) => (
-            <View style={styles.actionsTab}>
+            <View className="items-center justify-center">
               <LinearGradient
                 colors={
                   focused ? ['#667eea', '#764ba2'] : ['#f3f4f6', '#e5e7eb']
                 }
-                style={styles.actionsButton}
+                className="w-9 h-9 rounded-full items-center justify-center shadow-md"
               >
                 <LineIcon name="actions" isActive={focused} size={20} />
               </LinearGradient>
@@ -230,10 +226,9 @@ export default function TabLayout() {
           title: 'Profile',
           tabBarIcon: ({ focused }) => (
             <View
-              style={[
-                styles.navIconContainer,
-                focused && styles.activeNavIconContainer,
-              ]}
+              className={`w-7 h-7 rounded-full items-center justify-center ${
+                focused ? 'bg-indigo-500 scale-110' : 'bg-slate-100'
+              }`}
             >
               <LineIcon name="profile" isActive={focused} size={16} />
             </View>
@@ -243,49 +238,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBarBackground: {
-    flex: 1,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  navIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  activeNavIconContainer: {
-    backgroundColor: '#667eea',
-    transform: [{ scale: 1.1 }],
-  },
-  lineIcon: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionsTab: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionsButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-});
