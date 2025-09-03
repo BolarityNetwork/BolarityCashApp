@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import PerfectVaultSavingsPlatform from './PerfectVaultSavingsPlatform';
+import PerfectVaultSavingsPlatform from '@/app/(tabs)/home';
 import RedesignedProfileScreen from '@/app/(tabs)/profile';
 
 type TabType = 'home' | 'actions' | 'profile';

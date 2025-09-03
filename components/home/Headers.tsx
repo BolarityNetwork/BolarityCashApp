@@ -1,8 +1,8 @@
 // components/PerfectVaultSavingsPlatform/components/Header.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import IconComponent from './IconComponent';
-import { bolarityLogo } from '../assets/logos';
+import IconComponent from '@/components/home/IconComponent';
+import bolarityLogo from '@/assets/images/icon.png';
 
 interface HeaderProps {
   user: any;

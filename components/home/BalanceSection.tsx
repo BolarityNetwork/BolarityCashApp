@@ -1,7 +1,7 @@
 // components/PerfectVaultSavingsPlatform/components/BalanceSection.tsx
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import AnimatedNumber from '../../AnimatedNumber';
+import AnimatedNumber from '../AnimatedNumber';
 
 interface BalanceSectionProps {
   totalBalance: number;

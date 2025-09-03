@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
 } from 'react-native';
-import IconComponent from '../components/IconComponent';
+import IconComponent from '../home/IconComponent';
 
 interface ActionsMenuProps {
   visible: boolean;

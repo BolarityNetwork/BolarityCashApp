@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from 'react-native';
 import IconComponent from './IconComponent';
-import { useTransactionHistory } from '../../../hooks/useTransactionHistory';
+import { useTransactionHistory } from '../../hooks/useTransactionHistory';
 
 interface ActivityListProps {
   // 保持向后兼容，但现在从 hook 获取真实数据

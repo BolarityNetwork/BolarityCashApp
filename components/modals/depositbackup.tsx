@@ -14,15 +14,15 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ethers } from 'ethers';
-import ProtocolLogo from '../components/ProtocolLogo';
-import VaultLogo from '../components/VaultLogo';
+import ProtocolLogo from '../home/ProtocolLogo';
+import VaultLogo from '../home/VaultLogo';
 import {
   getProtocolFromVaultName,
   VaultProduct,
   VaultOption,
   TimeVaultOption,
 } from '../constants';
-import { useMultiChainWallet } from '../../../hooks/useMultiChainWallet';
+import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
 
 // AAVE集成类 - 重构版本
 class AAVEIntegration {
@@ -449,28 +449,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
     null
   );
   const initializationRef = useRef<boolean>(false);
-  const lastNetworkRef = useRef<string>('');
-  const lastAddressRef = useRef<string>('');
-  const balancesCacheRef = useRef<{
-    usdcBalance: string;
-    deposits: string;
-    timestamp: number;
-  } | null>(null);
-
-  // 🔧 防抖和缓存机制
-  const CACHE_DURATION = 30000; // 30秒缓存
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 🔧 检查缓存是否有效
-  const isCacheValid = useCallback(() => {
-    if (!balancesCacheRef.current) return false;
-    const now = Date.now();
-    return now - balancesCacheRef.current.timestamp < CACHE_DURATION;
-  }, []);
 
   // 🔧 修复后的初始化逻辑 - 防止无限循环
   const initializeAAVE = useCallback(async () => {
-    // 防止重复初始化
     if (initializationRef.current) {
       console.log('🔄 AAVE initialization already in progress, skipping...');
       return;
@@ -479,31 +460,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
     if (!hasEthereumWallet || !activeWallet?.address) {
       console.log('❌ No Ethereum wallet available');
       setNetworkError('Please connect an Ethereum wallet');
-      return;
-    }
-
-    // 检查是否真的需要重新初始化
-    const currentNetwork = getCurrentNetworkKey();
-    const currentAddress = activeWallet?.address || '';
-
-    if (
-      aaveInstance &&
-      lastNetworkRef.current === currentNetwork &&
-      lastAddressRef.current === currentAddress
-    ) {
-      console.log(
-        '🎯 AAVE already initialized for current network/address, skipping...'
-      );
-      // 如果有有效缓存，直接使用
-      if (isCacheValid()) {
-        console.log('📋 Using cached balances...');
-        const cache = balancesCacheRef.current!;
-        setUsdcBalance(cache.usdcBalance);
-        setCurrentDeposits(cache.deposits);
-        return;
-      }
-      // 否则只刷新余额
-      loadBalances();
       return;
     }
 
@@ -553,8 +509,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
       setAaveInstance(aave);
 
-      // 直接加载余额
-      await loadBalancesForInstance(aave);
+      // 加载余额
+      await loadBalances(aave);
     } catch (error) {
       console.error('❌ Failed to initialize AAVE:', error);
       setNetworkError(error.message);
@@ -569,130 +525,70 @@ const DepositModal: React.FC<DepositModalProps> = ({
     activeWallet?.address,
     getEthereumProvider,
     getCurrentNetworkKey,
-    aaveInstance,
-    isCacheValid,
   ]);
 
-  // 🔧 直接为特定实例加载余额
-  const loadBalancesForInstance = useCallback(async (aave: AAVEIntegration) => {
-    try {
-      console.log('💰 Loading balances for new instance...');
-
-      // 并行加载USDC余额和AAVE存款
-      const [usdcBal, deposits] = await Promise.all([
-        aave.getUSDCBalance(),
-        aave.getUserDeposits(),
-      ]);
-
-      const formattedUsdcBalance = parseFloat(usdcBal).toFixed(2);
-      const depositAmount = parseFloat(deposits.aTokenBalance);
-      const formattedDeposits =
-        depositAmount > 0 ? depositAmount.toFixed(2) : '0';
-
-      // 更新缓存
-      balancesCacheRef.current = {
-        usdcBalance: formattedUsdcBalance,
-        deposits: formattedDeposits,
-        timestamp: Date.now(),
-      };
-
-      setUsdcBalance(formattedUsdcBalance);
-      setCurrentDeposits(formattedDeposits);
-
-      console.log(
-        `✅ Balances loaded and cached for new instance - USDC: ${formattedUsdcBalance}, Deposits: ${formattedDeposits}`
-      );
-    } catch (error) {
-      console.error('❌ Failed to load balances for instance:', error);
-      setNetworkError(`Failed to load balances: ${error.message}`);
-    }
-  }, []);
-
-  // 🔧 加载余额的单独函数 - 带缓存和防抖
+  // 🔧 加载余额的单独函数
   const loadBalances = useCallback(
     async (aaveInstanceToUse?: AAVEIntegration) => {
       const aave = aaveInstanceToUse || aaveInstance;
       if (!aave) return;
 
-      // 如果传入了特定实例，直接加载
-      if (aaveInstanceToUse) {
-        await loadBalancesForInstance(aaveInstanceToUse);
-        return;
-      }
+      try {
+        console.log('💰 Loading balances...');
 
-      // 清除之前的防抖定时器
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
+        // 并行加载USDC余额和AAVE存款
+        const [usdcBal, deposits] = await Promise.all([
+          aave.getUSDCBalance(),
+          aave.getUserDeposits(),
+        ]);
 
-      // 检查缓存
-      if (isCacheValid()) {
-        console.log('📋 Using cached balances (loadBalances)...');
-        const cache = balancesCacheRef.current!;
-        setUsdcBalance(cache.usdcBalance);
-        setCurrentDeposits(cache.deposits);
-        return;
-      }
+        setUsdcBalance(parseFloat(usdcBal).toFixed(2));
 
-      // 防抖：延迟执行
-      debounceTimerRef.current = setTimeout(async () => {
-        await loadBalancesForInstance(aave);
-      }, 500); // 500ms 防抖
+        // 使用aToken余额作为主要显示
+        const depositAmount = parseFloat(deposits.aTokenBalance);
+        setCurrentDeposits(depositAmount > 0 ? depositAmount.toFixed(2) : '0');
+
+        console.log(
+          `✅ Balances loaded - USDC: ${usdcBal}, Deposits: ${deposits.aTokenBalance}`
+        );
+      } catch (error) {
+        console.error('❌ Failed to load balances:', error);
+        setNetworkError(`Failed to load balances: ${error.message}`);
+      }
     },
-    [aaveInstance, isCacheValid, loadBalancesForInstance]
+    [aaveInstance]
   );
 
   // 🔧 使用useEffect但限制触发条件
-  const currentNetworkKey = getCurrentNetworkKey();
-  const currentAddress = activeWallet?.address;
-
-  useEffect(() => {
-    if (visible && hasEthereumWallet && currentAddress) {
-      console.log('🎯 Modal opened, checking AAVE initialization...');
-      initializeAAVE();
-    }
-  }, [visible, hasEthereumWallet, currentAddress, initializeAAVE]);
-
-  // 🔧 清理定时器
-  useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
-
-  // 🔧 网络或地址变化时重置状态
   useEffect(() => {
     if (
       visible &&
-      (lastNetworkRef.current !== currentNetworkKey ||
-        lastAddressRef.current !== currentAddress)
+      hasEthereumWallet &&
+      activeWallet?.address &&
+      !aaveInstance
     ) {
-      console.log(
-        `🔄 Network/Address changed from ${lastNetworkRef.current}/${lastAddressRef.current} to ${currentNetworkKey}/${currentAddress}`
-      );
+      console.log('🎯 Modal opened, initializing AAVE...');
+      initializeAAVE();
+    }
+  }, [visible, hasEthereumWallet, activeWallet?.address, initializeAAVE]);
 
-      // 清理现有状态
+  // 🔧 网络变化时重新初始化
+  useEffect(() => {
+    if (aaveInstance && visible) {
+      const currentNetwork = getCurrentNetworkKey();
+      console.log(`🔄 Network changed to: ${currentNetwork}`);
+
+      // 重置状态并重新初始化
       setAaveInstance(null);
       initializationRef.current = false;
-      balancesCacheRef.current = null;
-
-      // 更新refs
-      lastNetworkRef.current = currentNetworkKey;
-      lastAddressRef.current = currentAddress || '';
-
-      // 重新初始化
-      if (currentAddress) {
-        initializeAAVE();
-      }
+      initializeAAVE();
     }
-  }, [visible, currentNetworkKey, currentAddress, initializeAAVE]);
+  }, [getCurrentNetworkKey(), visible]);
 
-  // 🔧 处理存款 - 全英文版本
+  // 处理存款
   const handleDeposit = useCallback(async () => {
     if (!aaveInstance || !depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid deposit amount');
+      Alert.alert('错误', '请输入有效的存款金额');
       return;
     }
 
@@ -701,8 +597,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
     if (amount > availableBalance) {
       Alert.alert(
-        'Insufficient Balance',
-        `You only have ${usdcBalance} USDC, cannot deposit ${depositAmount} USDC`
+        '余额不足',
+        `您只有 ${usdcBalance} USDC，无法存入 ${depositAmount} USDC`
       );
       return;
     }
@@ -715,40 +611,39 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
       if (result.success) {
         Alert.alert(
-          'Deposit Successful!',
-          `Successfully deposited ${depositAmount} USDC to AAVE\n\nTransaction Hash: ${result.transactionHash?.substring(0, 10)}...`,
+          '存款成功！',
+          `已成功存入 ${depositAmount} USDC 到 AAVE\n\n交易哈希: ${result.transactionHash?.substring(0, 10)}...`,
           [
             {
-              text: 'View Transaction',
+              text: '查看交易',
               onPress: () => {
-                const explorerUrl = `https://basescan.org/tx/${result.transactionHash}`;
-                console.log(`🔗 Opening explorer: ${explorerUrl}`);
+                // 这里可以添加打开区块浏览器的逻辑
+                console.log(`🔗 Transaction: ${result.transactionHash}`);
               },
             },
-            { text: 'OK' },
+            { text: '确定' },
           ]
         );
 
         setDepositAmount('');
 
-        // 清除缓存并刷新余额
-        balancesCacheRef.current = null;
+        // 刷新余额
         await loadBalances();
       } else {
-        Alert.alert('Deposit Failed', result.error || 'Unknown error');
+        Alert.alert('存款失败', result.error || '未知错误');
       }
     } catch (error) {
       console.error('❌ Deposit error:', error);
-      Alert.alert('Deposit Failed', error.message);
+      Alert.alert('存款失败', error.message);
     } finally {
       setIsLoading(false);
     }
   }, [aaveInstance, depositAmount, usdcBalance, loadBalances]);
 
-  // 🔧 处理提取 - 全英文版本
+  // 处理提取
   const handleWithdraw = useCallback(async () => {
     if (!aaveInstance || !depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid withdrawal amount');
+      Alert.alert('错误', '请输入有效的提取金额');
       return;
     }
 
@@ -757,64 +652,69 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
     if (amount > availableDeposits) {
       Alert.alert(
-        'Insufficient Deposits',
-        `You only have ${currentDeposits} USDC deposited, cannot withdraw ${depositAmount} USDC`
+        '存款不足',
+        `您只有 ${currentDeposits} USDC 存款，无法提取 ${depositAmount} USDC`
       );
       return;
     }
 
-    Alert.alert(
-      'Confirm Withdrawal',
-      `Are you sure you want to withdraw ${depositAmount} USDC?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              console.log(`💸 Withdrawing ${depositAmount} USDC...`);
+    Alert.alert('确认提取', `确定要提取 ${depositAmount} USDC 吗？`, [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '确认',
+        onPress: async () => {
+          setIsLoading(true);
+          try {
+            console.log(`💸 Withdrawing ${depositAmount} USDC...`);
 
-              const result = await aaveInstance.withdraw(depositAmount);
+            const result = await aaveInstance.withdraw(depositAmount);
 
-              if (result.success) {
-                Alert.alert(
-                  'Withdrawal Successful!',
-                  `Successfully withdrew ${depositAmount} USDC\n\nTransaction Hash: ${result.transactionHash?.substring(0, 10)}...`,
-                  [
-                    {
-                      text: 'View Transaction',
-                      onPress: () => {
-                        const explorerUrl = `https://basescan.org/tx/${result.transactionHash}`;
-                        console.log(`🔗 Opening explorer: ${explorerUrl}`);
-                      },
+            if (result.success) {
+              Alert.alert(
+                '提取成功！',
+                `已成功提取 ${depositAmount} USDC\n\n交易哈希: ${result.transactionHash?.substring(0, 10)}...`,
+                [
+                  {
+                    text: '查看交易',
+                    onPress: () => {
+                      console.log(`🔗 Transaction: ${result.transactionHash}`);
                     },
-                    { text: 'OK' },
-                  ]
-                );
+                  },
+                  { text: '确定' },
+                ]
+              );
 
-                setDepositAmount('');
+              setDepositAmount('');
 
-                // 清除缓存并刷新余额
-                balancesCacheRef.current = null;
-                await loadBalances();
-              } else {
-                Alert.alert(
-                  'Withdrawal Failed',
-                  result.error || 'Unknown error'
-                );
-              }
-            } catch (error) {
-              console.error('❌ Withdrawal error:', error);
-              Alert.alert('Withdrawal Failed', error.message);
-            } finally {
-              setIsLoading(false);
+              // 刷新余额
+              await loadBalances();
+            } else {
+              Alert.alert('提取失败', result.error || '未知错误');
             }
-          },
+          } catch (error) {
+            console.error('❌ Withdrawal error:', error);
+            Alert.alert('提取失败', error.message);
+          } finally {
+            setIsLoading(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, [aaveInstance, depositAmount, currentDeposits, loadBalances]);
+
+  // 快速金额设置
+  const handleQuickAmount = useCallback(
+    (percentage: number) => {
+      const maxAmount =
+        percentage === 100
+          ? parseFloat(usdcBalance)
+          : Math.min(parseFloat(usdcBalance), parseFloat(currentDeposits));
+
+      const amount = maxAmount * (percentage / 100);
+      setDepositAmount(amount > 0 ? amount.toFixed(2) : '0');
+    },
+    [usdcBalance, currentDeposits]
+  );
 
   if (!visible || (!selectedVault && !selectedSpecificVault)) {
     return null;
@@ -950,94 +850,28 @@ const DepositModal: React.FC<DepositModalProps> = ({
             </LinearGradient>
           )}
 
-          {/* 恢复原本的功能描述 */}
-          <View style={styles.depositFeatures}>
-            <Text style={styles.depositFeaturesTitle}>
-              {isTimeVault
-                ? 'Vault Features:'
-                : isSpecificVault
-                  ? 'Protocol Features:'
-                  : 'Key Features:'}
-            </Text>
-            {isTimeVault
-              ? [
-                  'Fixed-term guaranteed returns',
-                  'No early withdrawal penalty',
-                  'Automated yield optimization',
-                  'Institutional-grade security',
-                ].map((feature, index) => (
-                  <View key={index} style={styles.depositFeatureItem}>
-                    <View
-                      style={[
-                        styles.depositFeatureDot,
-                        { backgroundColor: '#667eea' },
-                      ]}
-                    />
-                    <Text style={styles.depositFeatureText}>{feature}</Text>
-                  </View>
-                ))
-              : isSpecificVault
-                ? [
-                    'Flexible access anytime',
-                    'Auto-compounding rewards',
-                    'Audited smart contracts',
-                    '24/7 yield optimization',
-                  ].map((feature, index) => (
-                    <View key={index} style={styles.depositFeatureItem}>
-                      <View
-                        style={[
-                          styles.depositFeatureDot,
-                          { backgroundColor: '#764ba2' },
-                        ]}
-                      />
-                      <Text style={styles.depositFeatureText}>{feature}</Text>
-                    </View>
-                  ))
-                : (displayVault as VaultProduct).features.map(
-                    (feature, index) => (
-                      <View key={index} style={styles.depositFeatureItem}>
-                        <View
-                          style={[
-                            styles.depositFeatureDot,
-                            { backgroundColor: '#c084fc' },
-                          ]}
-                        />
-                        <Text style={styles.depositFeatureText}>{feature}</Text>
-                      </View>
-                    )
-                  )}
-          </View>
+          {/* 🆕 改进的余额显示 */}
+          <View style={styles.balanceSection}>
+            <Text style={styles.balanceSectionTitle}>Account Overview</Text>
 
-          {/* 原本的余额和输入区域 */}
-          <View style={styles.depositSummary}>
-            <View style={styles.depositSummaryRow}>
-              <Text style={styles.depositSummaryLabel}>
-                USDC Wallet Balance
-              </Text>
-              <View style={styles.depositAmountContainer}>
+            <View style={styles.balanceRow}>
+              <Text style={styles.balanceLabel}>USDC Wallet Balance</Text>
+              <View style={styles.balanceValueContainer}>
                 {loadingBalance ? (
                   <ActivityIndicator size="small" color="#111827" />
                 ) : (
-                  <Text style={styles.depositSummaryAmount}>
-                    ${usdcBalance}
-                  </Text>
+                  <Text style={styles.balanceValue}>${usdcBalance}</Text>
                 )}
               </View>
             </View>
-            <View style={styles.depositSummaryRow}>
-              <Text style={styles.depositSummaryLabel}>
-                AAVE Deposit Amount
-              </Text>
-              <View style={styles.depositAmountContainer}>
+
+            <View style={styles.balanceRow}>
+              <Text style={styles.balanceLabel}>AAVE Deposits</Text>
+              <View style={styles.balanceValueContainer}>
                 {loadingBalance ? (
                   <ActivityIndicator size="small" color="#111827" />
-                ) : networkError ? (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.depositSummaryAmount}>$0</Text>
-                    <Text style={styles.errorText}>⚠️ Network issue</Text>
-                  </View>
                 ) : (
-                  <Text style={styles.depositSummaryAmount}>
+                  <Text style={[styles.balanceValue, { color: '#059669' }]}>
                     ${currentDeposits}
                   </Text>
                 )}
@@ -1045,54 +879,119 @@ const DepositModal: React.FC<DepositModalProps> = ({
             </View>
           </View>
 
-          {/* 输入框 */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.amountInput}
-              value={depositAmount}
-              onChangeText={setDepositAmount}
-              placeholder="Enter USDC amount"
-              keyboardType="numeric"
-              placeholderTextColor="#9ca3af"
-            />
+          {/* 🆕 改进的输入区域 */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputSectionTitle}>Transaction Amount</Text>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>USDC Amount</Text>
+              <TextInput
+                style={styles.amountInput}
+                value={depositAmount}
+                onChangeText={setDepositAmount}
+                placeholder="0.00"
+                keyboardType="numeric"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            {/* 🆕 快速金额选择 */}
+            <View style={styles.quickAmountContainer}>
+              <Text style={styles.quickAmountLabel}>Quick Select:</Text>
+              <View style={styles.quickAmountButtons}>
+                {[25, 50, 75, 100].map(percentage => (
+                  <TouchableOpacity
+                    key={percentage}
+                    style={styles.quickAmountButton}
+                    onPress={() => handleQuickAmount(percentage)}
+                  >
+                    <Text style={styles.quickAmountButtonText}>
+                      {percentage}%
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           </View>
 
           {/* 🔧 改进的错误提示 */}
           {networkError && (
             <View style={styles.networkErrorContainer}>
+              <Text style={styles.networkErrorIcon}>⚠️</Text>
               <Text style={styles.networkErrorText}>{networkError}</Text>
             </View>
           )}
 
+          {/* 🆕 改进的操作按钮 */}
           <View style={styles.depositActions}>
             <TouchableOpacity
               style={[
-                styles.learnMoreButton,
-                (isLoading || networkError) && styles.disabledButton,
+                styles.actionButton,
+                styles.withdrawButton,
+                (isLoading ||
+                  !!networkError ||
+                  parseFloat(currentDeposits) <= 0) &&
+                  styles.disabledButton,
               ]}
               onPress={handleWithdraw}
-              disabled={isLoading || !!networkError}
+              disabled={
+                isLoading || !!networkError || parseFloat(currentDeposits) <= 0
+              }
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color="#374151" />
+                <ActivityIndicator size="small" color="#dc2626" />
               ) : (
-                <Text style={styles.learnMoreText}>Withdraw</Text>
+                <>
+                  <Text style={styles.withdrawButtonIcon}>💸</Text>
+                  <Text style={styles.withdrawButtonText}>Withdraw</Text>
+                </>
               )}
             </TouchableOpacity>
+
             <TouchableOpacity
               style={[
-                styles.startSavingButton,
-                (isLoading || networkError) && styles.disabledButton,
+                styles.actionButton,
+                styles.depositButton,
+                (isLoading || !!networkError || parseFloat(usdcBalance) <= 0) &&
+                  styles.disabledButton,
               ]}
               onPress={handleDeposit}
-              disabled={isLoading || !!networkError}
+              disabled={
+                isLoading || !!networkError || parseFloat(usdcBalance) <= 0
+              }
             >
               {isLoading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.startSavingText}>Start Saving</Text>
+                <>
+                  <Text style={styles.depositButtonIcon}>💰</Text>
+                  <Text style={styles.depositButtonText}>Deposit</Text>
+                </>
               )}
             </TouchableOpacity>
+          </View>
+
+          {/* 🆕 功能说明 */}
+          <View style={styles.infoSection}>
+            <Text style={styles.infoTitle}>How it works:</Text>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoBullet}>•</Text>
+              <Text style={styles.infoText}>
+                Deposit USDC to earn yield through AAVE protocol
+              </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoBullet}>•</Text>
+              <Text style={styles.infoText}>
+                Your deposits are secured by AAVE's audited smart contracts
+              </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoBullet}>•</Text>
+              <Text style={styles.infoText}>
+                Withdraw anytime with no lock-up period
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -1186,122 +1085,144 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  // 功能描述样式
-  depositFeatures: {
+  // 🆕 余额部分
+  balanceSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  depositFeaturesTitle: {
+  balanceSectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#111827',
     marginBottom: 16,
   },
-  depositFeatureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  depositFeatureDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#667eea',
-    marginRight: 12,
-  },
-  depositFeatureText: {
-    fontSize: 14,
-    color: '#374151',
-  },
-
-  // 原本的存款汇总样式
-  depositSummary: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-  },
-  depositSummaryRow: {
+  balanceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  depositSummaryLabel: {
+  balanceLabel: {
     fontSize: 14,
-    color: '#374151',
+    color: '#6b7280',
   },
-  depositSummaryAmount: {
-    fontSize: 16,
-    fontWeight: '600',
+  balanceValueContainer: {
+    alignItems: 'flex-end',
+  },
+  balanceValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#111827',
   },
-  depositSummaryMaturity: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2563eb',
+
+  // 🆕 输入部分
+  inputSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  depositSummaryReturn: {
+  inputSectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#059669',
+    color: '#111827',
+    marginBottom: 16,
   },
-  depositAmountContainer: {
-    alignItems: 'flex-end',
-  },
-  errorContainer: {
-    alignItems: 'flex-end',
-  },
-  errorText: {
-    fontSize: 12,
-    color: '#ef4444',
-    marginTop: 2,
-  },
-
-  // 输入框样式
   inputContainer: {
     marginBottom: 16,
   },
+  inputLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
   amountInput: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f9fafb',
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     color: '#111827',
+    textAlign: 'right',
   },
 
-  // 操作按钮样式
-  depositActions: {
-    flexDirection: 'row',
-    gap: 12,
+  // 🆕 快速选择按钮
+  quickAmountContainer: {
+    marginTop: 12,
   },
-  learnMoreButton: {
+  quickAmountLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  quickAmountButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  quickAmountButton: {
     flex: 1,
     backgroundColor: '#f3f4f6',
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderRadius: 8,
+    paddingVertical: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  learnMoreText: {
-    fontSize: 16,
+  quickAmountButtonText: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#374151',
   },
-  startSavingButton: {
+
+  // 🆕 操作按钮
+  depositActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  actionButton: {
     flex: 1,
-    backgroundColor: '#111827',
     borderRadius: 16,
     paddingVertical: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-  startSavingText: {
+  depositButton: {
+    backgroundColor: '#059669',
+  },
+  depositButtonIcon: {
+    fontSize: 16,
+  },
+  depositButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
+  withdrawButton: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#dc2626',
+  },
+  withdrawButtonIcon: {
+    fontSize: 16,
+  },
+  withdrawButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#dc2626',
+  },
   disabledButton: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 
   // 🔧 错误提示
@@ -1312,11 +1233,50 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#fecaca',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  networkErrorIcon: {
+    fontSize: 18,
+    marginRight: 8,
   },
   networkErrorText: {
     fontSize: 14,
     color: '#dc2626',
     lineHeight: 20,
+    flex: 1,
+  },
+
+  // 🆕 信息部分
+  infoSection: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  infoBullet: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginRight: 8,
+    marginTop: 2,
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#6b7280',
+    lineHeight: 18,
+    flex: 1,
   },
 });
 

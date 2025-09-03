@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import ProtocolLogo from '../components/ProtocolLogo';
+import ProtocolLogo from '../home/ProtocolLogo';
 import { VaultOption } from '../constants';
 
 interface VaultSelectionModalProps {

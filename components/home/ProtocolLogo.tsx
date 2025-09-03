@@ -1,7 +1,7 @@
 // components/PerfectVaultSavingsPlatform/components/ProtocolLogo.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { PROTOCOL_LOGOS, PROTOCOL_FALLBACK_ICONS } from '../assets/logos';
+import { PROTOCOL_LOGOS, PROTOCOL_FALLBACK_ICONS } from '@/utils/home';
 
 interface ProtocolLogoProps {
   protocol: string;
@@ -17,8 +17,10 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const logoSrc = PROTOCOL_LOGOS[protocol];
-  const fallbackLogo = PROTOCOL_FALLBACK_ICONS[protocol] || '📦';
+  const logoSrc = PROTOCOL_LOGOS[protocol as keyof typeof PROTOCOL_LOGOS];
+  const fallbackLogo =
+    PROTOCOL_FALLBACK_ICONS[protocol as keyof typeof PROTOCOL_FALLBACK_ICONS] ||
+    '📦';
 
   // 重置错误状态当protocol改变时
   useEffect(() => {

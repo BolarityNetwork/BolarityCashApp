@@ -1,7 +1,7 @@
 // components/PerfectVaultSavingsPlatform/components/VaultLogo.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { VAULT_LOGOS, VAULT_FALLBACK_ICONS } from '../assets/logos';
+import { VAULT_LOGOS, VAULT_FALLBACK_ICONS } from '@/utils/home';
 
 interface VaultLogoProps {
   vaultName: string;
@@ -17,8 +17,10 @@ const VaultLogo: React.FC<VaultLogoProps> = ({
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const logoSrc = VAULT_LOGOS[vaultName];
-  const fallbackIcon = VAULT_FALLBACK_ICONS[vaultName] || '💼';
+  const logoSrc = VAULT_LOGOS[vaultName as keyof typeof VAULT_LOGOS];
+  const fallbackIcon =
+    VAULT_FALLBACK_ICONS[vaultName as keyof typeof VAULT_FALLBACK_ICONS] ||
+    '💼';
 
   useEffect(() => {
     setImageError(false);

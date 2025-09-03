@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getBarHeight } from '../constants';
+import { getBarHeight } from '@/utils/home';
 
 const ChartSection: React.FC = () => {
   const dates = ['20 Apr', '21 Apr', '22 Apr', '23 Apr', '24 Apr'];

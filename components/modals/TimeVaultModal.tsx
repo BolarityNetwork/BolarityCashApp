@@ -9,8 +9,9 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import ProtocolLogo from '../components/ProtocolLogo';
-import { TimeVaultOption, getProtocolFromVaultName } from '../constants';
+import ProtocolLogo from '@/components/home/ProtocolLogo';
+import { getProtocolFromVaultName } from '@/utils/home';
+import { TimeVaultOption } from '@/interfaces/home';
 
 interface TimeVaultModalProps {
   visible: boolean;
@@ -54,7 +55,7 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
               >
                 <View style={styles.modalVaultLeft}>
                   <ProtocolLogo
-                    protocol={getProtocolFromVaultName(vault.name)}
+                    protocol={getProtocolFromVaultName(vault.name as string)}
                     size={40}
                   />
                   <View style={styles.modalVaultInfo}>
