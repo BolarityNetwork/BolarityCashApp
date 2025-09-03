@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
-import { styles } from '../styles';
+import { styles } from './styles';
 
 interface LoginButtonProps {
   icon: string;

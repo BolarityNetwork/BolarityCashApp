@@ -1,7 +1,7 @@
 // app/index.tsx
 import { SafeAreaView, Text, View, StyleSheet } from 'react-native';
 import Constants from 'expo-constants';
-import LoginScreen from '@/components/LoginScreen';
+import LoginScreen from '@/app/login';
 import { usePrivy } from '@privy-io/expo';
 import { RedesignedMainNavigation } from '@/components/RedesignedMainNavigation';
 import { LinearGradient } from 'expo-linear-gradient';

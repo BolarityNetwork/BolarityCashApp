@@ -25,21 +25,21 @@ import { ProfileHeader } from '@/components/profile/components/ProfileHeader';
 import { QuickAction } from '@/components/profile/components/QuickAction';
 import { BaseModal } from '@/components/profile/components/BaseModal';
 import { formatAddress, toMainIdentifier } from '@/utils/profile';
-import { styles } from '@/components/Profile/styles';
+import { styles } from '@/components/profile/styles';
 import { WalletCard } from '@/components/profile/components/WalletCard';
 
 // Provider icon logos
 let ethereumProviderLogo: any, solanaProviderLogo: any;
 
 try {
-  ethereumProviderLogo = require('../../assets/logos/ethereum.png');
+  ethereumProviderLogo = require('@/assets/logos/ethereum.png');
 } catch (e) {
   console.warn('❌ Ethereum provider logo not found:', e);
   ethereumProviderLogo = null;
 }
 
 try {
-  solanaProviderLogo = require('../../assets/logos/solana.png');
+  solanaProviderLogo = require('@/assets/logos/solana.png');
 } catch (e) {
   console.warn('❌ Solana provider logo not found:', e);
   solanaProviderLogo = null;

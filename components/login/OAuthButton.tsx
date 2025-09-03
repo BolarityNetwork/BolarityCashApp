@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { styles } from '../styles';
+import { styles } from './styles';
 
 interface OAuthButtonProps {
   provider: {

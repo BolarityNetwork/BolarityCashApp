@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { WalletLogo } from './WalletLogo';
+import { WalletLogo } from '@/components/profile/components/WalletLogo';
 import { WalletCardProps } from '@/interfaces/profile';
-import { formatAddress } from '../utils';
+import { formatAddress } from '@/utils/profile';
 
 export const WalletCard: React.FC<WalletCardProps> = ({
   wallet,
