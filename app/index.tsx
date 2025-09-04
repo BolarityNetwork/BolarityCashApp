@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Buffer } from 'buffer';
 import { useEffect } from 'react';
 import * as Updates from 'expo-updates';
-import UpdateModal from '@/components/UpdateModal';
+import UpdateModal from '@/components/modals/UpdateModal';
 import { useUpdateModal } from '@/hooks/useUpdateModal';
 global.Buffer = Buffer;
 
