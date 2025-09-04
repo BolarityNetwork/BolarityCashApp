@@ -17,7 +17,7 @@ import {
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { useWalletActions } from '@/hooks/profile/useWalletActions';
 import { WalletLogo } from '@/components/profile/components/WalletLogo';
