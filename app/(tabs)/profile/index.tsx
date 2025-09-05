@@ -146,7 +146,10 @@ export default function ProfileScreen() {
   };
 
   return (
-    <CommonSafeAreaView className="flex-1 bg-slate-50">
+    <CommonSafeAreaView
+      className="flex-1 bg-slate-50"
+      isIncludeBottomBar={true}
+    >
       <ProfileHeader onSettingsPress={() => router.push('/settings')} />
 
       <ScrollView

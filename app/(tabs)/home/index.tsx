@@ -1,12 +1,6 @@
 // components/PerfectVaultSavingsPlatform/index.tsx
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  ScrollView,
-  StatusBar,
-  Animated,
-  SafeAreaView,
-} from 'react-native';
+import { View, ScrollView, StatusBar, Animated } from 'react-native';
 import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
 
@@ -27,6 +21,7 @@ import ActionsMenu from '@/components/modals/ActionsMenu';
 import { vaultOptions, timeVaultOptions, vaultProducts } from '@/utils/home';
 
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
+import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
@@ -161,29 +156,24 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <CommonSafeAreaView className="flex-1 bg-gray-50" isIncludeBottomBar={true}>
       <StatusBar barStyle="light-content" backgroundColor="#667eea" />
 
-      {/* Fixed Header */}
-      <View className="absolute top-0 left-0 right-0 bg-white z-20 shadow-lg">
-        <SafeAreaView>
-          <Header
-            user={user}
-            currentWalletInfo={currentWalletInfo}
-            formatAddress={formatAddress}
-          />
-          <BalanceSection
-            totalBalance={totalBalance}
-            todayEarnings={todayEarnings}
-            monthlyEarnings={monthlyEarnings}
-          />
-        </SafeAreaView>
-      </View>
+      <Header
+        user={user}
+        currentWalletInfo={currentWalletInfo}
+        formatAddress={formatAddress}
+      />
+      <BalanceSection
+        totalBalance={totalBalance}
+        todayEarnings={todayEarnings}
+        monthlyEarnings={monthlyEarnings}
+      />
 
       {/* Scrollable Content */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingTop: 250, paddingBottom: 10 }}
+        contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Chart */}
@@ -233,7 +223,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         selectedSpecificVault={selectedSpecificVault}
         onClose={() => setShowDepositModal(false)}
       />
-    </View>
+    </CommonSafeAreaView>
   );
 };
 
