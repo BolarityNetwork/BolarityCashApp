@@ -12,11 +12,6 @@ import {
 } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
 import '@/i18n';
-import UpdateModal from '@/components/modals/UpdateModal';
-import { useUpdateModal } from '@/hooks/useUpdateModal';
-import { useEffect } from 'react';
-import { checkForUpdate } from '@/utils/updates';
-import { useUpdateStore } from '@/hooks/store/useUpdateStore';
 
 export default function RootLayout() {
   useFonts({
@@ -24,23 +19,6 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
   });
-  const { isVisible, updateInfo, hideUpdateModal, handleUpdate } =
-    useUpdateModal();
-  const { setExpoUpdateInfo } = useUpdateStore();
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkForUpdate?.().then(res => {
-        if (res?.isAvailable) {
-          setExpoUpdateInfo(res);
-        }
-      });
-    }, 60000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [checkForUpdate]);
 
   return (
     <PrivyProvider
@@ -49,21 +27,10 @@ export default function RootLayout() {
     >
       <MultiChainWalletProvider>
         <ThemeProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              statusBarStyle: 'light',
-              statusBarTranslucent: true,
-              statusBarBackgroundColor: 'transparent',
-            }}
-          ></Stack>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
           <PrivyElements />
-          <UpdateModal
-            visible={isVisible}
-            updateInfo={updateInfo}
-            onUpdate={handleUpdate}
-            onClose={hideUpdateModal}
-          />
         </ThemeProvider>
       </MultiChainWalletProvider>
     </PrivyProvider>

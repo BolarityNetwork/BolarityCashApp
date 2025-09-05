@@ -128,17 +128,6 @@ export default function ProfileScreen() {
   const profileState = useProfileState();
   const walletActions = useWalletActions();
 
-  if (!user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-slate-50">
-        <ActivityIndicator size="large" color="#667eea" />
-        <Text className="text-base text-slate-500 mt-3">
-          Loading profile...
-        </Text>
-      </View>
-    );
-  }
-
   const handleWalletAction = (actionType: 'sign' | 'sendTx' | 'signTx') => {
     profileState.setLoading(true);
 
