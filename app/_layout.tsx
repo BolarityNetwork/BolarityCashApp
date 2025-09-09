@@ -27,7 +27,7 @@ export default function RootLayout() {
     >
       <MultiChainWalletProvider>
         <ThemeProvider>
-          <Stack>
+          <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
           <PrivyElements />
