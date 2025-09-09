@@ -24,8 +24,6 @@ export function usePersistedPrivyUser() {
   useEffect(() => {
     if (user) {
       setCachedUser(user);
-    } else if (cachedUser) {
-      clearUser();
     }
   }, [user, cachedUser, setCachedUser, clearUser]);
 

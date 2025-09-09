@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { ErrorDisplay } from '@/components/login/ErrorDisplay';
+import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
+import { Redirect } from 'expo-router';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -42,6 +44,11 @@ export default function LoginScreen() {
     handlePasskeyLogin,
     handleOAuthLogin,
   } = useAuth();
+  const { user } = usePersistedPrivyUser();
+
+  if (user) {
+    return <Redirect href="/(tabs)/home" />;
+  }
 
   return (
     <>
