@@ -26,6 +26,7 @@ import { BaseModal } from '@/components/profile/components/BaseModal';
 import { formatAddress, toMainIdentifier } from '@/utils/profile';
 import { WalletCard } from '@/components/profile/components/WalletCard';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
+import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 
 // Provider icon logos
 let ethereumProviderLogo: any, solanaProviderLogo: any;
@@ -103,7 +104,8 @@ export function getProviderIcon(
 }
 
 export default function ProfileScreen() {
-  const { logout, user } = usePrivy();
+  const { logout } = usePrivy();
+  const { user: persistedUser } = usePersistedPrivyUser();
   const { linkWithPasskey } = useLinkWithPasskey();
   const oauth = useLinkWithOAuth();
   const { create } = useEmbeddedEthereumWallet();
@@ -165,8 +167,8 @@ export default function ProfileScreen() {
               className="w-25 h-25 rounded-full items-center justify-center shadow-lg"
             >
               <Text className="text-4xl font-bold text-white">
-                {user.email?.address
-                  ? user.email.address.charAt(0).toUpperCase()
+                {persistedUser?.email?.address
+                  ? persistedUser.email.address.charAt(0).toUpperCase()
                   : '👤'}
               </Text>
             </LinearGradient>
@@ -176,10 +178,10 @@ export default function ProfileScreen() {
           </View>
 
           <Text className="text-2xl font-bold text-slate-800 text-center mb-1">
-            {user.email?.address || 'Bolarity User'}
+            {persistedUser?.email?.address || 'Bolarity User'}
           </Text>
           <Text className="text-sm text-slate-500 font-mono mb-4">
-            ID: {formatAddress(user.id)}
+            ID: {formatAddress(persistedUser?.id)}
           </Text>
 
           {/* Current Wallet Display */}
@@ -226,7 +228,7 @@ export default function ProfileScreen() {
           <View className="flex-row items-center bg-slate-50 rounded-2xl py-4 px-6 border border-slate-200">
             <View className="items-center flex-1">
               <Text className="text-xl font-bold text-indigo-500">
-                {user.linked_accounts.length}
+                {persistedUser?.linked_accounts.length}
               </Text>
               <Text className="text-xs text-slate-500 mt-0.5">Accounts</Text>
             </View>
@@ -537,7 +539,7 @@ export default function ProfileScreen() {
               </Text>
               <View className="bg-indigo-500 rounded-lg px-2 py-0.5 ml-2">
                 <Text className="text-xs font-bold text-white">
-                  {user.linked_accounts.length}
+                  {persistedUser?.linked_accounts.length}
                 </Text>
               </View>
             </View>
@@ -548,35 +550,39 @@ export default function ProfileScreen() {
 
           {profileState.expandedSection === 'accounts' && (
             <View className="px-5 pb-5">
-              {user.linked_accounts.slice(0, 3).map((accountItem, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center py-3 border-b border-slate-50"
-                >
-                  <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                    {getProviderIcon(accountItem.type, 18)}
+              {persistedUser?.linked_accounts
+                .slice(0, 3)
+                .map((accountItem, index) => (
+                  <View
+                    key={index}
+                    className="flex-row items-center py-3 border-b border-slate-50"
+                  >
+                    <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
+                      {getProviderIcon(accountItem.type, 18)}
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-slate-800 capitalize">
+                        {accountItem.type
+                          .replace('_oauth', '')
+                          .replace('_', ' ')}
+                      </Text>
+                      <Text className="text-xs text-slate-500 mt-0.5">
+                        {toMainIdentifier(accountItem)}
+                      </Text>
+                    </View>
+                    <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
+                      <Text className="text-xs text-white font-bold">✓</Text>
+                    </View>
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-sm font-semibold text-slate-800 capitalize">
-                      {accountItem.type.replace('_oauth', '').replace('_', ' ')}
-                    </Text>
-                    <Text className="text-xs text-slate-500 mt-0.5">
-                      {toMainIdentifier(accountItem)}
-                    </Text>
-                  </View>
-                  <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
-                    <Text className="text-xs text-white font-bold">✓</Text>
-                  </View>
-                </View>
-              ))}
+                ))}
 
-              {user.linked_accounts.length > 3 && (
+              {persistedUser?.linked_accounts.length > 3 && (
                 <TouchableOpacity
                   className="mt-3 py-2 items-center"
                   onPress={() => profileState.openModal('accounts')}
                 >
                   <Text className="text-sm font-semibold text-indigo-500">
-                    View All ({user.linked_accounts.length})
+                    View All ({persistedUser?.linked_accounts.length})
                   </Text>
                 </TouchableOpacity>
               )}
@@ -902,7 +908,7 @@ export default function ProfileScreen() {
         onClose={profileState.closeModal}
         title="All Connected Accounts"
       >
-        {user.linked_accounts.map((accountItem, index) => (
+        {persistedUser?.linked_accounts.map((accountItem, index) => (
           <View
             key={index}
             className="flex-row items-center py-3 border-b border-slate-50"
