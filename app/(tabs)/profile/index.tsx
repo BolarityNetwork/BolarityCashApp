@@ -8,14 +8,10 @@ import {
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  usePrivy,
-  useLinkWithOAuth,
-  useEmbeddedEthereumWallet,
-} from '@privy-io/expo';
+import { useLinkWithOAuth, useEmbeddedEthereumWallet } from '@privy-io/expo';
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
 import Constants from 'expo-constants';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { useWalletActions } from '@/hooks/profile/useWalletActions';
@@ -104,13 +100,11 @@ export function getProviderIcon(
 }
 
 export default function ProfileScreen() {
-  const { logout } = usePrivy();
-  const { user: persistedUser } = usePersistedPrivyUser();
+  const { user: persistedUser, logout } = usePersistedPrivyUser();
   const { linkWithPasskey } = useLinkWithPasskey();
   const oauth = useLinkWithOAuth();
   const { create } = useEmbeddedEthereumWallet();
   const router = useRouter();
-
   const {
     activeWalletType,
     activeWallet,
@@ -146,6 +140,9 @@ export default function ProfileScreen() {
       profileState.setLoading(false);
     });
   };
+  if (!persistedUser) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <CommonSafeAreaView

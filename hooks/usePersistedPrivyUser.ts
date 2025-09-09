@@ -1,40 +1,38 @@
 // hooks/usePersistedPrivyUser.ts
-import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect } from 'react';
 import { usePrivy } from '@privy-io/expo';
-
-const STORAGE_KEY = 'cached_user';
+import { useUserStore } from './store/useUserStore';
+import { router } from 'expo-router';
 
 export function usePersistedPrivyUser() {
-  const { user, isReady } = usePrivy();
-  const [cachedUser, setCachedUser] = useState<any>(null);
-  const [hydrated, setHydrated] = useState(false);
+  const { user, isReady, logout: privyLogout } = usePrivy();
+  const { cachedUser, hydrated, setCachedUser, setHydrated, clearUser } =
+    useUserStore();
+
+  const logout = useCallback(() => {
+    privyLogout();
+    clearUser();
+    router.replace('/login');
+  }, [privyLogout, clearUser]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then(data => {
-      if (data) {
-        try {
-          setCachedUser(JSON.parse(data));
-        } catch {
-          setCachedUser(null);
-        }
-      }
+    if (!hydrated) {
       setHydrated(true);
-    });
-  }, []);
+    }
+  }, [hydrated, setHydrated]);
 
   useEffect(() => {
     if (user) {
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
       setCachedUser(user);
-    } else {
-      setCachedUser(null);
+    } else if (cachedUser) {
+      clearUser();
     }
-  }, [user]);
+  }, [user, cachedUser, setCachedUser, clearUser]);
 
   return {
     isReady,
     hydrated,
     user: user || cachedUser,
+    logout,
   };
 }
