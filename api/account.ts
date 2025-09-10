@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { DEFAULT_CACHE_TIME, EndpointEnum } from '@/lib/endpoint';
 
-import { axiosToken } from './index';
+import { axios } from './index';
 
 // Types for the coins API response
 export interface CoinData {
@@ -26,15 +26,19 @@ export interface CoinsByAddressResponse {
 export const getCoinsByAddress = async (
   network: string,
   address: string,
-  platforms: string
+  platforms: string | string[]
 ): Promise<CoinsByAddressResponse> => {
-  const { data } = await axiosToken.get<CoinsByAddressResponse>(
+  const platformsParam = Array.isArray(platforms)
+    ? platforms.join('|')
+    : platforms;
+
+  const { data } = await axios.get<CoinsByAddressResponse>(
     EndpointEnum.getCoinsByAddress,
     {
       params: {
         network,
         address,
-        platforms,
+        platforms: platformsParam,
       },
     }
   );
@@ -45,13 +49,17 @@ export const getCoinsByAddress = async (
 export function useCoinsByAddress(
   network: string,
   address: string,
-  platforms: string,
+  platforms: string | string[],
   enabled: boolean = true
 ) {
+  const queryEnabled = enabled && !!address && !!network && !!platforms;
+
   return useQuery({
     queryKey: [EndpointEnum.getCoinsByAddress, network, address, platforms],
-    queryFn: () => getCoinsByAddress(network, address, platforms),
-    enabled: enabled && !!address && !!network && !!platforms,
+    queryFn: () => {
+      return getCoinsByAddress(network, address, platforms);
+    },
+    enabled: queryEnabled,
     staleTime: DEFAULT_CACHE_TIME,
   });
 }

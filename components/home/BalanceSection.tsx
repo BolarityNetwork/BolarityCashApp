@@ -1,142 +1,146 @@
 // components/PerfectVaultSavingsPlatform/components/BalanceSection.tsx
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
+import { useMultiChainBalance } from '@/hooks/useBalanceData';
 
 interface BalanceSectionProps {
-  totalBalance: number;
-  todayEarnings: number;
-  monthlyEarnings: number;
+  address: string;
+  totalBalance?: number;
+  todayEarnings?: number;
+  monthlyEarnings?: number;
 }
 
 const BalanceSection: React.FC<BalanceSectionProps> = ({
-  totalBalance,
-  todayEarnings,
-  monthlyEarnings,
+  address,
+  totalBalance: propTotalBalance,
+  todayEarnings: propTodayEarnings,
+  monthlyEarnings: propMonthlyEarnings,
 }) => {
-  return (
-    <View style={styles.balanceSectionContainer}>
-      <View style={styles.balanceSection}>
-        <View style={styles.balanceHeader}>
-          <Text style={styles.balanceLabel}>Total Savings Balance</Text>
+  console.log('BalanceSection received address:', address);
+
+  const {
+    data: balanceData,
+    isLoading,
+    isError,
+  } = useMultiChainBalance(address);
+  const totalBalance = balanceData?.totalBalance ?? propTotalBalance ?? 0;
+  const todayEarnings = balanceData?.todayEarnings ?? propTodayEarnings ?? 0;
+  const monthlyEarnings =
+    balanceData?.monthlyEarnings ?? propMonthlyEarnings ?? 0;
+
+  if (isLoading) {
+    return (
+      <View className="px-5 pb-1.5">
+        <View className="mb-1">
+          <View className="flex-row items-center mb-2 gap-2">
+            <Text className="text-sm text-gray-500">Total Savings Balance</Text>
+          </View>
+          <View className="flex-row justify-between items-start">
+            <View className="flex-1">
+              <View className="h-8 bg-gray-200 rounded mb-2 w-3/5" />
+              <View className="flex-row gap-4">
+                <View className="h-5 bg-gray-200 rounded w-15" />
+                <View className="h-5 bg-gray-200 rounded w-15" />
+              </View>
+            </View>
+            <View className="bg-gray-200 px-3 py-1.5 rounded-2xl h-8 w-20 -mt-1" />
+          </View>
         </View>
-        <View style={styles.balanceContent}>
-          <View style={styles.balanceLeft}>
-            {/* 🎯 使用 AnimatedNumber 组件替换原来的余额显示 */}
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View className="px-5 pb-1.5">
+        <View className="mb-1">
+          <View className="flex-row items-center mb-2 gap-2">
+            <Text className="text-sm text-gray-500">Total Savings Balance</Text>
+          </View>
+          <View className="items-center justify-center py-5">
+            <Text className="text-sm text-red-500">Failed to load balance</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View className="px-5 pb-1.5">
+      <View className="mb-1">
+        <View className="flex-row items-center mb-2 gap-2">
+          <Text className="text-sm text-gray-500">Total Savings Balance</Text>
+        </View>
+        <View className="flex-row justify-between items-start">
+          <View className="flex-1">
             <AnimatedNumber
               value={totalBalance}
-              style={styles.balanceAmount}
+              style={{
+                fontSize: 26,
+                fontWeight: '300',
+                color: '#111827',
+                marginBottom: 0,
+              }}
               duration={1200}
               formatOptions={{
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-                prefix: '$', // ✅ 正确的字符串
+                prefix: '$',
               }}
             />
-            <View style={styles.earningsRow}>
-              <View style={styles.earningsItem}>
-                {/* 🎯 今日收益也使用动画 */}
-                <AnimatedNumber
-                  value={todayEarnings}
-                  style={styles.earningsAmount}
-                  duration={800}
-                  formatOptions={{
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                    prefix: '+$', // ✅ 正确的字符串
-                  }}
-                />
-                <Text style={styles.earningsLabel}>today</Text>
+            {(todayEarnings > 0 || monthlyEarnings > 0) && (
+              <View className="flex-row gap-4">
+                {todayEarnings > 0 && (
+                  <View className="flex-row items-center gap-1">
+                    <AnimatedNumber
+                      value={todayEarnings}
+                      style={{
+                        fontSize: 14,
+                        color: '#059669',
+                        fontWeight: '600',
+                      }}
+                      duration={800}
+                      formatOptions={{
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                        prefix: '+$',
+                      }}
+                    />
+                    <Text className="text-sm text-gray-500">today</Text>
+                  </View>
+                )}
+                {monthlyEarnings > 0 && (
+                  <View className="flex-row items-center gap-1">
+                    <AnimatedNumber
+                      value={monthlyEarnings}
+                      style={{
+                        fontSize: 14,
+                        color: '#059669',
+                        fontWeight: '600',
+                      }}
+                      duration={1000}
+                      formatOptions={{
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                        prefix: '+$',
+                      }}
+                    />
+                    <Text className="text-sm text-gray-500">this month</Text>
+                  </View>
+                )}
               </View>
-              <View style={styles.earningsItem}>
-                {/* 🎯 月度收益也使用动画 */}
-                <AnimatedNumber
-                  value={monthlyEarnings}
-                  style={styles.earningsAmount}
-                  duration={1000}
-                  formatOptions={{
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                    prefix: '+$', // ✅ 正确的字符串
-                  }}
-                />
-                <Text style={styles.earningsLabel}>this month</Text>
-              </View>
-            </View>
+            )}
           </View>
-          <View style={styles.apyBadge}>
-            <Text style={styles.apyText}>Earning 8.4%</Text>
+          <View className="bg-green-500 px-3 py-1.5 rounded-2xl items-center self-start -mt-1">
+            <Text className="text-sm font-semibold text-white">
+              Earning APY
+            </Text>
           </View>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  balanceSectionContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 6,
-  },
-  balanceSection: {
-    marginBottom: 4,
-  },
-  balanceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 8,
-  },
-  balanceLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  balanceContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  balanceLeft: {
-    flex: 1,
-  },
-  balanceAmount: {
-    fontSize: 26,
-    fontWeight: '300',
-    color: '#111827',
-    marginBottom: 0,
-  },
-  earningsRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  earningsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  earningsAmount: {
-    fontSize: 14,
-    color: '#059669',
-    fontWeight: '600',
-  },
-  earningsLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  apyBadge: {
-    backgroundColor: '#10b981',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginTop: -4,
-  },
-  apyText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
-});
 
 export default BalanceSection;

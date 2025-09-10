@@ -32,28 +32,21 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   const [selectedSpecificVault, setSelectedSpecificVault] = useState<
     VaultOption | TimeVaultOption | null
   >(null);
-  const [totalBalance, setTotalBalance] = useState(127845.67);
-  const [todayEarnings, setTodayEarnings] = useState(293.52);
-  const [monthlyEarnings, setMonthlyEarnings] = useState(8247.18);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [todayEarnings, setTodayEarnings] = useState(0);
+  const [monthlyEarnings, setMonthlyEarnings] = useState(0);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
-
-  // 多链钱包状态
   const { activeWallet } = useMultiChainWallet();
-
-  // 动画值
   const actionMenuOpacity = new Animated.Value(0);
   const actionMenuScale = new Animated.Value(0.8);
 
-  // 动画更新余额
   useEffect(() => {
     const interval = setInterval(() => {
       const increment = Math.random() * 0.04 + 0.01;
       setTotalBalance(prev => prev + increment);
 
-      // 🎯 今日收益的增量与总余额增量保持一致
       setTodayEarnings(prev => prev + increment);
 
-      // 月度收益可以是总余额增量的略微倍数（模拟累积效果）
       const monthlyIncrement = increment * (Math.random() * 0.5 + 1.2); // 1.2-1.7倍
       setMonthlyEarnings(prev => prev + monthlyIncrement);
     }, 2500);
@@ -61,7 +54,6 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // 动作菜单动画
   useEffect(() => {
     if (showActionsMenu) {
       Animated.parallel([
@@ -107,13 +99,11 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     setShowDepositModal(true);
   };
 
-  // 格式化地址显示
   const formatAddress = (address: string) => {
     if (!address) return 'Not Connected';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  // 获取当前钱包信息用于显示
   const getCurrentWalletInfo = () => {
     if (activeWallet.address) {
       return {
@@ -165,6 +155,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         formatAddress={formatAddress}
       />
       <BalanceSection
+        address={activeWallet.address}
         totalBalance={totalBalance}
         todayEarnings={todayEarnings}
         monthlyEarnings={monthlyEarnings}
