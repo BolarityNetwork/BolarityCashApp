@@ -3,8 +3,6 @@ import { useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { randomUUID } from 'expo-crypto';
-import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
 import { t } from 'i18next';
 import moment from 'moment';
 
@@ -225,81 +223,6 @@ export function throttle(func: Function, delay: number) {
       return func(...args);
     }
   };
-}
-
-export async function saveImageFn(url: string) {
-  let isSuccess = false;
-  let uri: string | undefined;
-  try {
-    const permission = await MediaLibrary.requestPermissionsAsync();
-    if (!permission.granted) {
-      // Toast.show({
-      //   type: 'normal',
-      //   status: 'error',
-      //   message: t('error.saveImagePermissions'),
-      // });
-      return;
-    }
-
-    // if (Platform.OS === "android") {
-    const timer = setTimeout(() => {
-      throw 'Timeout';
-    }, 15000);
-    const response = await FileSystem.downloadAsync(
-      url,
-      FileSystem.documentDirectory + 'temp_file'
-    );
-    const contentType =
-      response.headers['Content-Type'] || response.headers['content-type'];
-    let fileExtension = '';
-    if (contentType === 'image/jpeg') {
-      fileExtension = '.jpg';
-    } else if (contentType === 'image/png') {
-      fileExtension = '.png';
-    } else if (contentType === 'image/gif') {
-      fileExtension = '.gif';
-    } else {
-      fileExtension = '';
-    }
-    const fileUri =
-      FileSystem.documentDirectory +
-      'downloaded_image' +
-      new Date().getTime() +
-      fileExtension;
-
-    const { uri: _uri } = await FileSystem.downloadAsync(url, fileUri);
-    await MediaLibrary.createAssetAsync(_uri);
-    uri = _uri;
-    isSuccess = true;
-    // }
-    // if (Platform.OS === "ios") {
-    //   const permission = await MediaLibrary.requestPermissionsAsync();
-    //   if (permission.granted) {
-    //     await MediaLibrary.saveToLibraryAsync(url);
-    //     isSuccess = true;
-    //   } else {
-    //     Toast.show({
-    //       text1: t("error.saveImagePermissions"),
-    //       type: "error",
-    //     });
-    //   }
-    // }
-    if (isSuccess)
-      // Toast.show({
-      //   type: 'normal',
-      //   status: 'success',
-      //   message: t('toast.saveImageSuccess'),
-      // });
-      clearTimeout(timer);
-    return uri || url;
-  } catch (error: any) {
-    // Toast.show({
-    //   type: 'normal',
-    //   status: 'error',
-    //   message: t('error.saveImage'),
-    // });
-    throw error;
-  }
 }
 
 export function truncateText(text: string, maxLength: number): string {
