@@ -17,8 +17,6 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
   todayEarnings: propTodayEarnings,
   monthlyEarnings: propMonthlyEarnings,
 }) => {
-  console.log('BalanceSection received address:', address);
-
   const {
     data: balanceData,
     isLoading,
