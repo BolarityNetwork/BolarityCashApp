@@ -6,14 +6,19 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import en from './locales/en.json';
 import zh from './locales/zh.json';
 
+export enum Language {
+  CN = 'zh-CN',
+  EN = 'en-US',
+}
+
 // 支持的语言列表
 export const supportedLanguages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: Language.EN, name: 'English', flag: '🇺🇸' },
+  { code: Language.CN, name: '中文', flag: '🇨🇳' },
 ];
 
 // 默认语言
-export const defaultLanguage = 'en';
+export const defaultLanguage = Language.EN;
 
 // 初始化 i18n
 i18n
@@ -22,7 +27,7 @@ i18n
   .init({
     resources: {
       en: { translation: en },
-      zh: { translation: zh },
+      [Language.CN]: { translation: zh },
     },
     fallbackLng: defaultLanguage,
     debug: __DEV__, // 开发环境下启用调试
