@@ -1,10 +1,10 @@
 import React, { FC, useState } from 'react';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ActionButton from 'react-native-circular-action-menu';
 import Icon from 'react-native-vector-icons/Ionicons';
+import ActionModal from './ActionModal';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,
@@ -14,34 +14,43 @@ export const TabBar: FC<BottomTabBarProps> = ({
   const { t: _t } = useTranslation();
   const routeNameArr = ['home', 'actions', 'profile'];
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [animValue] = useState(new Animated.Value(0));
   const insets = useSafeAreaInsets();
+
+  const handleActionMenuClose = () => {
+    setIsActionMenuOpen(false);
+    Animated.timing(animValue, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleActionMenuOpen = () => {
+    setIsActionMenuOpen(true);
+    Animated.timing(animValue, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
 
   return (
     <>
-      {/* 全局蒙版 */}
-      {isActionMenuOpen && (
-        <View
-          className="absolute inset-0 bg-black/30 z-40"
-          style={{
-            top: -insets.top,
-            left: -insets.left,
-            right: -insets.right,
-            bottom: -insets.bottom,
-          }}
-        >
-          <Pressable
-            className="flex-1"
-            onPress={() => setIsActionMenuOpen(false)}
-          />
-        </View>
-      )}
+      {/* Action Modal */}
+      <ActionModal
+        visible={isActionMenuOpen}
+        onClose={handleActionMenuClose}
+        animValue={animValue}
+      />
 
       {/* TabBar */}
       <View
-        className="absolute left-6 right-6 bg-white rounded-3xl py-4 px-6 flex-row items-center justify-between shadow-lg border border-gray-200"
+        className="absolute left-0 right-0 bg-white rounded-3xl py-4 px-6 flex-row items-center justify-between shadow-lg border border-gray-200"
         style={{
           bottom: insets.bottom + 12,
           zIndex: 50,
+          marginHorizontal: 24,
         }}
       >
         {routeNameArr.map(name => {
@@ -70,80 +79,18 @@ export const TabBar: FC<BottomTabBarProps> = ({
 
           if (route.name === 'actions') {
             return (
-              <View key={label} className="items-center py-2 flex-1">
-                <View className="w-7 h-7"></View>
-                <View className="position-absolute bottom-2 -left-3 right-1/2">
-                  <ActionButton
-                    buttonColor="#000000"
-                    onPress={() => setIsActionMenuOpen(!isActionMenuOpen)}
-                    active={isActionMenuOpen}
-                    size={32}
-                    radius={60}
-                    verticalOrientation="up"
-                    style={{
-                      position: 'relative',
-                      zIndex: 1000,
-                    }}
-                  >
-                    <ActionButton.Item
-                      buttonColor="#F7813C"
-                      title="Deposit"
-                      onPress={() => {
-                        console.log('Deposit pressed');
-                        setIsActionMenuOpen(false);
-                      }}
-                    >
-                      <Icon
-                        name="arrow-down-circle"
-                        style={{ fontSize: 20, height: 22, color: 'white' }}
-                      />
-                    </ActionButton.Item>
-                    <ActionButton.Item
-                      buttonColor="#55A180"
-                      title="Withdraw"
-                      onPress={() => {
-                        console.log('Withdraw pressed');
-                        setIsActionMenuOpen(false);
-                      }}
-                    >
-                      <Icon
-                        name="arrow-up-circle"
-                        style={{ fontSize: 20, height: 22, color: 'white' }}
-                      />
-                    </ActionButton.Item>
-                    <ActionButton.Item
-                      buttonColor="#6675c0"
-                      title="Swap"
-                      onPress={() => {
-                        console.log('Swap pressed');
-                        setIsActionMenuOpen(false);
-                      }}
-                    >
-                      <Icon
-                        name="swap-horizontal"
-                        style={{ fontSize: 20, height: 22, color: 'white' }}
-                      />
-                    </ActionButton.Item>
-                    <ActionButton.Item
-                      buttonColor="#E3446E"
-                      title="Send"
-                      onPress={() => {
-                        console.log('Send pressed');
-                        setIsActionMenuOpen(false);
-                      }}
-                    >
-                      <Icon
-                        name="send"
-                        style={{ fontSize: 20, height: 22, color: 'white' }}
-                      />
-                    </ActionButton.Item>
-                  </ActionButton>
+              <Pressable
+                key={label}
+                onPress={handleActionMenuOpen}
+                className="items-center py-2 flex-1"
+              >
+                <View className="w-8 h-8 bg-black rounded-full items-center justify-center">
+                  <Icon name="add" size={16} color="white" />
                 </View>
-
                 <Text className="text-xs mt-1 text-black font-semibold">
                   Actions
                 </Text>
-              </View>
+              </Pressable>
             );
           }
 
