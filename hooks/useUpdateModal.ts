@@ -25,11 +25,9 @@ export const useUpdateModal = () => {
       hideUpdateModal();
       const update = await Updates.checkForUpdateAsync();
 
-      // 检查是否有可用更新
       if (update.isAvailable) {
         await Updates.reloadAsync();
       } else {
-        // 如果没有可用更新，尝试检查更新
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
@@ -38,12 +36,12 @@ export const useUpdateModal = () => {
       }
     } catch (error) {
       console.error('Update failed:', error);
-      // 可以在这里显示错误提示
     }
   }, [hideUpdateModal]);
 
   const checkForUpdates = useCallback(async () => {
     try {
+      if (__DEV__) return false;
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
@@ -51,7 +49,7 @@ export const useUpdateModal = () => {
           version: 'New',
           description:
             'A new version is available with improvements and bug fixes.',
-          isMandatory: false, // 可以根据需要设置
+          isMandatory: false,
         };
 
         showUpdateModal(info);

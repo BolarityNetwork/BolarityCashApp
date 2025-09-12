@@ -13,6 +13,9 @@ import {
 } from '@expo-google-fonts/inter';
 import { useFonts } from 'expo-font';
 import '@/i18n';
+import { useUpdateModal } from '@/hooks/useUpdateModal';
+import UpdateModal from '@/components/modals/UpdateModal';
+import { useCheckForUpdates } from '@/hooks/useCheckForUpdates';
 
 export default function RootLayout() {
   useFonts({
@@ -20,6 +23,16 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
   });
+
+  const {
+    isVisible,
+    updateInfo,
+    hideUpdateModal,
+    handleUpdate,
+    checkForUpdates,
+  } = useUpdateModal();
+
+  useCheckForUpdates(checkForUpdates);
 
   return (
     <QueryProvider>
@@ -32,6 +45,12 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             </Stack>
+            <UpdateModal
+              visible={isVisible}
+              updateInfo={updateInfo}
+              onClose={hideUpdateModal}
+              onUpdate={handleUpdate}
+            />
             <PrivyElements />
           </ThemeProvider>
         </MultiChainWalletProvider>
