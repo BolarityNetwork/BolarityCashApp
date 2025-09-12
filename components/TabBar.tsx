@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ActionModal from './ActionModal';
+import ActionModal from './modals/ActionModal';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,

@@ -68,22 +68,22 @@ const ActionModal: React.FC<ActionModalProps> = ({
 
   const actions = [
     {
-      id: 'save',
-      title: 'Save',
+      id: 'deposit',
+      title: 'Deposit',
       icon: 'wallet',
       color: 'bg-black',
       onPress: () => {
-        console.log('Save pressed');
+        console.log('Deposit pressed');
         onClose();
       },
     },
     {
-      id: 'invest',
-      title: 'Invest',
+      id: 'portfolio',
+      title: 'Portfolio',
       icon: 'trending-up',
       color: 'bg-black',
       onPress: () => {
-        console.log('Invest pressed');
+        console.log('Save pressed');
         onClose();
       },
     },
@@ -93,27 +93,27 @@ const ActionModal: React.FC<ActionModalProps> = ({
       icon: 'swap-horizontal',
       color: 'bg-black',
       onPress: () => {
+        console.log('Invest pressed');
+        onClose();
+      },
+    },
+    {
+      id: 'actions',
+      title: 'Actions',
+      icon: 'add-circle',
+      color: 'bg-black',
+      onPress: () => {
         console.log('Transfer pressed');
         onClose();
       },
     },
     {
-      id: 'deposit',
-      title: 'Deposit',
-      icon: 'add-circle',
+      id: 'receive',
+      title: 'Receive',
+      icon: 'arrow-down',
       color: 'bg-black',
       onPress: () => {
-        console.log('Deposit pressed');
-        onClose();
-      },
-    },
-    {
-      id: 'refer',
-      title: 'Refer a Friend',
-      icon: 'link',
-      color: 'bg-black',
-      onPress: () => {
-        console.log('Refer pressed');
+        console.log('receive pressed');
         onClose();
       },
     },
