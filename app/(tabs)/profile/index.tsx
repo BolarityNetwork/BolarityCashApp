@@ -108,8 +108,8 @@ export default function ProfileScreen() {
   const {
     activeWalletType,
     activeWallet,
-    ethereumWallet,
-    solanaWallet,
+    ethereumAddress,
+    solanaAddress,
     hasSolanaWallet,
     isCreatingSolanaWallet,
     switchWalletType,
@@ -356,14 +356,14 @@ export default function ProfileScreen() {
 
                 <WalletCard
                   wallet={{
-                    address: ethereumWallet?.address,
+                    address: ethereumAddress || '',
                     type: 'ethereum',
                     iconType: 'ethereum',
                     network: getCurrentEthereumNetwork().name,
                   }}
                   isActive={activeWalletType === 'ethereum'}
                   onPress={() => {
-                    if (ethereumWallet?.address) {
+                    if (ethereumAddress) {
                       if (activeWalletType !== 'ethereum') {
                         switchWalletType('ethereum');
                       }
@@ -403,14 +403,14 @@ export default function ProfileScreen() {
 
                 <WalletCard
                   wallet={{
-                    address: solanaWallet?.address,
+                    address: solanaAddress || '',
                     type: 'solana',
                     iconType: 'solana',
                     network: 'mainnet-beta',
                   }}
                   isActive={activeWalletType === 'solana'}
                   onPress={() => {
-                    if (hasSolanaWallet && solanaWallet?.address) {
+                    if (hasSolanaWallet && solanaAddress) {
                       if (activeWalletType !== 'solana') {
                         switchWalletType('solana');
                       }
@@ -549,7 +549,7 @@ export default function ProfileScreen() {
             <View className="px-5 pb-5">
               {persistedUser?.linked_accounts
                 .slice(0, 3)
-                .map((accountItem, index) => (
+                .map((accountItem: any, index: number) => (
                   <View
                     key={index}
                     className="flex-row items-center py-3 border-b border-slate-50"
@@ -573,16 +573,17 @@ export default function ProfileScreen() {
                   </View>
                 ))}
 
-              {persistedUser?.linked_accounts.length > 3 && (
-                <TouchableOpacity
-                  className="mt-3 py-2 items-center"
-                  onPress={() => profileState.openModal('accounts')}
-                >
-                  <Text className="text-sm font-semibold text-indigo-500">
-                    View All ({persistedUser?.linked_accounts.length})
-                  </Text>
-                </TouchableOpacity>
-              )}
+              {persistedUser?.linked_accounts.length &&
+                persistedUser?.linked_accounts.length > 3 && (
+                  <TouchableOpacity
+                    className="mt-3 py-2 items-center"
+                    onPress={() => profileState.openModal('accounts')}
+                  >
+                    <Text className="text-sm font-semibold text-indigo-500">
+                      View All ({persistedUser?.linked_accounts.length})
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
               <View className="mt-4 pt-4 border-t border-slate-50">
                 <Text className="text-sm font-semibold text-slate-800 mb-3">
@@ -713,7 +714,7 @@ export default function ProfileScreen() {
         </Text>
 
         {/* Ethereum Wallet Option */}
-        {ethereumWallet?.address && (
+        {ethereumAddress && (
           <TouchableOpacity
             className={`bg-white rounded-2xl mb-3 shadow-md border ${
               activeWalletType === 'ethereum'
@@ -736,7 +737,7 @@ export default function ProfileScreen() {
                   Ethereum Wallet
                 </Text>
                 <Text className="text-sm text-slate-500 font-mono mt-0.5">
-                  {formatAddress(ethereumWallet.address)}
+                  {formatAddress(ethereumAddress)}
                 </Text>
                 <Text className="text-xs text-slate-400 mt-0.5">
                   Ethereum Mainnet
@@ -750,7 +751,7 @@ export default function ProfileScreen() {
         )}
 
         {/* Solana Wallet Option */}
-        {hasSolanaWallet && solanaWallet && (
+        {hasSolanaWallet && solanaAddress && (
           <TouchableOpacity
             className={`bg-white rounded-2xl mb-3 shadow-md border ${
               activeWalletType === 'solana'
@@ -769,7 +770,7 @@ export default function ProfileScreen() {
                   Solana Wallet
                 </Text>
                 <Text className="text-sm text-slate-500 font-mono mt-0.5">
-                  {formatAddress(solanaWallet.address)}
+                  {formatAddress(solanaAddress)}
                 </Text>
                 <Text className="text-xs text-slate-400 mt-0.5">
                   mainnet-beta
@@ -788,7 +789,7 @@ export default function ProfileScreen() {
             Create New Wallet
           </Text>
 
-          {!ethereumWallet?.address && (
+          {!ethereumAddress && (
             <TouchableOpacity
               className="flex-row items-center bg-slate-50 rounded-xl p-4 mb-3 border border-slate-200"
               onPress={() => {
@@ -905,27 +906,29 @@ export default function ProfileScreen() {
         onClose={profileState.closeModal}
         title="All Connected Accounts"
       >
-        {persistedUser?.linked_accounts.map((accountItem, index) => (
-          <View
-            key={index}
-            className="flex-row items-center py-3 border-b border-slate-50"
-          >
-            <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-              {getProviderIcon(accountItem.type, 18)}
+        {persistedUser?.linked_accounts.map(
+          (accountItem: any, index: number) => (
+            <View
+              key={index}
+              className="flex-row items-center py-3 border-b border-slate-50"
+            >
+              <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
+                {getProviderIcon(accountItem.type, 18)}
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-slate-800 capitalize">
+                  {accountItem.type.replace('_oauth', '').replace('_', ' ')}
+                </Text>
+                <Text className="text-xs text-slate-500 mt-0.5">
+                  {toMainIdentifier(accountItem)}
+                </Text>
+              </View>
+              <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
+                <Text className="text-xs text-white font-bold">✓</Text>
+              </View>
             </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-slate-800 capitalize">
-                {accountItem.type.replace('_oauth', '').replace('_', ' ')}
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">
-                {toMainIdentifier(accountItem)}
-              </Text>
-            </View>
-            <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
-              <Text className="text-xs text-white font-bold">✓</Text>
-            </View>
-          </View>
-        ))}
+          )
+        )}
       </BaseModal>
     </CommonSafeAreaView>
   );
