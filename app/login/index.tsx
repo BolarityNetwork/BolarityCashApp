@@ -256,11 +256,11 @@ function OAuthSection({
               {provider.label}
             </Text>
           </View>
-          {provider.name === 'google' && (
+          {/* {provider.name === 'google' && (
             <View className="bg-gray-100 rounded-xl px-3 py-1 mr-2">
               <Text className="text-xs text-gray-500 font-medium">Recent</Text>
             </View>
-          )}
+          )} */}
           <Text className="text-lg text-gray-400">›</Text>
         </TouchableOpacity>
       ))}
