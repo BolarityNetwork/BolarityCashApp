@@ -96,21 +96,20 @@ export default function LoginScreen() {
 
 function Header() {
   return (
-    <View className="items-center mb-12">
-      <Text className="text-3xl font-semibold text-gray-500 text-center mb-8 tracking-tight">
-        Log in or sign up
-      </Text>
-
-      <View className="flex-row items-center mb-8">
+    <View className="items-center mb-16">
+      <View className="flex-row items-center mb-6">
         <Image
           source={require('@/assets/images/adaptive-icon.png')}
-          style={{ width: 32, height: 32, borderRadius: 8 }}
+          style={{ width: 40, height: 40, borderRadius: 10 }}
           resizeMode="contain"
         />
-        <Text className="ml-2 text-3xl font-bold text-black tracking-tight">
+        <Text className="ml-3 text-4xl font-bold text-black tracking-tight">
           Bolarity
         </Text>
       </View>
+      <Text className="text-xl font-medium text-gray-600 text-center tracking-wide">
+        Log in or sign up
+      </Text>
     </View>
   );
 }

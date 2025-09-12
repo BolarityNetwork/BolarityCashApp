@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLinkWithOAuth, useEmbeddedEthereumWallet } from '@privy-io/expo';
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
 import Constants from 'expo-constants';
@@ -17,7 +16,6 @@ import { useProfileState } from '@/hooks/profile/useProfileState';
 import { useWalletActions } from '@/hooks/profile/useWalletActions';
 import { WalletLogo } from '@/components/profile/components/WalletLogo';
 import { ProfileHeader } from '@/components/profile/components/ProfileHeader';
-import { QuickAction } from '@/components/profile/components/QuickAction';
 import { BaseModal } from '@/components/profile/components/BaseModal';
 import { formatAddress, toMainIdentifier } from '@/utils/profile';
 import { WalletCard } from '@/components/profile/components/WalletCard';
@@ -124,22 +122,22 @@ export default function ProfileScreen() {
   const profileState = useProfileState();
   const walletActions = useWalletActions();
 
-  const handleWalletAction = (actionType: 'sign' | 'sendTx' | 'signTx') => {
-    profileState.setLoading(true);
+  // const handleWalletAction = (actionType: 'sign' | 'sendTx' | 'signTx') => {
+  //   profileState.setLoading(true);
 
-    const actions = {
-      sign: () =>
-        walletActions.handleSignMessage(profileState.addSignedMessage),
-      sendTx: () =>
-        walletActions.handleSendTransaction(profileState.addTransaction),
-      signTx: () =>
-        walletActions.handleSignTransaction(profileState.addTransaction),
-    };
+  //   const actions = {
+  //     sign: () =>
+  //       walletActions.handleSignMessage(profileState.addSignedMessage),
+  //     sendTx: () =>
+  //       walletActions.handleSendTransaction(profileState.addTransaction),
+  //     signTx: () =>
+  //       walletActions.handleSignTransaction(profileState.addTransaction),
+  //   };
 
-    actions[actionType]().finally(() => {
-      profileState.setLoading(false);
-    });
-  };
+  //   actions[actionType]().finally(() => {
+  //     profileState.setLoading(false);
+  //   });
+  // };
   if (!persistedUser) {
     return <Redirect href="/login" />;
   }
@@ -154,21 +152,13 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Header Card */}
-        <View className="bg-white mx-5 mt-5 rounded-3xl p-6 items-center shadow-lg">
+        <View className="bg-white mx-5 mt-5 rounded-3xl p-6 items-center">
           <View className="relative mb-4">
-            <LinearGradient
-              colors={['#667eea', '#764ba2']}
-              className="w-25 h-25 rounded-full items-center justify-center shadow-lg"
-            >
-              <Text className="text-4xl font-bold text-white">
-                {persistedUser?.email?.address
-                  ? persistedUser.email.address.charAt(0).toUpperCase()
-                  : '👤'}
-              </Text>
-            </LinearGradient>
-            <View className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-white items-center justify-center shadow-md">
-              <View className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
-            </View>
+            <Text className="text-4xl font-bold text-white">
+              {persistedUser?.email?.address
+                ? persistedUser.email.address.charAt(0).toUpperCase()
+                : '👤'}
+            </Text>
           </View>
 
           <Text className="text-2xl font-bold text-slate-800 text-center mb-1">
@@ -246,7 +236,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Quick Actions */}
-        <View className="px-5 mt-6">
+        {/* <View className="px-5 mt-6">
           <Text className="text-lg font-bold text-slate-800 mb-3">
             Quick Actions
           </Text>
@@ -258,7 +248,6 @@ export default function ProfileScreen() {
               backgroundColor="#f0f9ff"
             />
 
-            {/* Network switch button for Ethereum */}
             {activeWalletType === 'ethereum' && (
               <QuickAction
                 icon="🌐"
@@ -306,7 +295,7 @@ export default function ProfileScreen() {
               backgroundColor="#f8fafc"
             />
           </View>
-        </View>
+        </View> */}
 
         {/* Multi-Chain Wallet Section */}
         <View className="mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-md border border-slate-100">
