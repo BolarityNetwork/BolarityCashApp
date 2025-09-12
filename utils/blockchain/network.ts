@@ -1,9 +1,5 @@
 // 网络工具方法
-import {
-  AAVE_NETWORKS,
-  NETWORKS,
-  RPC_ENDPOINTS,
-} from '../../constants/networks';
+import { AAVE_NETWORKS, NETWORKS, RPC_ENDPOINTS } from '@/constants/networks';
 
 // 根据 chainId 获取网络配置
 export const getNetworkByChainId = (

@@ -17,7 +17,7 @@ import ProtocolLogo from '@/components/home/ProtocolLogo';
 import VaultLogo from '@/components/home/VaultLogo';
 import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
-import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import AAVEIntegration from '@/utils/transaction/aave';
 import getErrorMessage from '@/utils/error';
 

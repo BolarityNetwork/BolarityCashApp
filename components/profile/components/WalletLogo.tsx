@@ -9,11 +9,11 @@ interface WalletLogoProps {
 
 const LOGOS = {
   ethereum: {
-    src: require('../../../assets/logos/ethereum.png'),
+    src: require('@/assets/logos/ethereum.png'),
     fallback: '🔷',
   },
   solana: {
-    src: require('../../../assets/logos/solana.png'),
+    src: require('@/assets/logos/solana.png'),
     fallback: '🌞',
   },
 };

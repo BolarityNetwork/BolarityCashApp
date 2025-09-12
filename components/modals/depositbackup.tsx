@@ -16,13 +16,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ethers } from 'ethers';
 import ProtocolLogo from '../home/ProtocolLogo';
 import VaultLogo from '../home/VaultLogo';
-import {
-  getProtocolFromVaultName,
-  VaultProduct,
-  VaultOption,
-  TimeVaultOption,
-} from '../constants';
-import { useMultiChainWallet } from '../../hooks/useMultiChainWallet';
+import { getProtocolFromVaultName } from '@/utils/home';
+import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
 // AAVE集成类 - 重构版本
 class AAVEIntegration {

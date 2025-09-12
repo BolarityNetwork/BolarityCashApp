@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import getErrorMessage from '../error';
-import { AAVE_POOL_ABI, AAVE_ERC20_ABI } from '../../constants/abis/aave';
-import { AAVE_NETWORKS } from '../../constants/networks';
+import { AAVE_POOL_ABI, AAVE_ERC20_ABI } from '@/constants/abis/aave';
+import { AAVE_NETWORKS } from '@/constants/networks';
 
 // AAVE集成类 - 重构版本
 class AAVEIntegration {
