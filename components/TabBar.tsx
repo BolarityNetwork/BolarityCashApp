@@ -1,7 +1,7 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useCallback } from 'react';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View, Animated } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionModal from './modals/ActionModal';
@@ -14,35 +14,20 @@ export const TabBar: FC<BottomTabBarProps> = ({
   const { t: _t } = useTranslation();
   const routeNameArr = ['home', 'actions', 'profile'];
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-  const [animValue] = useState(new Animated.Value(0));
   const insets = useSafeAreaInsets();
 
-  const handleActionMenuClose = () => {
+  const handleActionMenuClose = useCallback(() => {
     setIsActionMenuOpen(false);
-    Animated.timing(animValue, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  };
+  }, []);
 
-  const handleActionMenuOpen = () => {
+  const handleActionMenuOpen = useCallback(() => {
     setIsActionMenuOpen(true);
-    Animated.timing(animValue, {
-      toValue: 1,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  };
+  }, []);
 
   return (
     <>
       {/* Action Modal */}
-      <ActionModal
-        visible={isActionMenuOpen}
-        onClose={handleActionMenuClose}
-        animValue={animValue}
-      />
+      <ActionModal visible={isActionMenuOpen} onClose={handleActionMenuClose} />
 
       {/* TabBar */}
       <View
