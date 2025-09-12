@@ -102,9 +102,13 @@ function Header() {
       </Text>
 
       <View className="flex-row items-center mb-8">
-        <View className="w-8 h-8 rounded-full bg-black mr-3" />
-        <Text className="text-3xl font-bold text-black tracking-tight">
-          bolarity
+        <Image
+          source={require('@/assets/images/adaptive-icon.png')}
+          style={{ width: 32, height: 32, borderRadius: 8 }}
+          resizeMode="contain"
+        />
+        <Text className="ml-2 text-3xl font-bold text-black tracking-tight">
+          Bolarity
         </Text>
       </View>
     </View>
@@ -162,7 +166,7 @@ function GoogleLogo() {
     <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/google.png')}
-        className="w-4.5 h-4.5"
+        style={{ width: 18, height: 18 }}
         resizeMode="contain"
       />
     </View>
@@ -174,7 +178,7 @@ function AppleLogo() {
     <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/apple.png')}
-        className="w-4.5 h-4.5"
+        style={{ width: 18, height: 18 }}
         resizeMode="contain"
       />
     </View>
@@ -186,7 +190,7 @@ function DiscordLogo() {
     <View className="w-5 h-5 mr-4 items-center justify-center">
       <Image
         source={require('@/assets/logos/discord.png')}
-        className="w-4.5 h-4.5"
+        style={{ width: 18, height: 18 }}
         resizeMode="contain"
       />
     </View>
@@ -247,9 +251,9 @@ function OAuthSection({
           onPress={() => onProviderSelect(provider.name)}
           disabled={isLoading}
         >
-          <View className="flex-row items-center flex-1">
+          <View className="flex-row items-center">
             {renderProviderIcon(provider.name)}
-            <Text className="text-base font-medium text-gray-900 flex-1">
+            <Text className="text-base font-medium text-gray-900">
               {provider.label}
             </Text>
           </View>
