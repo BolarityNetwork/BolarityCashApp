@@ -147,7 +147,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
 
   return (
     <CommonSafeAreaView className="flex-1 bg-gray-50" isIncludeBottomBar={true}>
-      <StatusBar barStyle="light-content" backgroundColor="#667eea" />
+      <StatusBar barStyle="dark-content" />
 
       <Header
         user={user}

@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  StatusBar,
 } from 'react-native';
 import { useLinkWithOAuth, useEmbeddedEthereumWallet } from '@privy-io/expo';
 import { useLinkWithPasskey } from '@privy-io/expo/passkey';
@@ -144,6 +145,7 @@ export default function ProfileScreen() {
 
   return (
     <CommonSafeAreaView className="flex-1 bg-white" isIncludeBottomBar={true}>
+      <StatusBar barStyle="dark-content" />
       <ProfileHeader onSettingsPress={() => router.push('/settings')} />
 
       <ScrollView
