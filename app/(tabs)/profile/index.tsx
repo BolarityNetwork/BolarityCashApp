@@ -15,11 +15,13 @@ import { Redirect, useRouter } from 'expo-router';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { useWalletActions } from '@/hooks/profile/useWalletActions';
-import { WalletLogo } from '@/components/profile/components/WalletLogo';
-import { ProfileHeader } from '@/components/profile/components/ProfileHeader';
-import { BaseModal } from '@/components/profile/components/BaseModal';
+import { WalletLogo } from '@/components/profile/WalletLogo';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { BaseModal } from '@/components/profile/BaseModal';
+import { ProfileHeaderCard } from '@/components/profile/ProfileHeaderCard';
+import { BalanceCard } from '@/components/profile/BalanceCard';
 import { formatAddress, toMainIdentifier } from '@/utils/profile';
-import { WalletCard } from '@/components/profile/components/WalletCard';
+import { WalletCard } from '@/components/profile/WalletCard';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 
@@ -153,89 +155,25 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Balance Card */}
+        <BalanceCard
+          address={activeWallet.address || ''}
+          // TODO: get asset distribution from backend
+          assetDistribution={{
+            USD: 0.4,
+            BTC: 0.35,
+            ETH: 0.25,
+          }}
+          profileState={profileState}
+        />
+
         {/* Profile Header Card */}
-        <View className="bg-white mx-5 mt-5 rounded-3xl p-6 items-center">
-          <View className="relative mb-4">
-            <Text className="text-4xl font-bold text-white">
-              {persistedUser?.email?.address
-                ? persistedUser.email.address.charAt(0).toUpperCase()
-                : '👤'}
-            </Text>
-          </View>
-
-          <Text className="text-2xl font-bold text-slate-800 text-center mb-1">
-            {persistedUser?.email?.address || 'Bolarity User'}
-          </Text>
-          <Text className="text-sm text-slate-500 font-mono mb-4">
-            ID: {formatAddress(persistedUser?.id)}
-          </Text>
-
-          {/* Current Wallet Display */}
-          <TouchableOpacity
-            className="flex-row items-center bg-slate-50 rounded-2xl p-4 mb-5 border-2 border-slate-200 w-full"
-            onPress={() => profileState.openModal('walletSwitch')}
-          >
-            <WalletLogo
-              type={activeWallet.type === 'ethereum' ? 'ethereum' : 'solana'}
-              size={28}
-              style={{ marginRight: 12 }}
-            />
-            <View className="flex-1">
-              <Text className="text-base font-bold text-slate-800">
-                {activeWallet.type === 'ethereum'
-                  ? 'Ethereum Wallet'
-                  : 'Solana Wallet'}
-              </Text>
-              <Text className="text-sm text-slate-500 font-mono mt-0.5">
-                {activeWallet.address
-                  ? formatAddress(activeWallet.address)
-                  : 'Not connected'}
-              </Text>
-
-              {/* Network info for Ethereum */}
-              {activeWallet.type === 'ethereum' && (
-                <TouchableOpacity
-                  className="flex-row items-center bg-slate-100/50 rounded-lg py-1 px-2 border border-slate-200/50 mt-1"
-                  onPress={() => profileState.openModal('network')}
-                >
-                  <Text className="text-xs mr-1">
-                    {getCurrentEthereumNetwork().icon}
-                  </Text>
-                  <Text className="text-xs text-slate-500 flex-1">
-                    {getCurrentEthereumNetwork().name}
-                  </Text>
-                  <Text className="text-xs ml-1">⚙️</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <Text className="text-xl text-indigo-500">🔄</Text>
-          </TouchableOpacity>
-
-          <View className="flex-row items-center bg-slate-50 rounded-2xl py-4 px-6 border border-slate-200">
-            <View className="items-center flex-1">
-              <Text className="text-xl font-bold text-indigo-500">
-                {persistedUser?.linked_accounts.length}
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">Accounts</Text>
-            </View>
-            <View className="w-px h-8 bg-slate-200 mx-4" />
-            <View className="items-center flex-1">
-              <Text className="text-xl font-bold text-indigo-500">
-                {profileState.signedMessages.length}
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">Messages</Text>
-            </View>
-            <View className="w-px h-8 bg-slate-200 mx-4" />
-            <View className="items-center flex-1">
-              <Text className="text-xl font-bold text-indigo-500">
-                {profileState.transactionResults.length}
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">
-                Transactions
-              </Text>
-            </View>
-          </View>
-        </View>
+        <ProfileHeaderCard
+          user={persistedUser}
+          activeWallet={activeWallet}
+          profileState={profileState}
+          getCurrentEthereumNetwork={getCurrentEthereumNetwork}
+        />
 
         {/* Quick Actions */}
         {/* <View className="px-5 mt-6">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { WalletLogo } from '@/components/profile/components/WalletLogo';
+import { WalletLogo } from '@/components/profile/WalletLogo';
 import { WalletCardProps } from '@/interfaces/profile';
 import { formatAddress } from '@/utils/profile';
 
