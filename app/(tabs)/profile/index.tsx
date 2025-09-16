@@ -8,20 +8,17 @@ import {
   Image,
   StatusBar,
 } from 'react-native';
-import { useLinkWithOAuth, useEmbeddedEthereumWallet } from '@privy-io/expo';
-import { useLinkWithPasskey } from '@privy-io/expo/passkey';
-import Constants from 'expo-constants';
+import { useEmbeddedEthereumWallet } from '@privy-io/expo';
 import { Redirect, useRouter } from 'expo-router';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
-import { useWalletActions } from '@/hooks/profile/useWalletActions';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { BaseModal } from '@/components/profile/BaseModal';
-import { ProfileHeaderCard } from '@/components/profile/ProfileHeaderCard';
 import { BalanceCard } from '@/components/profile/BalanceCard';
+import { SettingItem } from '@/components/profile/SettingItem';
+import { SettingSection } from '@/components/profile/SettingSection';
 import { formatAddress, toMainIdentifier } from '@/utils/profile';
-import { WalletCard } from '@/components/profile/WalletCard';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 
@@ -102,8 +99,6 @@ export function getProviderIcon(
 
 export default function ProfileScreen() {
   const { user: persistedUser, logout } = usePersistedPrivyUser();
-  const { linkWithPasskey } = useLinkWithPasskey();
-  const oauth = useLinkWithOAuth();
   const { create } = useEmbeddedEthereumWallet();
   const router = useRouter();
   const {
@@ -115,32 +110,13 @@ export default function ProfileScreen() {
     isCreatingSolanaWallet,
     switchWalletType,
     createSolanaWallet,
-    getCurrentEthereumNetwork,
     getAvailableNetworks,
     switchEthereumNetwork,
     activeEthereumNetwork,
     isSwitchingNetwork,
   } = useMultiChainWallet();
-
   const profileState = useProfileState();
-  const walletActions = useWalletActions();
 
-  // const handleWalletAction = (actionType: 'sign' | 'sendTx' | 'signTx') => {
-  //   profileState.setLoading(true);
-
-  //   const actions = {
-  //     sign: () =>
-  //       walletActions.handleSignMessage(profileState.addSignedMessage),
-  //     sendTx: () =>
-  //       walletActions.handleSendTransaction(profileState.addTransaction),
-  //     signTx: () =>
-  //       walletActions.handleSignTransaction(profileState.addTransaction),
-  //   };
-
-  //   actions[actionType]().finally(() => {
-  //     profileState.setLoading(false);
-  //   });
-  // };
   if (!persistedUser) {
     return <Redirect href="/login" />;
   }
@@ -167,373 +143,77 @@ export default function ProfileScreen() {
           profileState={profileState}
         />
 
-        {/* Profile Header Card */}
-        <ProfileHeaderCard
-          user={persistedUser}
-          activeWallet={activeWallet}
-          profileState={profileState}
-          getCurrentEthereumNetwork={getCurrentEthereumNetwork}
-        />
-
-        {/* Quick Actions */}
-        {/* <View className="px-5 mt-6">
-          <Text className="text-lg font-bold text-slate-800 mb-3">
-            Quick Actions
-          </Text>
-          <View className="flex-row flex-wrap gap-3">
-            <QuickAction
-              icon="🔄"
-              text="Switch Wallet"
-              onPress={() => profileState.openModal('walletSwitch')}
-              backgroundColor="#f0f9ff"
-            />
-
-            {activeWalletType === 'ethereum' && (
-              <QuickAction
-                icon="🌐"
-                text={isSwitchingNetwork ? 'Switching...' : 'Switch Network'}
-                onPress={() => profileState.openModal('network')}
-                backgroundColor="#fef3c7"
-                disabled={isSwitchingNetwork}
-              />
-            )}
-
-            <QuickAction
-              icon="✍️"
-              text="Sign Message"
-              onPress={() => handleWalletAction('sign')}
-              backgroundColor="#ecfdf5"
-              disabled={
-                profileState.isLoading || !walletActions.canPerformActions
-              }
-            />
-
-            <QuickAction
-              icon="📤"
-              text="Send Test TX"
-              onPress={() => handleWalletAction('sendTx')}
-              backgroundColor="#f3e8ff"
-              disabled={
-                profileState.isLoading || !walletActions.canPerformActions
-              }
-            />
-
-            <QuickAction
-              icon="🔏"
-              text="Sign Test TX"
-              onPress={() => handleWalletAction('signTx')}
-              backgroundColor="#fef2f2"
-              disabled={
-                profileState.isLoading || !walletActions.canPerformActions
-              }
-            />
-
-            <QuickAction
-              icon="⚙️"
-              text="Settings"
-              onPress={() => router.push('/settings')}
-              backgroundColor="#f8fafc"
-            />
-          </View>
-        </View> */}
-
-        {/* Multi-Chain Wallet Section */}
-        <View className="mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-md border border-slate-100">
-          <TouchableOpacity
-            className="flex-row items-center justify-between p-5"
-            onPress={() => profileState.toggleSection('wallet')}
-          >
-            <View className="flex-row items-center flex-1">
-              <View className="w-9 h-9 rounded-full bg-slate-50 items-center justify-center mr-3">
-                <Text className="text-lg">💰</Text>
-              </View>
-              <Text className="text-base font-semibold text-slate-800">
-                Multi-Chain Wallets
-              </Text>
-            </View>
-            <Text className="text-sm text-slate-400">
-              {profileState.expandedSection === 'wallet' ? '▼' : '▶'}
-            </Text>
-          </TouchableOpacity>
-
-          {profileState.expandedSection === 'wallet' && (
-            <View className="px-5 pb-5">
-              {/* Ethereum Wallet */}
-              <View className="mb-5">
-                <View className="flex-row justify-between items-center mb-3">
-                  <View className="flex-row items-center">
-                    <WalletLogo
-                      type="ethereum"
-                      size={24}
-                      style={{ marginRight: 8 }}
-                    />
-                    <Text className="text-base font-bold text-slate-800">
-                      Ethereum Wallet
-                    </Text>
-                  </View>
-                  {activeWalletType === 'ethereum' && (
-                    <View className="bg-emerald-500 rounded-xl px-2 py-1">
-                      <Text className="text-xs font-bold text-white">
-                        Active
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <WalletCard
-                  wallet={{
-                    address: ethereumAddress || '',
-                    type: 'ethereum',
-                    iconType: 'ethereum',
-                    network: getCurrentEthereumNetwork().name,
-                  }}
-                  isActive={activeWalletType === 'ethereum'}
-                  onPress={() => {
-                    if (ethereumAddress) {
-                      if (activeWalletType !== 'ethereum') {
-                        switchWalletType('ethereum');
-                      }
-                      profileState.openModal('wallet');
-                    } else {
-                      create();
-                    }
-                  }}
-                  onCopyAddress={address =>
-                    walletActions.copyToClipboard(address, 'Ethereum')
-                  }
-                  onNetworkPress={() => profileState.openModal('network')}
-                />
-              </View>
-
-              {/* Solana Wallet */}
-              <View className="mb-5">
-                <View className="flex-row justify-between items-center mb-3">
-                  <View className="flex-row items-center">
-                    <WalletLogo
-                      type="solana"
-                      size={24}
-                      style={{ marginRight: 8 }}
-                    />
-                    <Text className="text-base font-bold text-slate-800">
-                      Solana Wallet
-                    </Text>
-                  </View>
-                  {activeWalletType === 'solana' && (
-                    <View className="bg-emerald-500 rounded-xl px-2 py-1">
-                      <Text className="text-xs font-bold text-white">
-                        Active
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <WalletCard
-                  wallet={{
-                    address: solanaAddress || '',
-                    type: 'solana',
-                    iconType: 'solana',
-                    network: 'mainnet-beta',
-                  }}
-                  isActive={activeWalletType === 'solana'}
-                  onPress={() => {
-                    if (hasSolanaWallet && solanaAddress) {
-                      if (activeWalletType !== 'solana') {
-                        switchWalletType('solana');
-                      }
-                    } else {
-                      createSolanaWallet();
-                    }
-                  }}
-                  onCopyAddress={address =>
-                    walletActions.copyToClipboard(address, 'Solana')
-                  }
-                  isCreating={isCreatingSolanaWallet}
-                />
-              </View>
-            </View>
-          )}
-        </View>
-
         {/* Security Section */}
-        <View className="mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-md border border-slate-100">
-          <TouchableOpacity
-            className="flex-row items-center justify-between p-5"
-            onPress={() => profileState.toggleSection('security')}
-          >
-            <View className="flex-row items-center flex-1">
-              <View className="w-9 h-9 rounded-full bg-slate-50 items-center justify-center mr-3">
-                <Text className="text-lg">🔐</Text>
-              </View>
-              <Text className="text-base font-semibold text-slate-800">
-                Security & Access
-              </Text>
-            </View>
-            <Text className="text-sm text-slate-400">
-              {profileState.expandedSection === 'security' ? '▼' : '▶'}
-            </Text>
-          </TouchableOpacity>
+        <SettingSection title="Security">
+          <SettingItem
+            icon="🔑"
+            title="Keys & Recovery"
+            onPress={() => router.push('/settings/keys-recovery')}
+          />
+          <SettingItem
+            icon="⏰"
+            title="Spending Limits"
+            onPress={() => router.push('/settings/spending-limits')}
+          />
+          <SettingItem
+            icon="🔐"
+            title="Privy relative"
+            onPress={() => router.push('/settings/privy-relative')}
+          />
+        </SettingSection>
 
-          {profileState.expandedSection === 'security' && (
-            <View className="px-5 pb-5">
-              <TouchableOpacity
-                className="flex-row items-center py-4 border-b border-slate-50"
-                onPress={() =>
-                  linkWithPasskey({
-                    relyingParty:
-                      Constants.expoConfig?.extra?.passkeyAssociatedDomain,
-                  })
-                }
-              >
-                <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                  <Text className="text-lg">🔑</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-semibold text-slate-800">
-                    Passkey Security
-                  </Text>
-                  <Text className="text-xs text-slate-500 mt-0.5">
-                    Enhanced biometric authentication
-                  </Text>
-                </View>
-                <TouchableOpacity className="bg-indigo-500 rounded-lg py-1.5 px-3">
-                  <Text className="text-xs font-semibold text-white">Link</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
+        {/* General Section */}
+        <SettingSection title="General">
+          <SettingItem
+            icon="💼"
+            title="Edit wallet"
+            onPress={() => router.push('/settings/edit-wallet')}
+          />
+          <SettingItem
+            icon="🔔"
+            title="Notifications"
+            onPress={() => router.push('/settings/notifications')}
+          />
+          <SettingItem
+            icon="👥"
+            title="Address book"
+            onPress={() => router.push('/settings/address-book')}
+          />
+          <SettingItem
+            icon="🏔️"
+            title="Setting"
+            onPress={() => router.push('/settings')}
+          />
+          <SettingItem
+            icon="🖼️"
+            title="NFTs"
+            onPress={() => router.push('/settings/nfts')}
+          />
+          <SettingItem
+            icon="🌐"
+            title="Network"
+            onPress={() => router.push('/settings/network')}
+          />
+        </SettingSection>
 
-              <TouchableOpacity
-                className="flex-row items-center py-4 border-b border-slate-50"
-                onPress={() => profileState.openModal('messages')}
-              >
-                <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                  <Text className="text-lg">✍️</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-semibold text-slate-800">
-                    Signed Messages
-                  </Text>
-                  <Text className="text-xs text-slate-500 mt-0.5">
-                    View your message signatures
-                  </Text>
-                </View>
-                <TouchableOpacity className="bg-slate-100 rounded-lg py-1.5 px-3">
-                  <Text className="text-xs font-semibold text-slate-600">
-                    View
-                  </Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="flex-row items-center py-4"
-                onPress={() => profileState.openModal('transactions')}
-              >
-                <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                  <Text className="text-lg">📊</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-semibold text-slate-800">
-                    Transaction History
-                  </Text>
-                  <Text className="text-xs text-slate-500 mt-0.5">
-                    View your test transactions
-                  </Text>
-                </View>
-                <TouchableOpacity className="bg-slate-100 rounded-lg py-1.5 px-3">
-                  <Text className="text-xs font-semibold text-slate-600">
-                    View
-                  </Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* Connected Accounts */}
-        <View className="mx-5 mt-4 bg-white rounded-2xl overflow-hidden shadow-md border border-slate-100">
-          <TouchableOpacity
-            className="flex-row items-center justify-between p-5"
-            onPress={() => profileState.toggleSection('accounts')}
-          >
-            <View className="flex-row items-center flex-1">
-              <View className="w-9 h-9 rounded-full bg-slate-50 items-center justify-center mr-3">
-                <Text className="text-lg">🌐</Text>
-              </View>
-              <Text className="text-base font-semibold text-slate-800">
-                Connected Accounts
-              </Text>
-              <View className="bg-indigo-500 rounded-lg px-2 py-0.5 ml-2">
-                <Text className="text-xs font-bold text-white">
-                  {persistedUser?.linked_accounts.length}
-                </Text>
-              </View>
-            </View>
-            <Text className="text-sm text-slate-400">
-              {profileState.expandedSection === 'accounts' ? '▼' : '▶'}
-            </Text>
-          </TouchableOpacity>
-
-          {profileState.expandedSection === 'accounts' && (
-            <View className="px-5 pb-5">
-              {persistedUser?.linked_accounts
-                .slice(0, 3)
-                .map((accountItem: any, index: number) => (
-                  <View
-                    key={index}
-                    className="flex-row items-center py-3 border-b border-slate-50"
-                  >
-                    <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                      {getProviderIcon(accountItem.type, 18)}
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-sm font-semibold text-slate-800 capitalize">
-                        {accountItem.type
-                          .replace('_oauth', '')
-                          .replace('_', ' ')}
-                      </Text>
-                      <Text className="text-xs text-slate-500 mt-0.5">
-                        {toMainIdentifier(accountItem)}
-                      </Text>
-                    </View>
-                    <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
-                      <Text className="text-xs text-white font-bold">✓</Text>
-                    </View>
-                  </View>
-                ))}
-
-              {persistedUser?.linked_accounts.length &&
-                persistedUser?.linked_accounts.length > 3 && (
-                  <TouchableOpacity
-                    className="mt-3 py-2 items-center"
-                    onPress={() => profileState.openModal('accounts')}
-                  >
-                    <Text className="text-sm font-semibold text-indigo-500">
-                      View All ({persistedUser?.linked_accounts.length})
-                    </Text>
-                  </TouchableOpacity>
-                )}
-
-              <View className="mt-4 pt-4 border-t border-slate-50">
-                <Text className="text-sm font-semibold text-slate-800 mb-3">
-                  Link New Account
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {['google', 'github', 'discord', 'apple'].map(provider => (
-                    <TouchableOpacity
-                      key={provider}
-                      className="flex-row items-center bg-slate-50 rounded-xl py-2 px-3 border border-slate-200"
-                      onPress={() => oauth.link({ provider } as any)}
-                      disabled={oauth.state.status === 'loading'}
-                    >
-                      {getProviderIcon(provider, 16)}
-                      <Text className="text-xs font-medium text-slate-600 ml-1.5">
-                        {provider.charAt(0).toUpperCase() + provider.slice(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </View>
-          )}
-        </View>
+        {/* About Section */}
+        <SettingSection title="About">
+          <SettingItem
+            icon="💬"
+            title="Contact support"
+            onPress={() => router.push('/settings/contact-support')}
+          />
+          <SettingItem
+            icon="⭐"
+            title="Share your feedback"
+            onPress={() => router.push('/settings/share-feedback')}
+          />
+          <SettingItem
+            icon="🐦"
+            title="Follow @bolaritywallet"
+            onPress={() => router.push('/settings/follow-twitter')}
+          />
+        </SettingSection>
 
         {/* Sign Out Button */}
         <TouchableOpacity
