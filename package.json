@@ -3,7 +3,7 @@
   "main": "entrypoint.js",
   "version": "1.0.0",
   "engines": {
-    "node": "20.18.0",
+    "node": "20.19.4",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -14,7 +14,9 @@
     "lint:fix": "eslint . --fix",
     "prepare": "husky install",
     "quick-update": "EXPO_USE_CHUNKED_REQUESTS=1 EAS_BUILD_GRAPHQL_TIMEOUT=300000 node scripts/quick-update.js",
-    "eas-build-android": "eas build --platform android --local --profile production"
+    "eas-build-android": "eas build --platform android --local --profile production",
+    "eas-build-ios": "eas build --platform ios --local --profile production",
+    "build-ios": "react-native bundle --entry-file='entrypoint.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
   },
   "husky": {
     "hooks": {
@@ -100,7 +102,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "latest",
     "@types/react": "~19.0.10",
+    "@types/react-native": "^0.72.8",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
     "@typescript-eslint/parser": "^8.0.1",
     "eslint": "^9.25.0",
