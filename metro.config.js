@@ -4,6 +4,7 @@ const { withNativeWind } = require('nativewind/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
+const { transformer } = config;
 
 const resolveRequestWithPackageExports = (context, moduleName, platform) => {
   // Package exports in `isows` are incorrect, so we need to disable them
@@ -42,6 +43,11 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
+config.transformer = {
+  ...transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
+};
+
 config.resolver.resolveRequest = resolveRequestWithPackageExports;
 
 // 添加对 @noble/hashes 的别名解析
@@ -55,5 +61,11 @@ config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs'];
 
 // 添加对 crypto polyfills 的支持
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
+
+config.resolver = {
+  ...config.resolver,
+  assetExts: config.resolver.assetExts.filter(ext => ext !== 'svg'),
+  sourceExts: [...config.resolver.sourceExts, 'svg'],
+};
 
 module.exports = withNativeWind(config, { input: './global.css' });
