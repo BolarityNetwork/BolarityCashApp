@@ -3,22 +3,19 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { formatAddress } from '@/utils/profile';
 import AnimatedNumber from '../AnimatedNumber';
 import { useMultiChainBalance } from '@/hooks/useBalanceData';
+import { calculateAssetDistribution, AssetDistribution } from '@/utils/balance';
 
 interface BalanceCardProps {
   address: string;
   totalBalance?: number;
-  assetDistribution?: {
-    USD: number;
-    BTC: number;
-    ETH: number;
-  };
+  assetDistribution?: AssetDistribution;
   profileState?: any;
 }
 
 export const BalanceCard: React.FC<BalanceCardProps> = ({
   address,
   totalBalance: propTotalBalance,
-  assetDistribution = { USD: 0.4, BTC: 0.35, ETH: 0.25 },
+  assetDistribution: propAssetDistribution,
   profileState,
 }) => {
   const {
@@ -29,16 +26,26 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({
 
   const totalBalance = balanceData?.totalBalance ?? propTotalBalance ?? 0;
 
-  // Calculate total for percentage calculation
-  const total =
-    assetDistribution.USD + assetDistribution.BTC + assetDistribution.ETH;
-  const usdPercentage = total > 0 ? assetDistribution.USD / total : 0;
-  const btcPercentage = total > 0 ? assetDistribution.BTC / total : 0;
-  const ethPercentage = total > 0 ? assetDistribution.ETH / total : 0;
+  // Calculate dynamic asset distribution from balance data
+  const dynamicAssetDistribution = balanceData?.allTokens
+    ? calculateAssetDistribution(balanceData.allTokens)
+    : (propAssetDistribution ?? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 });
+
+  // Use dynamic distribution if available, otherwise fall back to prop
+  const assetDistribution =
+    totalBalance === 0
+      ? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 }
+      : balanceData?.allTokens
+        ? dynamicAssetDistribution
+        : (propAssetDistribution ?? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 });
+
+  const usdPercentage = assetDistribution.USD;
+  const btcPercentage = assetDistribution.BTC;
+  const ethPercentage = assetDistribution.ETH;
+  const otherPercentage = assetDistribution.Other;
 
   return (
     <View className="bg-white mx-5 mt-5 rounded-2xl p-5 shadow-sm border border-slate-100">
-      {/* Balance Section */}
       <View className="mb-4">
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-sm font-medium text-slate-600">balance</Text>
@@ -85,51 +92,85 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Asset Distribution Bar */}
       <View className="mb-3">
         <View className="h-6 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
           <View className="flex-row h-full">
-            {/* USD Segment */}
             <View
-              className="bg-green-500"
-              style={{ width: `${usdPercentage * 100}%` }}
-            />
-            {/* BTC Segment */}
-            <View
-              className="bg-yellow-500"
-              style={{ width: `${btcPercentage * 100}%` }}
-            />
-            {/* ETH Segment */}
-            <View
-              className="bg-red-500"
-              style={{ width: `${ethPercentage * 100}%` }}
-            />
-            {/* Empty space */}
-            <View
-              className="bg-white"
               style={{
-                width: `${(1 - usdPercentage - btcPercentage - ethPercentage) * 100}%`,
+                width: `${usdPercentage * 100}%`,
+                backgroundColor: '#10B981',
+              }}
+            />
+            <View
+              style={{
+                width: `${btcPercentage * 100}%`,
+                backgroundColor: '#F59E0B',
+              }}
+            />
+            <View
+              style={{
+                width: `${ethPercentage * 100}%`,
+                backgroundColor: '#3B82F6',
+              }}
+            />
+            <View
+              style={{
+                width: `${otherPercentage * 100}%`,
+                backgroundColor: '#8B5CF6',
               }}
             />
           </View>
         </View>
       </View>
 
-      {/* Asset Labels */}
-      <View className="flex-row justify-between">
-        <View className="items-center">
-          <Text className="text-xs font-medium text-slate-600">USD</Text>
-        </View>
-        <View className="items-center">
-          <Text className="text-xs font-medium text-slate-600">BTC</Text>
-        </View>
-        <View className="items-center">
-          <Text className="text-xs font-medium text-slate-600">ETH</Text>
-        </View>
-        <View className="items-center">
-          <Text className="text-xs font-medium text-slate-400">Other</Text>
-        </View>
+      <View className="flex-row relative h-6">
+        {usdPercentage > 0 && (
+          <View
+            className="absolute items-center"
+            style={{
+              left: `${usdPercentage * 50}%`,
+              transform: [{ translateX: -15 }],
+            }}
+          >
+            <Text className="text-xs font-medium text-slate-600">USD</Text>
+          </View>
+        )}
+
+        {btcPercentage > 0 && (
+          <View
+            className="absolute items-center"
+            style={{
+              left: `${(usdPercentage + btcPercentage * 0.5) * 100}%`,
+              transform: [{ translateX: -15 }],
+            }}
+          >
+            <Text className="text-xs font-medium text-slate-600">BTC</Text>
+          </View>
+        )}
+
+        {ethPercentage > 0 && (
+          <View
+            className="absolute items-center"
+            style={{
+              left: `${(usdPercentage + btcPercentage + ethPercentage * 0.5) * 100}%`,
+              transform: [{ translateX: -15 }],
+            }}
+          >
+            <Text className="text-xs font-medium text-slate-600">ETH</Text>
+          </View>
+        )}
+
+        {otherPercentage > 0 && (
+          <View
+            className="absolute items-center"
+            style={{
+              left: `${(usdPercentage + btcPercentage + ethPercentage + otherPercentage * 0.5) * 100}%`,
+              transform: [{ translateX: -20 }],
+            }}
+          >
+            <Text className="text-xs font-medium text-slate-600">Other</Text>
+          </View>
+        )}
       </View>
     </View>
   );

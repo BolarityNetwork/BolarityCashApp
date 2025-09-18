@@ -134,12 +134,6 @@ export default function ProfileScreen() {
         {/* Balance Card */}
         <BalanceCard
           address={activeWallet.address || ''}
-          // TODO: get asset distribution from backend
-          assetDistribution={{
-            USD: 0.4,
-            BTC: 0.35,
-            ETH: 0.25,
-          }}
           profileState={profileState}
         />
 

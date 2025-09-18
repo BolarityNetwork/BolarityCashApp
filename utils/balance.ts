@@ -86,3 +86,89 @@ export const getTokenDisplayName = (token: CoinData): string => {
   }
   return token.symbol;
 };
+
+// Interface for asset distribution
+export interface AssetDistribution {
+  USD: number;
+  BTC: number;
+  ETH: number;
+  Other: number;
+}
+
+// Helper function to categorize tokens by type
+export const categorizeTokenByType = (
+  token: CoinData
+): 'USD' | 'BTC' | 'ETH' | 'Other' => {
+  const symbol = token.symbol.toUpperCase();
+  const name = token.name.toUpperCase();
+
+  // USD-pegged tokens
+  if (
+    symbol === 'USDC' ||
+    symbol === 'USDT' ||
+    symbol === 'DAI' ||
+    symbol === 'BUSD' ||
+    name.includes('USD') ||
+    name.includes('DOLLAR')
+  ) {
+    return 'USD';
+  }
+
+  // Bitcoin-related tokens
+  if (
+    symbol === 'BTC' ||
+    symbol === 'WBTC' ||
+    symbol === 'BTCB' ||
+    name.includes('BITCOIN') ||
+    name.includes('BTC')
+  ) {
+    return 'BTC';
+  }
+
+  // Ethereum-related tokens
+  if (
+    symbol === 'ETH' ||
+    symbol === 'WETH' ||
+    name.includes('ETHEREUM') ||
+    name.includes('ETHER')
+  ) {
+    return 'ETH';
+  }
+
+  // Everything else
+  return 'Other';
+};
+
+// Function to calculate asset distribution from token data
+export const calculateAssetDistribution = (
+  tokens: CoinData[]
+): AssetDistribution => {
+  const distribution: AssetDistribution = {
+    USD: 0,
+    BTC: 0,
+    ETH: 0,
+    Other: 0,
+  };
+
+  // Calculate total balance first
+  const totalBalance = calculateTotalBalance(tokens);
+
+  if (totalBalance === 0) {
+    return distribution;
+  }
+
+  // Group tokens by category and sum their balances
+  tokens.forEach(token => {
+    const balance = parseBalanceString(token.balance);
+    const category = categorizeTokenByType(token);
+    distribution[category] += balance;
+  });
+
+  // Convert to percentages
+  return {
+    USD: distribution.USD / totalBalance,
+    BTC: distribution.BTC / totalBalance,
+    ETH: distribution.ETH / totalBalance,
+    Other: distribution.Other / totalBalance,
+  };
+};
