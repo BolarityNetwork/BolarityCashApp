@@ -1,13 +1,12 @@
-// hooks/store/useUserStore.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = 'cached_user';
 
 interface UserState {
   cachedUser: any | null;
-  hydrated: boolean;
+  isHydrated: boolean;
   setCachedUser: (user: any | null) => void;
   setHydrated: (hydrated: boolean) => void;
   clearUser: () => void;
@@ -17,24 +16,19 @@ export const useUserStore = create<UserState>()(
   persist(
     set => ({
       cachedUser: null,
-      hydrated: false,
+      isHydrated: false,
       setCachedUser: user => set({ cachedUser: user }),
-      setHydrated: hydrated => set({ hydrated }),
+      setHydrated: hydrated => set({ isHydrated: hydrated }),
       clearUser: () => set({ cachedUser: null }),
     }),
     {
       name: STORAGE_KEY,
-      storage: {
-        getItem: async name => {
-          const value = await AsyncStorage.getItem(name);
-          return value ? JSON.parse(value) : null;
-        },
-        setItem: async (name, value) => {
-          await AsyncStorage.setItem(name, JSON.stringify(value));
-        },
-        removeItem: async name => {
-          await AsyncStorage.removeItem(name);
-        },
+      partialize: state => ({ cachedUser: state.cachedUser }),
+      storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => state => {
+        if (state) {
+          state.setHydrated(true);
+        }
       },
     }
   )

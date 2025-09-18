@@ -6,23 +6,18 @@ import { PrivyElements } from '@privy-io/expo/ui';
 import { MultiChainWalletProvider } from '@/components/MultiChainWalletProvider';
 import { ThemeProvider } from '@/components/theme/ThemeContext';
 import { QueryProvider } from '@/components/QueryProvider';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from '@expo-google-fonts/inter';
-import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 import '@/i18n';
 import { useUpdateModal } from '@/hooks/useUpdateModal';
 import UpdateModal from '@/components/modals/UpdateModal';
 import { useCheckForUpdates } from '@/hooks/useCheckForUpdates';
+import { useAppReady } from '@/hooks/useAppReady';
+import { usePrivyReady } from '@/hooks/usePrivyReady';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-  });
+  useAppReady();
 
   const {
     isVisible,
@@ -40,21 +35,44 @@ export default function RootLayout() {
         appId={Constants.expoConfig?.extra?.privyAppId}
         clientId={Constants.expoConfig?.extra?.privyClientId}
       >
-        <MultiChainWalletProvider>
-          <ThemeProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            </Stack>
-            <UpdateModal
-              visible={isVisible}
-              updateInfo={updateInfo}
-              onClose={hideUpdateModal}
-              onUpdate={handleUpdate}
-            />
-            <PrivyElements />
-          </ThemeProvider>
-        </MultiChainWalletProvider>
+        <AppContent
+          isVisible={isVisible}
+          updateInfo={updateInfo}
+          hideUpdateModal={hideUpdateModal}
+          handleUpdate={handleUpdate}
+        />
       </PrivyProvider>
     </QueryProvider>
+  );
+}
+
+function AppContent({
+  isVisible,
+  updateInfo,
+  hideUpdateModal,
+  handleUpdate,
+}: {
+  isVisible: boolean;
+  updateInfo: any;
+  hideUpdateModal: () => void;
+  handleUpdate: () => void;
+}) {
+  usePrivyReady();
+
+  return (
+    <MultiChainWalletProvider>
+      <ThemeProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+        <UpdateModal
+          visible={isVisible}
+          updateInfo={updateInfo}
+          onClose={hideUpdateModal}
+          onUpdate={handleUpdate}
+        />
+        <PrivyElements />
+      </ThemeProvider>
+    </MultiChainWalletProvider>
   );
 }
