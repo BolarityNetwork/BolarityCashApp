@@ -17,6 +17,7 @@ import { SettingItem } from '@/components/profile/SettingItem';
 import { SettingSection } from '@/components/profile/SettingSection';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
+import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
 
 // Provider icon logos
 let ethereumProviderLogo: any, solanaProviderLogo: any;
@@ -102,6 +103,12 @@ export default function ProfileScreen() {
     switchEthereumNetwork,
     activeEthereumNetwork,
     isSwitchingNetwork,
+    switchWalletType,
+    createSolanaWallet,
+    ethereumAddress,
+    solanaAddress,
+    hasSolanaWallet,
+    isCreatingSolanaWallet,
   } = useMultiChainWallet();
   const profileState = useProfileState();
 
@@ -222,6 +229,20 @@ export default function ProfileScreen() {
         switchEthereumNetwork={switchEthereumNetwork}
         activeEthereumNetwork={activeEthereumNetwork}
         isSwitchingNetwork={isSwitchingNetwork}
+      />
+
+      {/* Wallet Switch Modal */}
+      <WalletSwitchModal
+        visible={profileState.activeModal === 'walletSwitch'}
+        onClose={profileState.closeModal}
+        activeWalletType={activeWallet.type || 'ethereum'}
+        ethereumAddress={ethereumAddress}
+        solanaAddress={solanaAddress}
+        hasSolanaWallet={hasSolanaWallet}
+        isCreatingSolanaWallet={isCreatingSolanaWallet}
+        switchWalletType={switchWalletType}
+        createSolanaWallet={createSolanaWallet}
+        create={() => {}}
       />
     </CommonSafeAreaView>
   );
