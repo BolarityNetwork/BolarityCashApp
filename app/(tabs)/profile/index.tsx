@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Image,
   StatusBar,
 } from 'react-native';
@@ -14,7 +13,8 @@ import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { BaseModal } from '@/components/profile/BaseModal';
+import { BaseModal } from '@/components/common/BaseModal';
+import { NetworkSwitchModal } from '@/components/modals/NetworkSwitchModal';
 import { BalanceCard } from '@/components/profile/BalanceCard';
 import { SettingItem } from '@/components/profile/SettingItem';
 import { SettingSection } from '@/components/profile/SettingSection';
@@ -227,81 +227,14 @@ export default function ProfileScreen() {
 
       {/* All Modals */}
       {/* Network Switch Modal */}
-      <BaseModal
+      <NetworkSwitchModal
         visible={profileState.activeModal === 'network'}
         onClose={profileState.closeModal}
-        title="Switch Network"
-      >
-        <Text className="text-base text-slate-500 mb-6 text-center">
-          Choose which Ethereum network to connect to
-        </Text>
-
-        {getAvailableNetworks().map(network => {
-          const networkKey =
-            Object.entries({
-              mainnet: { name: 'Ethereum Mainnet' },
-              sepolia: { name: 'Ethereum Sepolia' },
-              polygon: { name: 'Polygon Mainnet' },
-              bsc: { name: 'BSC Mainnet' },
-              arbitrum: { name: 'Arbitrum One' },
-              optimism: { name: 'Optimism' },
-              base: { name: 'Base Mainnet' },
-            }).find(([_, config]) => config.name === network.name)?.[0] ||
-            'mainnet';
-
-          const isActive = activeEthereumNetwork === networkKey;
-
-          return (
-            <TouchableOpacity
-              key={network.name}
-              className={`bg-white rounded-2xl mb-3 shadow-md border ${
-                isActive ? 'border-indigo-500 border-2' : 'border-slate-100'
-              }`}
-              onPress={async () => {
-                try {
-                  await switchEthereumNetwork(networkKey);
-                  profileState.closeModal();
-                } catch (_) {
-                  // Error handled in hook
-                }
-              }}
-              disabled={isSwitchingNetwork}
-            >
-              <View className="flex-row items-center p-4">
-                <View
-                  className="w-12 h-12 rounded-full items-center justify-center mr-4"
-                  style={{ backgroundColor: network.color + '20' }}
-                >
-                  <Text className="text-2xl">{network.icon}</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-bold text-slate-800 mb-1">
-                    {network.name}
-                  </Text>
-                  <Text className="text-sm text-slate-500 mb-0.5">
-                    Chain ID: {network.chainId} • {network.symbol}
-                  </Text>
-                  <Text className="text-xs text-slate-400">
-                    {network.blockExplorer}
-                  </Text>
-                </View>
-                {isActive && (
-                  <Text className="text-2xl text-indigo-500 font-bold">✓</Text>
-                )}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-
-        {isSwitchingNetwork && (
-          <View className="items-center py-5">
-            <ActivityIndicator color="#667eea" size="large" />
-            <Text className="text-base text-indigo-500 mt-3 font-medium">
-              Switching network...
-            </Text>
-          </View>
-        )}
-      </BaseModal>
+        getAvailableNetworks={getAvailableNetworks}
+        switchEthereumNetwork={switchEthereumNetwork}
+        activeEthereumNetwork={activeEthereumNetwork}
+        isSwitchingNetwork={isSwitchingNetwork}
+      />
 
       {/* Wallet Switch Modal */}
       <BaseModal
