@@ -7,18 +7,14 @@ import {
   Image,
   StatusBar,
 } from 'react-native';
-import { useEmbeddedEthereumWallet } from '@privy-io/expo';
 import { Redirect, useRouter } from 'expo-router';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { BaseModal } from '@/components/common/BaseModal';
 import { NetworkSwitchModal } from '@/components/modals/NetworkSwitchModal';
-import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
 import { BalanceCard } from '@/components/profile/BalanceCard';
 import { SettingItem } from '@/components/profile/SettingItem';
 import { SettingSection } from '@/components/profile/SettingSection';
-import { toMainIdentifier } from '@/utils/profile';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 
@@ -99,17 +95,9 @@ export function getProviderIcon(
 
 export default function ProfileScreen() {
   const { user: persistedUser, logout } = usePersistedPrivyUser();
-  const { create } = useEmbeddedEthereumWallet();
   const router = useRouter();
   const {
-    activeWalletType,
     activeWallet,
-    ethereumAddress,
-    solanaAddress,
-    hasSolanaWallet,
-    isCreatingSolanaWallet,
-    switchWalletType,
-    createSolanaWallet,
     getAvailableNetworks,
     switchEthereumNetwork,
     activeEthereumNetwork,
@@ -235,123 +223,6 @@ export default function ProfileScreen() {
         activeEthereumNetwork={activeEthereumNetwork}
         isSwitchingNetwork={isSwitchingNetwork}
       />
-
-      {/* Wallet Switch Modal */}
-      <WalletSwitchModal
-        visible={profileState.activeModal === 'walletSwitch'}
-        onClose={profileState.closeModal}
-        activeWalletType={activeWalletType}
-        ethereumAddress={ethereumAddress || undefined}
-        solanaAddress={solanaAddress || undefined}
-        hasSolanaWallet={hasSolanaWallet}
-        isCreatingSolanaWallet={isCreatingSolanaWallet}
-        switchWalletType={switchWalletType}
-        createSolanaWallet={createSolanaWallet}
-        create={create}
-      />
-
-      {/* Messages Modal */}
-      <BaseModal
-        visible={profileState.activeModal === 'messages'}
-        onClose={profileState.closeModal}
-        title="Signed Messages"
-      >
-        {profileState.signedMessages.length === 0 ? (
-          <View className="items-center py-10">
-            <Text className="text-5xl mb-4">📝</Text>
-            <Text className="text-lg font-bold text-slate-800 mb-2">
-              No Messages Signed
-            </Text>
-            <Text className="text-sm text-slate-500 text-center">
-              Sign your first message to see it here
-            </Text>
-          </View>
-        ) : (
-          profileState.signedMessages.map((message, index) => (
-            <View
-              key={index}
-              className="bg-white rounded-xl p-4 mb-3 shadow-sm"
-            >
-              <Text className="text-xs font-bold text-indigo-500 mb-2">
-                #{index + 1}
-              </Text>
-              <Text className="text-sm text-slate-800 font-mono mb-2">
-                {message}
-              </Text>
-              <Text className="text-xs text-slate-400">
-                {new Date().toLocaleString()}
-              </Text>
-            </View>
-          ))
-        )}
-      </BaseModal>
-
-      {/* Transactions Modal */}
-      <BaseModal
-        visible={profileState.activeModal === 'transactions'}
-        onClose={profileState.closeModal}
-        title="Transaction History"
-      >
-        {profileState.transactionResults.length === 0 ? (
-          <View className="items-center py-10">
-            <Text className="text-5xl mb-4">📊</Text>
-            <Text className="text-lg font-bold text-slate-800 mb-2">
-              No Transactions
-            </Text>
-            <Text className="text-sm text-slate-500 text-center">
-              Send your first test transaction to see it here
-            </Text>
-          </View>
-        ) : (
-          profileState.transactionResults.map((transaction, index) => (
-            <View
-              key={index}
-              className="bg-white rounded-xl p-4 mb-3 shadow-sm"
-            >
-              <Text className="text-xs font-bold text-indigo-500 mb-2">
-                #{index + 1}
-              </Text>
-              <Text className="text-sm text-slate-800 font-mono mb-2">
-                {transaction}
-              </Text>
-              <Text className="text-xs text-slate-400">
-                {new Date().toLocaleString()}
-              </Text>
-            </View>
-          ))
-        )}
-      </BaseModal>
-
-      {/* Accounts Modal */}
-      <BaseModal
-        visible={profileState.activeModal === 'accounts'}
-        onClose={profileState.closeModal}
-        title="All Connected Accounts"
-      >
-        {persistedUser?.linked_accounts.map(
-          (accountItem: any, index: number) => (
-            <View
-              key={index}
-              className="flex-row items-center py-3 border-b border-slate-50"
-            >
-              <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center mr-3">
-                {getProviderIcon(accountItem.type, 18)}
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-semibold text-slate-800 capitalize">
-                  {accountItem.type.replace('_oauth', '').replace('_', ' ')}
-                </Text>
-                <Text className="text-xs text-slate-500 mt-0.5">
-                  {toMainIdentifier(accountItem)}
-                </Text>
-              </View>
-              <View className="w-6 h-6 rounded-full bg-emerald-500 items-center justify-center">
-                <Text className="text-xs text-white font-bold">✓</Text>
-              </View>
-            </View>
-          )
-        )}
-      </BaseModal>
     </CommonSafeAreaView>
   );
 }
