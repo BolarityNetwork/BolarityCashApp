@@ -1,41 +1,41 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { BaseModal } from '@/components/common/BaseModal';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { formatAddress } from '@/utils/profile';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
 interface WalletSwitchModalProps {
   visible: boolean;
   onClose: () => void;
-  activeWalletType: string;
-  ethereumAddress?: string | null;
-  solanaAddress?: string | null;
-  hasSolanaWallet: boolean;
-  isCreatingSolanaWallet: boolean;
-  switchWalletType: (type: 'ethereum' | 'solana') => void;
-  createSolanaWallet: () => Promise<boolean>;
-  create: () => void;
 }
 
 export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
   visible,
   onClose,
-  activeWalletType,
-  ethereumAddress,
-  solanaAddress,
-  hasSolanaWallet,
-  isCreatingSolanaWallet,
-  switchWalletType,
-  createSolanaWallet,
-  create,
 }) => {
+  const {
+    activeWallet,
+    switchWalletType,
+    createSolanaWallet,
+    ethereumAddress,
+    solanaAddress,
+    hasSolanaWallet,
+    isCreatingSolanaWallet,
+  } = useMultiChainWallet();
+
+  const activeWalletType = activeWallet.type || 'ethereum';
+
   const handleWalletSwitch = (type: 'ethereum' | 'solana') => {
     switchWalletType(type);
     onClose();
   };
 
   const handleCreateEthereumWallet = () => {
-    create();
+    Alert.alert(
+      'Info',
+      'Ethereum wallet creation is handled automatically by Privy when you sign up. If you need a new Ethereum wallet, please contact support.'
+    );
     onClose();
   };
 
