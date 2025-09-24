@@ -5,6 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionModal from './modals/ActionModal';
+import { ReceiveModal } from './modals/ReceiveModal';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,
@@ -14,6 +15,7 @@ export const TabBar: FC<BottomTabBarProps> = ({
   const { t: _t } = useTranslation();
   const routeNameArr = ['home', 'actions', 'profile'];
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
   const handleActionMenuClose = useCallback(() => {
@@ -24,10 +26,28 @@ export const TabBar: FC<BottomTabBarProps> = ({
     setIsActionMenuOpen(true);
   }, []);
 
+  const handleReceiveModalOpen = useCallback(() => {
+    setIsReceiveModalOpen(true);
+  }, []);
+
+  const handleReceiveModalClose = useCallback(() => {
+    setIsReceiveModalOpen(false);
+  }, []);
+
   return (
     <>
       {/* Action Modal */}
-      <ActionModal visible={isActionMenuOpen} onClose={handleActionMenuClose} />
+      <ActionModal
+        visible={isActionMenuOpen}
+        onClose={handleActionMenuClose}
+        onReceivePress={handleReceiveModalOpen}
+      />
+
+      {/* Receive Modal */}
+      <ReceiveModal
+        visible={isReceiveModalOpen}
+        onClose={handleReceiveModalClose}
+      />
 
       {/* TabBar */}
       <View
