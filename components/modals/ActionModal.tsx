@@ -68,7 +68,7 @@ const ActionModal: React.FC<ActionModalProps> = ({
         handleClose();
         setTimeout(() => {
           onReceivePress?.();
-        }, 50);
+        }, 300);
       },
     },
   ];
