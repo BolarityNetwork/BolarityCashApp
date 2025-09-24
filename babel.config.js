@@ -8,6 +8,13 @@ module.exports = function (api) {
     plugins: [
       // Reanimated plugin has to be listed last.
       'react-native-reanimated/plugin',
+      [
+        'module:react-native-dotenv',
+        {
+          moduleName: '@env',
+          path: '.env',
+        },
+      ],
     ],
   };
 };
