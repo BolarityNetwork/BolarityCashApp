@@ -10,7 +10,6 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
-  StyleSheet,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProtocolLogo from '@/components/home/ProtocolLogo';
@@ -440,58 +439,75 @@ const DepositModal: React.FC<DepositModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
+          <Text className="text-xl font-bold text-gray-900">
             {isTimeVault
               ? `Open ${displayVault?.name}`
               : isSpecificVault
                 ? `Open ${displayVault?.name} Vault`
                 : `Open ${displayVault?.name}`}
           </Text>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>×</Text>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+            onPress={onClose}
+          >
+            <Text className="text-xl text-gray-500">×</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.modalContent}>
+        <ScrollView className="flex-1 p-5">
           {/* Vault Header - 保持原有样式 */}
           {isTimeVault ? (
             <LinearGradient
               colors={['#667eea', '#764ba2']}
-              style={styles.depositVaultHeader}
+              className="rounded-2xl p-6 mb-6"
+              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
             >
-              <View style={styles.depositVaultInfo}>
+              <View
+                className="flex-row items-center mb-4"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}
+              >
                 <ProtocolLogo
                   protocol={getProtocolFromVaultName(displayVault.name)}
                   size={48}
                 />
-                <View style={styles.depositVaultText}>
-                  <Text style={styles.depositVaultName}>
+                <View
+                  className="ml-3 flex-1"
+                  style={{ marginLeft: 12, flex: 1 }}
+                >
+                  <Text className="text-xl font-bold text-white">
                     {displayVault.name}
                   </Text>
-                  <Text style={styles.depositVaultDesc}>
+                  <Text className="text-sm text-white/80">
                     {displayVault.description}
                   </Text>
                 </View>
               </View>
-              <View style={styles.depositVaultStats}>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>APY Rate</Text>
-                  <Text style={styles.depositStatValue}>
-                    {displayVault.apy}
+              <View
+                className="flex-row gap-4"
+                style={{ flexDirection: 'row', gap: 16 }}
+              >
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {displayVault?.apy}
                   </Text>
                 </View>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>Lock Period</Text>
-                  <Text style={styles.depositStatValue}>
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">Lock Period</Text>
+                  <Text className="text-lg font-bold text-white">
                     {(displayVault as TimeVaultOption).lockPeriod}
                   </Text>
                 </View>
               </View>
-              <View style={styles.depositProtocol}>
-                <Text style={styles.depositStatLabel}>Protocol</Text>
-                <Text style={styles.depositStatValue}>
+              <View className="mt-3" style={{ marginTop: 12 }}>
+                <Text className="text-sm text-white/80">Protocol</Text>
+                <Text className="text-lg font-bold text-white">
                   {(displayVault as TimeVaultOption).protocol}
                 </Text>
               </View>
@@ -499,59 +515,85 @@ const DepositModal: React.FC<DepositModalProps> = ({
           ) : isSpecificVault ? (
             <LinearGradient
               colors={['#764ba2', '#c084fc']}
-              style={styles.depositVaultHeader}
+              className="rounded-2xl p-6 mb-6"
+              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
             >
-              <View style={styles.depositVaultInfo}>
-                <ProtocolLogo protocol={displayVault?.name} size={48} />
-                <View style={styles.depositVaultText}>
-                  <Text style={styles.depositVaultName}>
+              <View
+                className="flex-row items-center mb-4"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}
+              >
+                <ProtocolLogo protocol={displayVault?.name || ''} size={48} />
+                <View
+                  className="ml-3 flex-1"
+                  style={{ marginLeft: 12, flex: 1 }}
+                >
+                  <Text className="text-xl font-bold text-white">
                     {displayVault?.name}
                   </Text>
-                  <Text style={styles.depositVaultDesc}>
+                  <Text className="text-sm text-white/80">
                     {displayVault?.description}
                   </Text>
                 </View>
               </View>
-              <View style={styles.depositVaultStats}>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>APY Rate</Text>
-                  <Text style={styles.depositStatValue}>
+              <View
+                className="flex-row gap-4"
+                style={{ flexDirection: 'row', gap: 16 }}
+              >
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-lg font-bold text-white">
                     {displayVault?.apy}
                   </Text>
                 </View>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>TVL</Text>
-                  <Text style={styles.depositStatValue}>
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">TVL</Text>
+                  <Text className="text-lg font-bold text-white">
                     {(displayVault as VaultOption).tvl}
                   </Text>
                 </View>
               </View>
-              <View style={styles.depositProtocol}>
-                <Text style={styles.depositStatLabel}>Risk Level</Text>
-                <Text style={styles.depositStatValue}>
+              <View className="mt-3" style={{ marginTop: 12 }}>
+                <Text className="text-sm text-white/80">Risk Level</Text>
+                <Text className="text-lg font-bold text-white">
                   {(displayVault as VaultOption).risk}
                 </Text>
               </View>
             </LinearGradient>
           ) : (
             <LinearGradient
-              colors={(displayVault as VaultProduct).gradientColors}
-              style={styles.depositVaultHeader}
+              colors={
+                ((displayVault as VaultProduct)?.gradientColors as [
+                  string,
+                  string,
+                  ...string[],
+                ]) || ['#c084fc', '#f472b6']
+              }
+              className="rounded-2xl p-6 mb-6"
+              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
             >
-              <View style={styles.depositVaultHeaderContent}>
-                <Text style={styles.depositVaultName}>{displayVault.name}</Text>
-                <VaultLogo vaultName={displayVault.name} size={24} />
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className="text-xl font-bold text-white">
+                  {displayVault?.name}
+                </Text>
+                <VaultLogo vaultName={displayVault?.name || ''} size={24} />
               </View>
-              <View style={styles.depositVaultStats}>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>APY Rate</Text>
-                  <Text style={styles.depositStatValue}>
-                    {displayVault.apy}
+              <View
+                className="flex-row gap-4"
+                style={{ flexDirection: 'row', gap: 16 }}
+              >
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {displayVault?.apy}
                   </Text>
                 </View>
-                <View style={styles.depositStatItem}>
-                  <Text style={styles.depositStatLabel}>Minimum</Text>
-                  <Text style={styles.depositStatValue}>
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">Minimum</Text>
+                  <Text className="text-lg font-bold text-white">
                     {(displayVault as VaultProduct).minimum}
                   </Text>
                 </View>
@@ -560,8 +602,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
           )}
 
           {/* 恢复原本的功能描述 */}
-          <View style={styles.depositFeatures}>
-            <Text style={styles.depositFeaturesTitle}>
+          <View className="mb-6">
+            <Text className="text-base font-bold text-gray-900 mb-4">
               {isTimeVault
                 ? 'Vault Features:'
                 : isSpecificVault
@@ -575,14 +617,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
                   'Automated yield optimization',
                   'Institutional-grade security',
                 ].map((feature, index) => (
-                  <View key={index} style={styles.depositFeatureItem}>
-                    <View
-                      style={[
-                        styles.depositFeatureDot,
-                        { backgroundColor: '#667eea' },
-                      ]}
-                    />
-                    <Text style={styles.depositFeatureText}>{feature}</Text>
+                  <View key={index} className="flex-row items-center mb-2">
+                    <View className="w-2 h-2 rounded-full bg-indigo-500 mr-3" />
+                    <Text className="text-sm text-gray-700">{feature}</Text>
                   </View>
                 ))
               : isSpecificVault
@@ -592,61 +629,51 @@ const DepositModal: React.FC<DepositModalProps> = ({
                     'Audited smart contracts',
                     '24/7 yield optimization',
                   ].map((feature, index) => (
-                    <View key={index} style={styles.depositFeatureItem}>
-                      <View
-                        style={[
-                          styles.depositFeatureDot,
-                          { backgroundColor: '#764ba2' },
-                        ]}
-                      />
-                      <Text style={styles.depositFeatureText}>{feature}</Text>
+                    <View key={index} className="flex-row items-center mb-2">
+                      <View className="w-2 h-2 rounded-full bg-purple-600 mr-3" />
+                      <Text className="text-sm text-gray-700">{feature}</Text>
                     </View>
                   ))
                 : (displayVault as VaultProduct).features.map(
                     (feature, index) => (
-                      <View key={index} style={styles.depositFeatureItem}>
-                        <View
-                          style={[
-                            styles.depositFeatureDot,
-                            { backgroundColor: '#c084fc' },
-                          ]}
-                        />
-                        <Text style={styles.depositFeatureText}>{feature}</Text>
+                      <View key={index} className="flex-row items-center mb-2">
+                        <View className="w-2 h-2 rounded-full bg-purple-400 mr-3" />
+                        <Text className="text-sm text-gray-700">{feature}</Text>
                       </View>
                     )
                   )}
           </View>
 
           {/* 原本的余额和输入区域 */}
-          <View style={styles.depositSummary}>
-            <View style={styles.depositSummaryRow}>
-              <Text style={styles.depositSummaryLabel}>
-                USDC Wallet Balance
-              </Text>
-              <View style={styles.depositAmountContainer}>
+          <View className="bg-gray-50 rounded-2xl p-4 mb-6">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-sm text-gray-700">USDC Wallet Balance</Text>
+              <View className="items-end">
                 {loadingBalance ? (
                   <ActivityIndicator size="small" color="#111827" />
                 ) : (
-                  <Text style={styles.depositSummaryAmount}>
+                  <Text className="text-base font-semibold text-gray-900">
                     ${usdcBalance}
                   </Text>
                 )}
               </View>
             </View>
-            <View style={styles.depositSummaryRow}>
-              <Text style={styles.depositSummaryLabel}>
-                AAVE Deposit Amount
-              </Text>
-              <View style={styles.depositAmountContainer}>
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-sm text-gray-700">AAVE Deposit Amount</Text>
+              <View className="items-end">
                 {loadingBalance ? (
                   <ActivityIndicator size="small" color="#111827" />
                 ) : networkError ? (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.depositSummaryAmount}>$0</Text>
-                    <Text style={styles.errorText}>⚠️ Network issue</Text>
+                  <View className="items-end">
+                    <Text className="text-base font-semibold text-gray-900">
+                      $0
+                    </Text>
+                    <Text className="text-xs text-red-500 mt-0.5">
+                      ⚠️ Network issue
+                    </Text>
                   </View>
                 ) : (
-                  <Text style={styles.depositSummaryAmount}>
+                  <Text className="text-base font-semibold text-gray-900">
                     ${currentDeposits}
                   </Text>
                 )}
@@ -655,9 +682,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
           </View>
 
           {/* 输入框 */}
-          <View style={styles.inputContainer}>
+          <View className="mb-4">
             <TextInput
-              style={styles.amountInput}
+              className="bg-white rounded-xl p-4 text-base border border-gray-200 text-gray-900"
               value={depositAmount}
               onChangeText={setDepositAmount}
               placeholder="Enter USDC amount"
@@ -668,38 +695,42 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
           {/* 🔧 改进的错误提示 */}
           {networkError && (
-            <View style={styles.networkErrorContainer}>
-              <Text style={styles.networkErrorText}>{networkError}</Text>
+            <View className="bg-red-50 rounded-xl p-4 mb-4 border border-red-200">
+              <Text className="text-sm text-red-600 leading-5">
+                {networkError}
+              </Text>
             </View>
           )}
 
-          <View style={styles.depositActions}>
+          <View className="flex-row gap-3">
             <TouchableOpacity
-              style={[
-                styles.learnMoreButton,
-                (isLoading || networkError) && styles.disabledButton,
-              ]}
+              className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
+                isLoading || networkError ? 'opacity-60' : ''
+              }`}
               onPress={handleWithdraw}
               disabled={isLoading || !!networkError}
             >
               {isLoading ? (
                 <ActivityIndicator size="small" color="#374151" />
               ) : (
-                <Text style={styles.learnMoreText}>Withdraw</Text>
+                <Text className="text-base font-semibold text-gray-700">
+                  Withdraw
+                </Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={[
-                styles.startSavingButton,
-                (isLoading || networkError) && styles.disabledButton,
-              ]}
+              className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
+                isLoading || networkError ? 'opacity-60' : ''
+              }`}
               onPress={handleDeposit}
               disabled={isLoading || !!networkError}
             >
               {isLoading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.startSavingText}>Start Saving</Text>
+                <Text className="text-base font-semibold text-white">
+                  Start Saving
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -708,225 +739,5 @@ const DepositModal: React.FC<DepositModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    fontSize: 20,
-    color: '#6b7280',
-  },
-  modalContent: {
-    flex: 1,
-    padding: 20,
-  },
-
-  // Vault Header Styles (保持原有样式)
-  depositVaultHeader: {
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-  },
-  depositVaultInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  depositVaultText: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  depositVaultName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  depositVaultDesc: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  depositVaultHeaderContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  depositVaultStats: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  depositStatItem: {
-    flex: 1,
-  },
-  depositStatLabel: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  depositStatValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  depositProtocol: {
-    marginTop: 12,
-  },
-
-  // 功能描述样式
-  depositFeatures: {
-    marginBottom: 24,
-  },
-  depositFeaturesTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 16,
-  },
-  depositFeatureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  depositFeatureDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#667eea',
-    marginRight: 12,
-  },
-  depositFeatureText: {
-    fontSize: 14,
-    color: '#374151',
-  },
-
-  // 原本的存款汇总样式
-  depositSummary: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-  },
-  depositSummaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  depositSummaryLabel: {
-    fontSize: 14,
-    color: '#374151',
-  },
-  depositSummaryAmount: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  depositSummaryMaturity: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2563eb',
-  },
-  depositSummaryReturn: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#059669',
-  },
-  depositAmountContainer: {
-    alignItems: 'flex-end',
-  },
-  errorContainer: {
-    alignItems: 'flex-end',
-  },
-  errorText: {
-    fontSize: 12,
-    color: '#ef4444',
-    marginTop: 2,
-  },
-
-  // 输入框样式
-  inputContainer: {
-    marginBottom: 16,
-  },
-  amountInput: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    color: '#111827',
-  },
-
-  // 操作按钮样式
-  depositActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  learnMoreButton: {
-    flex: 1,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  learnMoreText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  startSavingButton: {
-    flex: 1,
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  startSavingText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-
-  // 🔧 错误提示
-  networkErrorContainer: {
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#fecaca',
-  },
-  networkErrorText: {
-    fontSize: 14,
-    color: '#dc2626',
-    lineHeight: 20,
-  },
-});
 
 export default DepositModal;
