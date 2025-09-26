@@ -18,7 +18,13 @@ export class AaveProtocolService implements ProtocolService {
       risk: 'Medium',
       isLive: false, // TODO: temporarily dead data
       lastUpdated: Date.now(),
+      balance: 0,
     };
+  }
+
+  async getBalance(): Promise<number> {
+    // TODO: Implement AAVE balance get logic
+    return 0;
   }
 
   getCacheKey(): string {

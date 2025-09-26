@@ -21,6 +21,7 @@ import { useProtocolService } from '@/services/protocolService';
 import AAVEIntegration from '@/utils/transaction/aave';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
+import { ProtocolInfo } from '@/services/protocols/types';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -41,7 +42,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const [usdcBalance, setUsdcBalance] = useState<string>('0');
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [networkError, setNetworkError] = useState<string>('');
-  const [liveProtocolData, setLiveProtocolData] = useState<any>(null);
+  const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
 
   const {
@@ -86,19 +87,20 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
       const protocolData = await getProtocolInfo(
         selectedSpecificVault.name,
-        false
+        activeWallet?.address,
+        true
       );
 
       if (protocolData) {
-        setLiveProtocolData(protocolData);
+        setProtocolData(protocolData);
         console.log('✅ Live protocol data loaded:', protocolData);
       } else {
         console.warn('⚠️ No live protocol data available');
-        setLiveProtocolData(null);
+        setProtocolData(null);
       }
     } catch (error) {
       console.error('❌ Failed to load live protocol data:', error);
-      setLiveProtocolData(null);
+      setProtocolData(null);
     } finally {
       setLoadingProtocolData(false);
     }
@@ -390,12 +392,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     }
 
     const amount = parseFloat(depositAmount);
-    const availableDeposits = parseFloat(currentDeposits);
+    const availableDeposits =
+      protocolData?.balance || parseFloat(currentDeposits);
 
     if (amount > availableDeposits) {
       Alert.alert(
         'Insufficient Deposits',
-        `You only have ${currentDeposits} USDC deposited, cannot withdraw ${depositAmount} USDC`
+        `You only have ${availableDeposits.toFixed(2)} USDC deposited, cannot withdraw ${depositAmount} USDC`
       );
       return;
     }
@@ -451,7 +454,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         },
       ]
     );
-  }, [aaveInstance, depositAmount, currentDeposits, loadBalances]);
+  }, [
+    aaveInstance,
+    depositAmount,
+    currentDeposits,
+    protocolData,
+    loadBalances,
+  ]);
 
   if (!visible || (!selectedVault && !selectedSpecificVault)) {
     return null;
@@ -564,7 +573,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                     {displayVault?.name}
                   </Text>
                   <Text className="text-sm text-white/80">
-                    {liveProtocolData?.description || displayVault?.description}
+                    {protocolData?.description || displayVault?.description}
                   </Text>
                 </View>
               </View>
@@ -576,10 +585,10 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   <Text className="text-sm text-white/80">APY Rate</Text>
                   {loadingProtocolData ? (
                     <Skeleton width={60} height={20} />
-                  ) : liveProtocolData ? (
+                  ) : protocolData ? (
                     <View className="flex-row items-center">
                       <Text className="text-lg font-bold text-white">
-                        {liveProtocolData.apyDisplay}
+                        {protocolData.apyDisplay}
                       </Text>
                     </View>
                   ) : (
@@ -592,10 +601,10 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   <Text className="text-sm text-white/80">TVL</Text>
                   {loadingProtocolData ? (
                     <Skeleton width={80} height={20} />
-                  ) : liveProtocolData ? (
+                  ) : protocolData ? (
                     <View className="flex-row items-center">
                       <Text className="text-lg font-bold text-white">
-                        {liveProtocolData.tvl}
+                        {protocolData.tvl}
                       </Text>
                     </View>
                   ) : (
@@ -609,10 +618,10 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 <Text className="text-sm text-white/80">Risk Level</Text>
                 {loadingProtocolData ? (
                   <Skeleton width={100} height={20} />
-                ) : liveProtocolData ? (
+                ) : protocolData ? (
                   <View className="flex-row items-center">
                     <Text className="text-lg font-bold text-white">
-                      {liveProtocolData.risk}
+                      {protocolData.risk}
                     </Text>
                   </View>
                 ) : (
@@ -718,9 +727,19 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
               </View>
             </View>
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-700">AAVE Deposit Amount</Text>
+              <Text className="text-sm text-gray-700">
+                {isSpecificVault
+                  ? `${displayVault?.name} Deposit Amount`
+                  : 'AAVE Deposit Amount'}
+              </Text>
               <View className="items-end">
-                {loadingBalance ? (
+                {loadingProtocolData ? (
+                  <Skeleton width={60} height={20} />
+                ) : protocolData ? (
+                  <Text className="text-base font-semibold text-gray-900">
+                    ${protocolData.balance.toFixed(2)}
+                  </Text>
+                ) : loadingBalance ? (
                   <ActivityIndicator size="small" color="#111827" />
                 ) : networkError ? (
                   <View className="items-end">

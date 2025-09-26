@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useProtocolService } from '@/services/protocolService';
 import { VaultOption } from '@/interfaces/home';
 import { vaultOptions } from '@/utils/home';
+import useMultiChainWallet from './useMultiChainWallet';
 
 interface VaultSelectionData {
   vaultOptions: VaultOption[];
@@ -18,7 +19,7 @@ interface VaultSelectionData {
 
 export const useVaultSelection = (): VaultSelectionData => {
   const { getMultipleProtocolsInfo, aprStore } = useProtocolService();
-
+  const { activeWallet } = useMultiChainWallet();
   // State Management
   const [vaultOptionsWithData, setVaultOptionsWithData] = useState<
     VaultOption[]
@@ -31,7 +32,11 @@ export const useVaultSelection = (): VaultSelectionData => {
     try {
       // Get All Protocol Data
       const protocolNames = vaultOptions.map(vault => vault.name);
-      const protocolData = await getMultipleProtocolsInfo(protocolNames, false);
+      const protocolData = await getMultipleProtocolsInfo(
+        protocolNames,
+        activeWallet?.address,
+        false
+      );
       // Integrate Protocol Data Into vaultOptions, Only Keep Vaults With Protocol Data
       const updatedVaultOptions = vaultOptions
         .map(vault => {

@@ -7,12 +7,13 @@ export interface ProtocolInfo {
   risk: string;
   isLive: boolean;
   lastUpdated?: number;
+  balance: number;
 }
 
 export interface ProtocolService {
   name: string;
   chainId: number;
-  getAPRInfo: () => Promise<ProtocolInfo>;
+  getAPRInfo: (userAddress: string) => Promise<ProtocolInfo>;
   getCacheKey: () => string;
   isSupported: () => boolean;
 }

@@ -1,16 +1,18 @@
 import { ProtocolService, ProtocolInfo } from './types';
 import { DEFAULT_CHAIN_ID } from '@/utils/blockchain/chainIds';
+import CompoundService from '@/api/CompoundService';
 
 export class CompoundProtocolService implements ProtocolService {
   name = 'Compound';
   chainId = DEFAULT_CHAIN_ID;
 
-  constructor(private compoundService: any) {}
+  constructor(private compoundService: CompoundService) {}
 
-  async getAPRInfo(): Promise<ProtocolInfo> {
+  async getAPRInfo(userAddress: string): Promise<ProtocolInfo> {
     try {
       // Get APR data first
       const aprData = await this.compoundService.getAPRInfo();
+      const balance = await this.compoundService.getUserBalance(userAddress);
       // Try to get TVL data, but don't fail if it doesn't work
       let tvlDisplay = '$0'; // Default fallback
       try {
@@ -45,6 +47,7 @@ export class CompoundProtocolService implements ProtocolService {
         risk: 'Low-Medium',
         isLive: true,
         lastUpdated: Date.now(),
+        balance: balance.totalValue,
       };
     } catch (error) {
       console.error('Failed to get Compound APR:', error);
@@ -57,6 +60,7 @@ export class CompoundProtocolService implements ProtocolService {
         risk: 'Low-Medium',
         isLive: false,
         lastUpdated: Date.now(),
+        balance: 0,
       };
     }
   }

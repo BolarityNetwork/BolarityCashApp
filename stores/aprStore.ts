@@ -7,6 +7,7 @@ interface APRInfo {
   compAPR: number;
   totalAPR: number;
   totalTVL: string;
+  balance: number;
 }
 
 interface APRCacheItem {

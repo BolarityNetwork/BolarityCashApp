@@ -44,6 +44,7 @@ export class ProtocolServiceManager {
   // Get Protocol Info (With Cache)
   async getProtocolInfo(
     protocolName: string,
+    userAddress: string,
     forceRefresh = false
   ): Promise<ProtocolInfo | null> {
     const service = this.getService(protocolName);
@@ -63,6 +64,7 @@ export class ProtocolServiceManager {
           apyDisplay: `${cachedData.totalAPR.toFixed(2)}%`,
           description: this.getDefaultDescription(service.name),
           tvl: cachedData.totalTVL,
+          balance: cachedData.balance,
           risk: this.getDefaultRisk(service.name),
           isLive: true,
           lastUpdated: Date.now(),
@@ -73,7 +75,8 @@ export class ProtocolServiceManager {
     // Get New Data
     try {
       this.aprStore.setLoading(cacheKey, true);
-      const protocolInfo = await service.getAPRInfo();
+
+      const protocolInfo = await service.getAPRInfo(userAddress);
       // Cache APR Data
       if (protocolInfo.isLive) {
         this.aprStore.setAPRData(cacheKey, {
@@ -81,6 +84,7 @@ export class ProtocolServiceManager {
           compAPR: protocolInfo.apy * 0.2, // Assume 20% is reward APR
           totalAPR: protocolInfo.apy,
           totalTVL: protocolInfo.tvl,
+          balance: protocolInfo.balance,
         });
       }
 
@@ -97,10 +101,11 @@ export class ProtocolServiceManager {
   // Get Multiple Protocol Info
   async getMultipleProtocolsInfo(
     protocolNames: string[],
+    userAddress: string,
     forceRefresh = false
   ): Promise<ProtocolInfo[]> {
     const promises = protocolNames.map(name =>
-      this.getProtocolInfo(name, forceRefresh)
+      this.getProtocolInfo(name, userAddress, forceRefresh)
     );
     const results = await Promise.allSettled(promises);
     return results
@@ -160,17 +165,26 @@ export const useProtocolService = () => {
 
   // Get Protocol Info
   const getProtocolInfo = useCallback(
-    async (protocolName: string, forceRefresh = false) => {
-      return protocolServiceManager.getProtocolInfo(protocolName, forceRefresh);
+    async (protocolName: string, userAddress: string, forceRefresh = false) => {
+      return protocolServiceManager.getProtocolInfo(
+        protocolName,
+        userAddress,
+        forceRefresh
+      );
     },
     []
   );
 
   // Get Multiple Protocol Info
   const getMultipleProtocolsInfo = useCallback(
-    async (protocolNames: string[], forceRefresh = false) => {
+    async (
+      protocolNames: string[],
+      userAddress: string,
+      forceRefresh = false
+    ) => {
       return protocolServiceManager.getMultipleProtocolsInfo(
         protocolNames,
+        userAddress,
         forceRefresh
       );
     },
