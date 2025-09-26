@@ -17,8 +17,10 @@ import VaultLogo from '@/components/home/VaultLogo';
 import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import { useProtocolService } from '@/services/protocolService';
 import AAVEIntegration from '@/utils/transaction/aave';
 import getErrorMessage from '@/utils/error';
+import Skeleton from '@/components/common/Skeleton';
 
 interface DepositModalProps {
   visible: boolean;
@@ -33,15 +35,15 @@ const DepositModal: React.FC<DepositModalProps> = ({
   selectedSpecificVault,
   onClose,
 }) => {
-  // 状态管理
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentDeposits, setCurrentDeposits] = useState<string>('0');
   const [usdcBalance, setUsdcBalance] = useState<string>('0');
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [networkError, setNetworkError] = useState<string>('');
+  const [liveProtocolData, setLiveProtocolData] = useState<any>(null);
+  const [loadingProtocolData, setLoadingProtocolData] = useState(false);
 
-  // 钱包Hook
   const {
     hasEthereumWallet,
     activeWallet,
@@ -49,7 +51,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
     getCurrentNetworkKey,
   } = useMultiChainWallet();
 
-  // AAVE实例管理
+  const { getProtocolInfo } = useProtocolService();
+
   const [aaveInstance, setAaveInstance] = useState<AAVEIntegration | null>(
     null
   );
@@ -62,20 +65,46 @@ const DepositModal: React.FC<DepositModalProps> = ({
     timestamp: number;
   } | null>(null);
 
-  // 🔧 防抖和缓存机制
   const CACHE_DURATION = 30000; // 30秒缓存
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🔧 检查缓存是否有效
   const isCacheValid = useCallback(() => {
     if (!balancesCacheRef.current) return false;
     const now = Date.now();
     return now - balancesCacheRef.current.timestamp < CACHE_DURATION;
   }, []);
 
-  // 🔧 修复后的初始化逻辑 - 防止无限循环
+  const loadLiveProtocolData = useCallback(async () => {
+    if (!selectedSpecificVault) return;
+
+    setLoadingProtocolData(true);
+    try {
+      console.log(
+        '🔄 Loading live protocol data for:',
+        selectedSpecificVault.name
+      );
+
+      const protocolData = await getProtocolInfo(
+        selectedSpecificVault.name,
+        false
+      );
+
+      if (protocolData) {
+        setLiveProtocolData(protocolData);
+        console.log('✅ Live protocol data loaded:', protocolData);
+      } else {
+        console.warn('⚠️ No live protocol data available');
+        setLiveProtocolData(null);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load live protocol data:', error);
+      setLiveProtocolData(null);
+    } finally {
+      setLoadingProtocolData(false);
+    }
+  }, [selectedSpecificVault, getProtocolInfo]);
+
   const initializeAAVE = useCallback(async () => {
-    // 防止重复初始化
     if (initializationRef.current) {
       console.log('🔄 AAVE initialization already in progress, skipping...');
       return;
@@ -87,7 +116,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
       return;
     }
 
-    // 检查是否真的需要重新初始化
     const currentNetwork = getCurrentNetworkKey();
     const currentAddress = activeWallet?.address || '';
 
@@ -99,7 +127,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
       console.log(
         '🎯 AAVE already initialized for current network/address, skipping...'
       );
-      // 如果有有效缓存，直接使用
       if (isCacheValid()) {
         console.log('📋 Using cached balances...');
         const cache = balancesCacheRef.current!;
@@ -107,7 +134,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
         setCurrentDeposits(cache.deposits);
         return;
       }
-      // 否则只刷新余额
       loadBalances();
       return;
     }
@@ -126,7 +152,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
         `🌐 Network: ${networkKey}, Address: ${activeWallet.address}`
       );
 
-      // 验证网络支持
       const networkConfig = AAVEIntegration.getNetworkConfig(networkKey);
       if (!networkConfig) {
         const supportedNetworks = AAVEIntegration.getSupportedNetworks();
@@ -135,7 +160,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
         );
       }
 
-      // 验证当前链ID
       const currentChainId = await provider.request({ method: 'eth_chainId' });
       if (currentChainId !== networkConfig.CHAIN_ID) {
         throw new Error(
@@ -143,14 +167,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
         );
       }
 
-      // 创建AAVE实例
       const aave = new AAVEIntegration(
         provider,
         activeWallet.address,
         networkKey
       );
 
-      // 验证网络连接
       const isValidNetwork = await aave.validateNetwork();
       if (!isValidNetwork) {
         throw new Error(`Please switch to ${networkConfig.NAME} network`);
@@ -158,7 +180,6 @@ const DepositModal: React.FC<DepositModalProps> = ({
 
       setAaveInstance(aave);
 
-      // 直接加载余额
       await loadBalancesForInstance(aave);
     } catch (error) {
       console.error('❌ Failed to initialize AAVE:', error);
@@ -260,6 +281,14 @@ const DepositModal: React.FC<DepositModalProps> = ({
       initializeAAVE();
     }
   }, [visible, hasEthereumWallet, currentAddress, initializeAAVE]);
+
+  // 🔧 加载实时协议数据
+  useEffect(() => {
+    if (visible && selectedSpecificVault) {
+      console.log('🎯 Modal opened, loading live protocol data...');
+      loadLiveProtocolData();
+    }
+  }, [visible, selectedSpecificVault, loadLiveProtocolData]);
 
   // 🔧 清理定时器
   useEffect(() => {
@@ -535,7 +564,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                     {displayVault?.name}
                   </Text>
                   <Text className="text-sm text-white/80">
-                    {displayVault?.description}
+                    {liveProtocolData?.description || displayVault?.description}
                   </Text>
                 </View>
               </View>
@@ -545,22 +574,52 @@ const DepositModal: React.FC<DepositModalProps> = ({
               >
                 <View className="flex-1" style={{ flex: 1 }}>
                   <Text className="text-sm text-white/80">APY Rate</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault?.apy}
-                  </Text>
+                  {loadingProtocolData ? (
+                    <Skeleton width={60} height={20} />
+                  ) : liveProtocolData ? (
+                    <View className="flex-row items-center">
+                      <Text className="text-lg font-bold text-white">
+                        {liveProtocolData.apyDisplay}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-lg font-bold text-white">
+                      {displayVault?.apy}
+                    </Text>
+                  )}
                 </View>
                 <View className="flex-1" style={{ flex: 1 }}>
                   <Text className="text-sm text-white/80">TVL</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {(displayVault as VaultOption).tvl}
-                  </Text>
+                  {loadingProtocolData ? (
+                    <Skeleton width={80} height={20} />
+                  ) : liveProtocolData ? (
+                    <View className="flex-row items-center">
+                      <Text className="text-lg font-bold text-white">
+                        {liveProtocolData.tvl}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text className="text-lg font-bold text-white">
+                      {(displayVault as VaultOption).tvl}
+                    </Text>
+                  )}
                 </View>
               </View>
               <View className="mt-3" style={{ marginTop: 12 }}>
                 <Text className="text-sm text-white/80">Risk Level</Text>
-                <Text className="text-lg font-bold text-white">
-                  {(displayVault as VaultOption).risk}
-                </Text>
+                {loadingProtocolData ? (
+                  <Skeleton width={100} height={20} />
+                ) : liveProtocolData ? (
+                  <View className="flex-row items-center">
+                    <Text className="text-lg font-bold text-white">
+                      {liveProtocolData.risk}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="text-lg font-bold text-white">
+                    {(displayVault as VaultOption).risk}
+                  </Text>
+                )}
               </View>
             </LinearGradient>
           ) : (
