@@ -1,5 +1,5 @@
 // components/PerfectVaultSavingsPlatform/modals/VaultSelectionModal.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Modal,
   View,
@@ -10,21 +10,28 @@ import {
   StyleSheet,
 } from 'react-native';
 import ProtocolLogo from '../home/ProtocolLogo';
-import { VaultOption } from '../constants';
+import { VaultOption } from '@/interfaces/home';
+import { useVaultSelection } from '@/hooks/useVaultSelection';
 
 interface VaultSelectionModalProps {
   visible: boolean;
-  vaultOptions: VaultOption[];
   onClose: () => void;
   onSelect: (vault: VaultOption) => void;
 }
 
 const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
   visible,
-  vaultOptions,
   onClose,
   onSelect,
 }) => {
+  // 使用专门的 VaultSelection hook
+  const { vaultOptions, loadProtocolData } = useVaultSelection();
+  // 当模态框打开时，加载数据
+  useEffect(() => {
+    if (visible) {
+      loadProtocolData();
+    }
+  }, [visible, loadProtocolData]);
   return (
     <Modal
       visible={visible}
@@ -55,19 +62,32 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
                 <View style={styles.modalVaultLeft}>
                   <ProtocolLogo protocol={vault.name} size={40} />
                   <View style={styles.modalVaultInfo}>
-                    <Text style={styles.modalVaultName}>{vault.name}</Text>
+                    <View style={styles.modalVaultNameRow}>
+                      <Text style={styles.modalVaultName}>{vault.name}</Text>
+                      <View style={styles.liveIndicator}>
+                        <Text style={styles.liveIndicatorText}>LIVE</Text>
+                      </View>
+                    </View>
                     <Text style={styles.modalVaultDesc}>
-                      {vault.description}
+                      {vault.protocolData.description}
                     </Text>
                   </View>
                 </View>
                 <View style={styles.modalVaultRight}>
-                  <Text style={styles.modalVaultApy}>{vault.apy}</Text>
+                  <Text
+                    style={[styles.modalVaultApy, styles.modalVaultApyLive]}
+                  >
+                    {vault.protocolData.apyDisplay}
+                  </Text>
                   <Text style={styles.modalVaultApyLabel}>APY</Text>
                 </View>
                 <View style={styles.modalVaultBottom}>
-                  <Text style={styles.modalVaultTvl}>TVL: {vault.tvl}</Text>
-                  <Text style={styles.modalVaultRisk}>Risk: {vault.risk}</Text>
+                  <Text style={styles.modalVaultTvl}>
+                    TVL: {vault.protocolData.tvl}
+                  </Text>
+                  <Text style={styles.modalVaultRisk}>
+                    Risk: {vault.protocolData.risk}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -172,6 +192,81 @@ const styles = StyleSheet.create({
   modalVaultRisk: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  // APR Info Card Styles
+  aprInfoCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e0f2fe',
+  },
+  aprInfoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0369a1',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  aprInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  aprInfoItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  aprInfoLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  aprInfoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  aprInfoTotal: {
+    color: '#059669',
+    fontSize: 18,
+  },
+  aprInfoFooter: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  aprInfoLoading: {
+    fontSize: 12,
+    color: '#64748b',
+    fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  aprInfoCacheStatus: {
+    fontSize: 10,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  // Live data indicators
+  modalVaultNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  liveIndicator: {
+    backgroundColor: '#10b981',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  liveIndicatorText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  modalVaultApyLive: {
+    color: '#10b981',
+    fontWeight: 'bold',
   },
 });
 

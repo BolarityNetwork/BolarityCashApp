@@ -4,6 +4,12 @@ export interface VaultOption {
   description: string;
   tvl: string;
   risk: string;
+  protocolData: {
+    apyDisplay: string;
+    description: string;
+    tvl: string;
+    risk: string;
+  };
 }
 
 export interface TimeVaultOption {

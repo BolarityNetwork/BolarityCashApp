@@ -8,19 +8,28 @@ import { VaultProduct } from '../constants';
 interface VaultListProps {
   vaultProducts: VaultProduct[];
   onVaultPress: (vault: VaultProduct) => void;
+  onTestPress?: () => void;
 }
 
 const VaultList: React.FC<VaultListProps> = ({
   vaultProducts,
   onVaultPress,
+  onTestPress,
 }) => {
   return (
     <View style={styles.vaultSection}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Savings Vaults</Text>
-        <TouchableOpacity>
-          <Text style={styles.sectionAction}>Compare All</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          {onTestPress && (
+            <TouchableOpacity onPress={onTestPress} style={styles.testButton}>
+              <Text style={styles.testButtonText}>Test</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity>
+            <Text style={styles.sectionAction}>Compare All</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.vaultList}>
@@ -86,6 +95,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  testButton: {
+    backgroundColor: '#7c3aed',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  testButtonText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 20,

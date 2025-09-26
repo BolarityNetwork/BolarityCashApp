@@ -18,5 +18,5 @@
     "app/index.js",
     "nativewind-env.d.ts",
     "types/**/*.d.ts"
-  ]
+, "sdk/PendleSDK.js", "sdk/CompoundSDK.js", "api/CompoundService.js"  ]
 }
