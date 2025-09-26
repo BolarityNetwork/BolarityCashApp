@@ -14,7 +14,7 @@ import ActivityList from '@/components/home/ActivityList';
 // Import Modals
 import VaultSelectionModal from '@/components/modals/VaultSelectionModal';
 import TimeVaultModal from '@/components/modals/TimeVaultModal';
-import DepositModal from '@/components/modals/DepositModal';
+import DepositVaultModal from '@/components/modals/DepositVaultModal';
 import ActionsMenu from '@/components/modals/ActionsMenu';
 
 // Import Constants
@@ -208,7 +208,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       />
 
       {/* Deposit Modal */}
-      <DepositModal
+      <DepositVaultModal
         visible={showDepositModal}
         selectedVault={selectedVault}
         selectedSpecificVault={selectedSpecificVault}

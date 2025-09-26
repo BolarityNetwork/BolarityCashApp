@@ -22,14 +22,14 @@ import AAVEIntegration from '@/utils/transaction/aave';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 
-interface DepositModalProps {
+interface DepositVaultModalProps {
   visible: boolean;
   selectedVault: VaultProduct | null;
   selectedSpecificVault: VaultOption | TimeVaultOption | null;
   onClose: () => void;
 }
 
-const DepositModal: React.FC<DepositModalProps> = ({
+const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   visible,
   selectedVault,
   selectedSpecificVault,
@@ -799,4 +799,4 @@ const DepositModal: React.FC<DepositModalProps> = ({
   );
 };
 
-export default DepositModal;
+export default DepositVaultModal;
