@@ -6,6 +6,7 @@ interface APRInfo {
   baseAPR: number;
   compAPR: number;
   totalAPR: number;
+  totalTVL: string;
 }
 
 interface APRCacheItem {

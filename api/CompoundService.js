@@ -26,6 +26,24 @@ class CompoundService {
     }
   }
 
+  // 获取 TVL 信息
+  async getTVL() {
+    try {
+      const tvlData = await this.sdk.getTVL();
+      return {
+        totalTVL: tvlData.totalTVL,
+        baseTVL: tvlData.baseTVL,
+        collateralTVL: tvlData.collateralTVL,
+        chain: tvlData.chain,
+        cometAddress: tvlData.cometAddress,
+        assets: tvlData.assets,
+        timestamp: tvlData.timestamp,
+      };
+    } catch (error) {
+      throw new Error(`获取 TVL 失败: ${error.message}`);
+    }
+  }
+
   // 获取用户余额
   async getUserBalance(userAddress) {
     try {

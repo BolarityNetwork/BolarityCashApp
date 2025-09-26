@@ -62,7 +62,7 @@ export class ProtocolServiceManager {
           apy: cachedData.totalAPR,
           apyDisplay: `${cachedData.totalAPR.toFixed(2)}%`,
           description: this.getDefaultDescription(service.name),
-          tvl: this.getDefaultTVL(service.name),
+          tvl: cachedData.totalTVL,
           risk: this.getDefaultRisk(service.name),
           isLive: true,
           lastUpdated: Date.now(),
@@ -74,13 +74,13 @@ export class ProtocolServiceManager {
     try {
       this.aprStore.setLoading(cacheKey, true);
       const protocolInfo = await service.getAPRInfo();
-
       // Cache APR Data
       if (protocolInfo.isLive) {
         this.aprStore.setAPRData(cacheKey, {
           baseAPR: protocolInfo.apy * 0.8, // Assume 80% is base APR
           compAPR: protocolInfo.apy * 0.2, // Assume 20% is reward APR
           totalAPR: protocolInfo.apy,
+          totalTVL: protocolInfo.tvl,
         });
       }
 
@@ -103,7 +103,6 @@ export class ProtocolServiceManager {
       this.getProtocolInfo(name, forceRefresh)
     );
     const results = await Promise.allSettled(promises);
-
     return results
       .filter(
         (result): result is PromiseFulfilledResult<ProtocolInfo> =>
@@ -125,15 +124,15 @@ export class ProtocolServiceManager {
     return descriptions[protocolName.toLowerCase()] || 'DeFi protocol';
   }
 
-  // Get Default TVL
+  // Get Default TVL (Fallback when live data is unavailable)
   private getDefaultTVL(protocolName: string): string {
     const tvls: Record<string, string> = {
-      compound: '$8.7B',
-      aave: '$12.5B',
-      drift: '$2.1B',
-      solend: '$1.8B',
-      navi: '$890M',
-      huma: '$450M',
+      compound: '$0', // Base chain TVL (will be replaced by live data)
+      aave: '$0',
+      drift: '$0',
+      solend: '$0',
+      navi: '$0',
+      huma: '$0',
     };
     return tvls[protocolName.toLowerCase()] || '$0';
   }
@@ -158,16 +157,6 @@ export const protocolServiceManager = new ProtocolServiceManager();
 // Hook for using protocol services
 export const useProtocolService = () => {
   const aprStore = useAPRStore();
-
-  // Initialize All Protocol Services (Internal Handling)
-  const initializeServices = useCallback(() => {
-    // Services are automatically initialized in the ProtocolServiceManager constructor
-    // Here you can add additional initialization logic
-    console.log(
-      'Protocol services initialized:',
-      protocolServiceManager.getSupportedProtocols()
-    );
-  }, []);
 
   // Get Protocol Info
   const getProtocolInfo = useCallback(
@@ -194,7 +183,6 @@ export const useProtocolService = () => {
   }, []);
 
   return {
-    initializeServices,
     getProtocolInfo,
     getMultipleProtocolsInfo,
     getSupportedProtocols,

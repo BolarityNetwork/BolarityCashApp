@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useProtocolService } from '@/services/protocolService';
 import { VaultOption } from '@/interfaces/home';
 import { vaultOptions } from '@/utils/home';
@@ -17,8 +17,7 @@ interface VaultSelectionData {
 }
 
 export const useVaultSelection = (): VaultSelectionData => {
-  const { initializeServices, getMultipleProtocolsInfo, aprStore } =
-    useProtocolService();
+  const { getMultipleProtocolsInfo, aprStore } = useProtocolService();
 
   // State Management
   const [vaultOptionsWithData, setVaultOptionsWithData] = useState<
@@ -26,20 +25,13 @@ export const useVaultSelection = (): VaultSelectionData => {
   >([]);
   const [isLoadingProtocols, setIsLoadingProtocols] = useState(false);
 
-  // Initialize Services
-  useEffect(() => {
-    initializeServices();
-  }, [initializeServices]);
-
   // Load Protocol Data
   const loadProtocolData = useCallback(async () => {
     setIsLoadingProtocols(true);
-
     try {
       // Get All Protocol Data
       const protocolNames = vaultOptions.map(vault => vault.name);
       const protocolData = await getMultipleProtocolsInfo(protocolNames, false);
-
       // Integrate Protocol Data Into vaultOptions, Only Keep Vaults With Protocol Data
       const updatedVaultOptions = vaultOptions
         .map(vault => {

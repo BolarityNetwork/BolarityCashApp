@@ -9,14 +9,39 @@ export class CompoundProtocolService implements ProtocolService {
 
   async getAPRInfo(): Promise<ProtocolInfo> {
     try {
+      // Get APR data first
       const aprData = await this.compoundService.getAPRInfo();
-      // TODO: get tvl from api
+      // Try to get TVL data, but don't fail if it doesn't work
+      let tvlDisplay = '$0'; // Default fallback
+      try {
+        const tvlData = await this.compoundService.getTVL();
+        // Format TVL for display
+        const formatTVL = (tvl: number): string => {
+          if (tvl >= 1e9) {
+            return `$${(tvl / 1e9).toFixed(1)}B`;
+          } else if (tvl >= 1e6) {
+            return `$${(tvl / 1e6).toFixed(1)}M`;
+          } else if (tvl >= 1e3) {
+            return `$${(tvl / 1e3).toFixed(1)}K`;
+          } else {
+            return `$${tvl.toFixed(0)}`;
+          }
+        };
+
+        tvlDisplay = formatTVL(tvlData.totalTVL);
+      } catch (tvlError) {
+        console.warn(
+          'Failed to get TVL data, using fallback:',
+          tvlError instanceof Error ? tvlError.message : 'Unknown error'
+        );
+      }
+
       return {
         name: this.name,
         apy: aprData.totalAPR,
         apyDisplay: `${aprData.totalAPR.toFixed(2)}%`,
         description: 'Ethereum money markets',
-        tvl: '$32.76M',
+        tvl: tvlDisplay,
         risk: 'Low-Medium',
         isLive: true,
         lastUpdated: Date.now(),
