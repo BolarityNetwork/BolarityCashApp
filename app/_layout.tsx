@@ -13,6 +13,7 @@ import UpdateModal from '@/components/modals/UpdateModal';
 import { useCheckForUpdates } from '@/hooks/useCheckForUpdates';
 import { useAppReady } from '@/hooks/useAppReady';
 import { usePrivyReady } from '@/hooks/usePrivyReady';
+import { PRIVY_CONFIG, SUPPORTED_CHAINS } from '@/constants/privyConfig';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,8 @@ export default function RootLayout() {
       <PrivyProvider
         appId={Constants.expoConfig?.extra?.privyAppId}
         clientId={Constants.expoConfig?.extra?.privyClientId}
+        config={PRIVY_CONFIG}
+        supportedChains={SUPPORTED_CHAINS as any}
       >
         <AppContent
           isVisible={isVisible}
