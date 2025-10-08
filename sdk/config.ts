@@ -1,10 +1,9 @@
-import { RPC_URL_8453 } from '@env';
 import { CHAIN_IDS } from '@/utils/blockchain/chainIds';
 
 export const SDK_CONFIG = {
   base: {
     chainId: CHAIN_IDS.BASE,
-    rpcUrl: RPC_URL_8453,
+    rpcUrl: process.env.EXPO_PUBLIC_RPC_URL_8453,
     slippage: 0.01,
   },
   // TODO: Pendle Config
