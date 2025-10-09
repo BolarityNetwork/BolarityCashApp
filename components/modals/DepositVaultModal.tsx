@@ -1,5 +1,5 @@
 // components/PerfectVaultSavingsPlatform/modals/DepositModal.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Modal,
   View,
@@ -18,10 +18,11 @@ import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProtocolService } from '@/services/protocolService';
-import AAVEIntegration from '@/utils/transaction/aave';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 import { ProtocolInfo } from '@/services/protocols/types';
+import { useCompoundWallet } from '@/hooks/useCompoundWallet';
+import { CHAIN_IDS } from '@/utils/blockchain/chainIds';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -38,42 +39,21 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 }) => {
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentDeposits, setCurrentDeposits] = useState<string>('0');
-  const [usdcBalance, setUsdcBalance] = useState<string>('0');
-  const [loadingBalance, setLoadingBalance] = useState(false);
-  const [networkError, setNetworkError] = useState<string>('');
   const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
 
-  const {
-    hasEthereumWallet,
-    activeWallet,
-    getEthereumProvider,
-    getCurrentNetworkKey,
-  } = useMultiChainWallet();
+  const { activeWallet } = useMultiChainWallet();
 
   const { getProtocolInfo } = useProtocolService();
 
-  const [aaveInstance, setAaveInstance] = useState<AAVEIntegration | null>(
-    null
-  );
-  const initializationRef = useRef<boolean>(false);
-  const lastNetworkRef = useRef<string>('');
-  const lastAddressRef = useRef<string>('');
-  const balancesCacheRef = useRef<{
-    usdcBalance: string;
-    deposits: string;
-    timestamp: number;
-  } | null>(null);
-
-  const CACHE_DURATION = 30000; // 30秒缓存
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const isCacheValid = useCallback(() => {
-    if (!balancesCacheRef.current) return false;
-    const now = Date.now();
-    return now - balancesCacheRef.current.timestamp < CACHE_DURATION;
-  }, []);
+  // Compound Hook
+  const {
+    isLoading: compoundLoading,
+    error: compoundError,
+    supply,
+    withdraw,
+    clearError: clearCompoundError,
+  } = useCompoundWallet(CHAIN_IDS.BASE);
 
   const loadLiveProtocolData = useCallback(async () => {
     if (!selectedSpecificVault) return;
@@ -106,185 +86,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     }
   }, [selectedSpecificVault, getProtocolInfo]);
 
-  const initializeAAVE = useCallback(async () => {
-    if (initializationRef.current) {
-      console.log('🔄 AAVE initialization already in progress, skipping...');
-      return;
-    }
-
-    if (!hasEthereumWallet || !activeWallet?.address) {
-      console.log('❌ No Ethereum wallet available');
-      setNetworkError('Please connect an Ethereum wallet');
-      return;
-    }
-
-    const currentNetwork = getCurrentNetworkKey();
-    const currentAddress = activeWallet?.address || '';
-
-    if (
-      aaveInstance &&
-      lastNetworkRef.current === currentNetwork &&
-      lastAddressRef.current === currentAddress
-    ) {
-      console.log(
-        '🎯 AAVE already initialized for current network/address, skipping...'
-      );
-      if (isCacheValid()) {
-        console.log('📋 Using cached balances...');
-        const cache = balancesCacheRef.current!;
-        setUsdcBalance(cache.usdcBalance);
-        setCurrentDeposits(cache.deposits);
-        return;
-      }
-      loadBalances();
-      return;
-    }
-
-    initializationRef.current = true;
-    setLoadingBalance(true);
-    setNetworkError('');
-
-    try {
-      console.log('🚀 Initializing AAVE integration...');
-
-      const provider = await getEthereumProvider();
-      const networkKey = getCurrentNetworkKey();
-
-      console.log(
-        `🌐 Network: ${networkKey}, Address: ${activeWallet.address}`
-      );
-
-      const networkConfig = AAVEIntegration.getNetworkConfig(networkKey);
-      if (!networkConfig) {
-        const supportedNetworks = AAVEIntegration.getSupportedNetworks();
-        throw new Error(
-          `Unsupported network: ${networkKey}. Supported networks: ${supportedNetworks.join(', ')}`
-        );
-      }
-
-      const currentChainId = await provider.request({ method: 'eth_chainId' });
-      if (currentChainId !== networkConfig.CHAIN_ID) {
-        throw new Error(
-          `Network mismatch. Please switch to ${networkConfig.NAME} (${networkConfig.CHAIN_ID})`
-        );
-      }
-
-      const aave = new AAVEIntegration(
-        provider,
-        activeWallet.address,
-        networkKey
-      );
-
-      const isValidNetwork = await aave.validateNetwork();
-      if (!isValidNetwork) {
-        throw new Error(`Please switch to ${networkConfig.NAME} network`);
-      }
-
-      setAaveInstance(aave);
-
-      await loadBalancesForInstance(aave);
-    } catch (error) {
-      console.error('❌ Failed to initialize AAVE:', error);
-      setNetworkError(getErrorMessage(error));
-      setCurrentDeposits('0');
-      setUsdcBalance('0');
-    } finally {
-      setLoadingBalance(false);
-      initializationRef.current = false;
-    }
-  }, [
-    hasEthereumWallet,
-    activeWallet?.address,
-    getEthereumProvider,
-    getCurrentNetworkKey,
-    aaveInstance,
-    isCacheValid,
-  ]);
-
-  // 🔧 直接为特定实例加载余额
-  const loadBalancesForInstance = useCallback(async (aave: AAVEIntegration) => {
-    try {
-      console.log('💰 Loading balances for new instance...');
-
-      // 并行加载USDC余额和AAVE存款
-      const [usdcBal, deposits] = await Promise.all([
-        aave.getUSDCBalance(),
-        aave.getUserDeposits(),
-      ]);
-
-      console.log('usdcBal', usdcBal);
-      console.log('deposits', deposits);
-
-      const formattedUsdcBalance = parseFloat(usdcBal).toFixed(2);
-      const depositAmount = parseFloat(deposits.aTokenBalance);
-      const formattedDeposits =
-        depositAmount > 0 ? depositAmount.toFixed(2) : '0';
-
-      // 更新缓存
-      balancesCacheRef.current = {
-        usdcBalance: formattedUsdcBalance,
-        deposits: formattedDeposits,
-        timestamp: Date.now(),
-      };
-
-      setUsdcBalance(formattedUsdcBalance);
-      setCurrentDeposits(formattedDeposits);
-
-      console.log(
-        `✅ Balances loaded and cached for new instance - USDC: ${formattedUsdcBalance}, Deposits: ${formattedDeposits}`
-      );
-    } catch (error) {
-      console.error('❌ Failed to load balances for instance:', error);
-      setNetworkError(`Failed to load balances: ${getErrorMessage(error)}`);
-    }
-  }, []);
-
-  // 🔧 加载余额的单独函数 - 带缓存和防抖
-  const loadBalances = useCallback(
-    async (aaveInstanceToUse?: AAVEIntegration) => {
-      const aave = aaveInstanceToUse || aaveInstance;
-      if (!aave) return;
-
-      // 如果传入了特定实例，直接加载
-      if (aaveInstanceToUse) {
-        await loadBalancesForInstance(aaveInstanceToUse);
-        return;
-      }
-
-      // 清除之前的防抖定时器
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-
-      // 检查缓存
-      if (isCacheValid()) {
-        console.log('📋 Using cached balances (loadBalances)...');
-        const cache = balancesCacheRef.current!;
-        setUsdcBalance(cache.usdcBalance);
-        setCurrentDeposits(cache.deposits);
-        return;
-      }
-
-      // 防抖：延迟执行
-      debounceTimerRef.current = setTimeout(async () => {
-        await loadBalancesForInstance(aave);
-      }, 500) as any; // 500ms 防抖
-    },
-    [aaveInstance, isCacheValid, loadBalancesForInstance]
-  );
-
-  // 🔧 使用useEffect但限制触发条件
-  const currentNetworkKey = getCurrentNetworkKey();
-  const currentAddress = activeWallet?.address;
-
-  useEffect(() => {
-    if (visible && hasEthereumWallet && currentAddress) {
-      console.log('🎯 Modal opened, checking AAVE initialization...');
-      initializeAAVE();
-    }
-  }, [visible, hasEthereumWallet, currentAddress, initializeAAVE]);
-
-  // 🔧 加载实时协议数据
+  // Load live protocol data
   useEffect(() => {
     if (visible && selectedSpecificVault) {
       console.log('🎯 Modal opened, loading live protocol data...');
@@ -292,57 +94,10 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     }
   }, [visible, selectedSpecificVault, loadLiveProtocolData]);
 
-  // 🔧 清理定时器
-  useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
-
-  // 🔧 网络或地址变化时重置状态
-  useEffect(() => {
-    if (
-      visible &&
-      (lastNetworkRef.current !== currentNetworkKey ||
-        lastAddressRef.current !== currentAddress)
-    ) {
-      console.log(
-        `🔄 Network/Address changed from ${lastNetworkRef.current}/${lastAddressRef.current} to ${currentNetworkKey}/${currentAddress}`
-      );
-
-      // 清理现有状态
-      setAaveInstance(null);
-      initializationRef.current = false;
-      balancesCacheRef.current = null;
-
-      // 更新refs
-      lastNetworkRef.current = currentNetworkKey;
-      lastAddressRef.current = currentAddress || '';
-
-      // 重新初始化
-      if (currentAddress) {
-        initializeAAVE();
-      }
-    }
-  }, [visible, currentNetworkKey, currentAddress, initializeAAVE]);
-
-  // 🔧 处理存款 - 全英文版本
+  // Handle deposit
   const handleDeposit = useCallback(async () => {
-    if (!aaveInstance || !depositAmount || parseFloat(depositAmount) <= 0) {
+    if (!depositAmount || parseFloat(depositAmount) <= 0) {
       Alert.alert('Error', 'Please enter a valid deposit amount');
-      return;
-    }
-
-    const amount = parseFloat(depositAmount);
-    const availableBalance = parseFloat(usdcBalance);
-
-    if (amount > availableBalance) {
-      Alert.alert(
-        'Insufficient Balance',
-        `You only have ${usdcBalance} USDC, cannot deposit ${depositAmount} USDC`
-      );
       return;
     }
 
@@ -350,56 +105,38 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     try {
       console.log(`💰 Depositing ${depositAmount} USDC...`);
 
-      const result = await aaveInstance.deposit(depositAmount);
+      // Deposit to Compound
+      const txHash = await supply({
+        asset: 'USDC',
+        amount: depositAmount,
+      });
 
-      if (result.success) {
-        Alert.alert(
-          'Deposit Successful!',
-          `Successfully deposited ${depositAmount} USDC to AAVE\n\nTransaction Hash: ${result.transactionHash?.substring(0, 10)}...`,
-          [
-            {
-              text: 'View Transaction',
-              onPress: () => {
-                const explorerUrl = `https://basescan.org/tx/${result.transactionHash}`;
-                console.log(`🔗 Opening explorer: ${explorerUrl}`);
-              },
+      Alert.alert(
+        'Deposit Successful',
+        `Successfully deposited ${depositAmount} USDC\nTransaction: ${txHash.slice(0, 10)}...`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              setDepositAmount('');
+              // Reload protocol data
+              loadLiveProtocolData();
             },
-            { text: 'OK' },
-          ]
-        );
-
-        setDepositAmount('');
-
-        // 清除缓存并刷新余额
-        balancesCacheRef.current = null;
-        await loadBalances();
-      } else {
-        Alert.alert('Deposit Failed', result.error || 'Unknown error');
-      }
+          },
+        ]
+      );
     } catch (error) {
       console.error('❌ Deposit error:', error);
       Alert.alert('Deposit Failed', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
-  }, [aaveInstance, depositAmount, usdcBalance, loadBalances]);
+  }, [depositAmount, supply, loadLiveProtocolData]);
 
-  // 🔧 处理提取 - 全英文版本
+  // Handle withdraw
   const handleWithdraw = useCallback(async () => {
-    if (!aaveInstance || !depositAmount || parseFloat(depositAmount) <= 0) {
+    if (!depositAmount || parseFloat(depositAmount) <= 0) {
       Alert.alert('Error', 'Please enter a valid withdrawal amount');
-      return;
-    }
-
-    const amount = parseFloat(depositAmount);
-    const availableDeposits =
-      protocolData?.balance || parseFloat(currentDeposits);
-
-    if (amount > availableDeposits) {
-      Alert.alert(
-        'Insufficient Deposits',
-        `You only have ${availableDeposits.toFixed(2)} USDC deposited, cannot withdraw ${depositAmount} USDC`
-      );
       return;
     }
 
@@ -415,35 +152,26 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             try {
               console.log(`💸 Withdrawing ${depositAmount} USDC...`);
 
-              const result = await aaveInstance.withdraw(depositAmount);
+              // Withdraw from Compound
+              const txHash = await withdraw({
+                asset: 'USDC',
+                amount: depositAmount,
+              });
 
-              if (result.success) {
-                Alert.alert(
-                  'Withdrawal Successful!',
-                  `Successfully withdrew ${depositAmount} USDC\n\nTransaction Hash: ${result.transactionHash?.substring(0, 10)}...`,
-                  [
-                    {
-                      text: 'View Transaction',
-                      onPress: () => {
-                        const explorerUrl = `https://basescan.org/tx/${result.transactionHash}`;
-                        console.log(`🔗 Opening explorer: ${explorerUrl}`);
-                      },
+              Alert.alert(
+                'Withdrawal Successful',
+                `Successfully withdrew ${depositAmount} USDC\nTransaction: ${txHash.slice(0, 10)}...`,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      setDepositAmount('');
+                      // Reload protocol data
+                      loadLiveProtocolData();
                     },
-                    { text: 'OK' },
-                  ]
-                );
-
-                setDepositAmount('');
-
-                // 清除缓存并刷新余额
-                balancesCacheRef.current = null;
-                await loadBalances();
-              } else {
-                Alert.alert(
-                  'Withdrawal Failed',
-                  result.error || 'Unknown error'
-                );
-              }
+                  },
+                ]
+              );
             } catch (error) {
               console.error('❌ Withdrawal error:', error);
               Alert.alert('Withdrawal Failed', getErrorMessage(error));
@@ -454,13 +182,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         },
       ]
     );
-  }, [
-    aaveInstance,
-    depositAmount,
-    currentDeposits,
-    protocolData,
-    loadBalances,
-  ]);
+  }, [depositAmount, withdraw, loadLiveProtocolData]);
 
   if (!visible || (!selectedVault && !selectedSpecificVault)) {
     return null;
@@ -495,7 +217,25 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         </View>
 
         <ScrollView className="flex-1 p-5">
-          {/* Vault Header - 保持原有样式 */}
+          {/* Compound Error Display */}
+          {compoundError && (
+            <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <Text className="text-red-700 text-sm font-medium mb-1">
+                Transaction Error
+              </Text>
+              <Text className="text-red-600 text-xs">{compoundError}</Text>
+              <TouchableOpacity
+                onPress={clearCompoundError}
+                className="mt-2 self-start"
+              >
+                <Text className="text-red-600 text-xs font-semibold">
+                  Dismiss
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Vault Header - Keep original style */}
           {isTimeVault ? (
             <LinearGradient
               colors={['#667eea', '#764ba2']}
@@ -669,7 +409,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </LinearGradient>
           )}
 
-          {/* 恢复原本的功能描述 */}
+          {/* Restore original feature description */}
           <View className="mb-6">
             <Text className="text-base font-bold text-gray-900 mb-4">
               {isTimeVault
@@ -712,25 +452,21 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   )}
           </View>
 
-          {/* 原本的余额和输入区域 */}
+          {/* Balance and input area */}
           <View className="bg-gray-50 rounded-2xl p-4 mb-6">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-700">USDC Wallet Balance</Text>
+              <Text className="text-sm text-gray-700">Wallet Balance</Text>
               <View className="items-end">
-                {loadingBalance ? (
-                  <ActivityIndicator size="small" color="#111827" />
-                ) : (
-                  <Text className="text-base font-semibold text-gray-900">
-                    ${usdcBalance}
-                  </Text>
-                )}
+                <Text className="text-base font-semibold text-gray-900">
+                  $0.00
+                </Text>
               </View>
             </View>
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm text-gray-700">
                 {isSpecificVault
                   ? `${displayVault?.name} Deposit Amount`
-                  : 'AAVE Deposit Amount'}
+                  : 'Deposit Amount'}
               </Text>
               <View className="items-end">
                 {loadingProtocolData ? (
@@ -739,56 +475,36 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   <Text className="text-base font-semibold text-gray-900">
                     ${protocolData.balance.toFixed(2)}
                   </Text>
-                ) : loadingBalance ? (
-                  <ActivityIndicator size="small" color="#111827" />
-                ) : networkError ? (
-                  <View className="items-end">
-                    <Text className="text-base font-semibold text-gray-900">
-                      $0
-                    </Text>
-                    <Text className="text-xs text-red-500 mt-0.5">
-                      ⚠️ Network issue
-                    </Text>
-                  </View>
                 ) : (
                   <Text className="text-base font-semibold text-gray-900">
-                    ${currentDeposits}
+                    $0.00
                   </Text>
                 )}
               </View>
             </View>
           </View>
 
-          {/* 输入框 */}
+          {/* Input field */}
           <View className="mb-4">
             <TextInput
               className="bg-white rounded-xl p-4 text-base border border-gray-200 text-gray-900"
               value={depositAmount}
               onChangeText={setDepositAmount}
               placeholder="Enter USDC amount"
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               placeholderTextColor="#9ca3af"
             />
           </View>
 
-          {/* 🔧 改进的错误提示 */}
-          {networkError && (
-            <View className="bg-red-50 rounded-xl p-4 mb-4 border border-red-200">
-              <Text className="text-sm text-red-600 leading-5">
-                {networkError}
-              </Text>
-            </View>
-          )}
-
           <View className="flex-row gap-3">
             <TouchableOpacity
               className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
-                isLoading || networkError ? 'opacity-60' : ''
+                isLoading || compoundLoading ? 'opacity-60' : ''
               }`}
               onPress={handleWithdraw}
-              disabled={isLoading || !!networkError}
+              disabled={isLoading || compoundLoading}
             >
-              {isLoading ? (
+              {isLoading || compoundLoading ? (
                 <ActivityIndicator size="small" color="#374151" />
               ) : (
                 <Text className="text-base font-semibold text-gray-700">
@@ -798,12 +514,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
-                isLoading || networkError ? 'opacity-60' : ''
+                isLoading || compoundLoading ? 'opacity-60' : ''
               }`}
               onPress={handleDeposit}
-              disabled={isLoading || !!networkError}
+              disabled={isLoading || compoundLoading}
             >
-              {isLoading ? (
+              {isLoading || compoundLoading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text className="text-base font-semibold text-white">
