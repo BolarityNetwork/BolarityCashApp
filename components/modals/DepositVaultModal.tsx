@@ -37,7 +37,8 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   onClose,
 }) => {
   const [depositAmount, setDepositAmount] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
@@ -113,7 +114,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
-    setIsLoading(true);
+    setIsDepositing(true);
     setError(null);
 
     try {
@@ -143,7 +144,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       setError(errorMsg);
       Alert.alert('Deposit Failed', errorMsg);
     } finally {
-      setIsLoading(false);
+      setIsDepositing(false);
     }
   }, [depositAmount, getProtocolName, depositToProtocol, loadLiveProtocolData]);
 
@@ -168,7 +169,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         {
           text: 'Confirm',
           onPress: async () => {
-            setIsLoading(true);
+            setIsWithdrawing(true);
             setError(null);
 
             try {
@@ -200,7 +201,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
               setError(errorMsg);
               Alert.alert('Withdrawal Failed', errorMsg);
             } finally {
-              setIsLoading(false);
+              setIsWithdrawing(false);
             }
           },
         },
@@ -528,12 +529,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           <View className="flex-row gap-3">
             <TouchableOpacity
               className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
-                isLoading ? 'opacity-60' : ''
+                isWithdrawing || isDepositing ? 'opacity-60' : ''
               }`}
               onPress={handleWithdraw}
-              disabled={isLoading}
+              disabled={isWithdrawing || isDepositing}
             >
-              {isLoading ? (
+              {isWithdrawing ? (
                 <ActivityIndicator size="small" color="#374151" />
               ) : (
                 <Text className="text-base font-semibold text-gray-700">
@@ -543,12 +544,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
-                isLoading ? 'opacity-60' : ''
+                isDepositing || isWithdrawing ? 'opacity-60' : ''
               }`}
               onPress={handleDeposit}
-              disabled={isLoading}
+              disabled={isDepositing || isWithdrawing}
             >
-              {isLoading ? (
+              {isDepositing ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text className="text-base font-semibold text-white">
