@@ -1,12 +1,23 @@
-import { ProtocolService, ProtocolInfo } from './types';
+import {
+  ProtocolService,
+  ProtocolInfo,
+  DepositParams,
+  WithdrawParams,
+} from './types';
 import { DEFAULT_CHAIN_ID } from '@/utils/blockchain/chainIds';
 import CompoundService from '@/api/CompoundService';
 
 export class CompoundProtocolService implements ProtocolService {
   name = 'Compound';
   chainId = DEFAULT_CHAIN_ID;
+  private compoundWallet: any; // Store useCompoundWallet instance
 
   constructor(private compoundService: CompoundService) {}
+
+  // Set Compound Wallet (for transactions)
+  setCompoundWallet(wallet: any) {
+    this.compoundWallet = wallet;
+  }
 
   async getAPRInfo(userAddress: string): Promise<ProtocolInfo> {
     try {
@@ -71,6 +82,36 @@ export class CompoundProtocolService implements ProtocolService {
 
   isSupported(): boolean {
     return !!this.compoundService;
+  }
+
+  // Deposit to Compound
+  async deposit(params: DepositParams): Promise<string> {
+    if (!this.compoundWallet) {
+      throw new Error(
+        'Compound wallet not initialized. Please set up wallet first.'
+      );
+    }
+    return this.compoundWallet.supply(params);
+  }
+
+  // Withdraw from Compound
+  async withdraw(params: WithdrawParams): Promise<string> {
+    if (!this.compoundWallet) {
+      throw new Error(
+        'Compound wallet not initialized. Please set up wallet first.'
+      );
+    }
+    return this.compoundWallet.withdraw(params);
+  }
+
+  // Get Balance
+  async getBalance(asset: string, userAddress?: string): Promise<number> {
+    if (!this.compoundWallet) {
+      throw new Error(
+        'Compound wallet not initialized. Please set up wallet first.'
+      );
+    }
+    return this.compoundWallet.getBalance(asset, userAddress);
   }
 }
 

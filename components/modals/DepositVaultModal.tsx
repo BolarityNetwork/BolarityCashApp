@@ -18,11 +18,10 @@ import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProtocolService } from '@/services/protocolService';
+import { useProtocolWallet } from '@/hooks/useProtocolWallet';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 import { ProtocolInfo } from '@/services/protocols/types';
-import { useCompoundWallet } from '@/hooks/useCompoundWallet';
-import { CHAIN_IDS } from '@/utils/blockchain/chainIds';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -39,21 +38,28 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 }) => {
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
 
   const { activeWallet } = useMultiChainWallet();
 
-  const { getProtocolInfo } = useProtocolService();
+  // Initialize protocol wallets (injects wallet instances into services)
+  useProtocolWallet();
 
-  // Compound Hook
   const {
-    isLoading: compoundLoading,
-    error: compoundError,
-    supply,
-    withdraw,
-    clearError: clearCompoundError,
-  } = useCompoundWallet(CHAIN_IDS.BASE);
+    getProtocolInfo,
+    deposit: depositToProtocol,
+    withdraw: withdrawFromProtocol,
+  } = useProtocolService();
+
+  // Get current protocol name
+  const getProtocolName = useCallback(() => {
+    if (selectedSpecificVault) {
+      return selectedSpecificVault.name;
+    }
+    return null;
+  }, [selectedSpecificVault]);
 
   const loadLiveProtocolData = useCallback(async () => {
     if (!selectedSpecificVault) return;
@@ -101,37 +107,45 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
-    setIsLoading(true);
-    try {
-      console.log(`💰 Depositing ${depositAmount} USDC...`);
+    const protocolName = getProtocolName();
+    if (!protocolName) {
+      Alert.alert('Error', 'No protocol selected');
+      return;
+    }
 
-      // Deposit to Compound
-      const txHash = await supply({
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log(`💰 Depositing ${depositAmount} USDC to ${protocolName}...`);
+
+      const txHash = await depositToProtocol(protocolName, {
         asset: 'USDC',
         amount: depositAmount,
       });
 
       Alert.alert(
         'Deposit Successful',
-        `Successfully deposited ${depositAmount} USDC\nTransaction: ${txHash.slice(0, 10)}...`,
+        `Successfully deposited ${depositAmount} USDC to ${protocolName}\nTransaction: ${txHash.slice(0, 10)}...`,
         [
           {
             text: 'OK',
             onPress: () => {
               setDepositAmount('');
-              // Reload protocol data
               loadLiveProtocolData();
             },
           },
         ]
       );
-    } catch (error) {
-      console.error('❌ Deposit error:', error);
-      Alert.alert('Deposit Failed', getErrorMessage(error));
+    } catch (err) {
+      console.error('❌ Deposit error:', err);
+      const errorMsg = getErrorMessage(err);
+      setError(errorMsg);
+      Alert.alert('Deposit Failed', errorMsg);
     } finally {
       setIsLoading(false);
     }
-  }, [depositAmount, supply, loadLiveProtocolData]);
+  }, [depositAmount, getProtocolName, depositToProtocol, loadLiveProtocolData]);
 
   // Handle withdraw
   const handleWithdraw = useCallback(async () => {
@@ -140,41 +154,51 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
+    const protocolName = getProtocolName();
+    if (!protocolName) {
+      Alert.alert('Error', 'No protocol selected');
+      return;
+    }
+
     Alert.alert(
       'Confirm Withdrawal',
-      `Are you sure you want to withdraw ${depositAmount} USDC?`,
+      `Are you sure you want to withdraw ${depositAmount} USDC from ${protocolName}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm',
           onPress: async () => {
             setIsLoading(true);
-            try {
-              console.log(`💸 Withdrawing ${depositAmount} USDC...`);
+            setError(null);
 
-              // Withdraw from Compound
-              const txHash = await withdraw({
+            try {
+              console.log(
+                `💸 Withdrawing ${depositAmount} USDC from ${protocolName}...`
+              );
+
+              const txHash = await withdrawFromProtocol(protocolName, {
                 asset: 'USDC',
                 amount: depositAmount,
               });
 
               Alert.alert(
                 'Withdrawal Successful',
-                `Successfully withdrew ${depositAmount} USDC\nTransaction: ${txHash.slice(0, 10)}...`,
+                `Successfully withdrew ${depositAmount} USDC from ${protocolName}\nTransaction: ${txHash.slice(0, 10)}...`,
                 [
                   {
                     text: 'OK',
                     onPress: () => {
                       setDepositAmount('');
-                      // Reload protocol data
                       loadLiveProtocolData();
                     },
                   },
                 ]
               );
-            } catch (error) {
-              console.error('❌ Withdrawal error:', error);
-              Alert.alert('Withdrawal Failed', getErrorMessage(error));
+            } catch (err) {
+              console.error('❌ Withdrawal error:', err);
+              const errorMsg = getErrorMessage(err);
+              setError(errorMsg);
+              Alert.alert('Withdrawal Failed', errorMsg);
             } finally {
               setIsLoading(false);
             }
@@ -182,7 +206,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         },
       ]
     );
-  }, [depositAmount, withdraw, loadLiveProtocolData]);
+  }, [
+    depositAmount,
+    getProtocolName,
+    withdrawFromProtocol,
+    loadLiveProtocolData,
+  ]);
 
   if (!visible || (!selectedVault && !selectedSpecificVault)) {
     return null;
@@ -217,15 +246,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         </View>
 
         <ScrollView className="flex-1 p-5">
-          {/* Compound Error Display */}
-          {compoundError && (
+          {/* Error Display */}
+          {error && (
             <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
               <Text className="text-red-700 text-sm font-medium mb-1">
                 Transaction Error
               </Text>
-              <Text className="text-red-600 text-xs">{compoundError}</Text>
+              <Text className="text-red-600 text-xs">{error}</Text>
               <TouchableOpacity
-                onPress={clearCompoundError}
+                onPress={() => setError(null)}
                 className="mt-2 self-start"
               >
                 <Text className="text-red-600 text-xs font-semibold">
@@ -499,12 +528,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           <View className="flex-row gap-3">
             <TouchableOpacity
               className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
-                isLoading || compoundLoading ? 'opacity-60' : ''
+                isLoading ? 'opacity-60' : ''
               }`}
               onPress={handleWithdraw}
-              disabled={isLoading || compoundLoading}
+              disabled={isLoading}
             >
-              {isLoading || compoundLoading ? (
+              {isLoading ? (
                 <ActivityIndicator size="small" color="#374151" />
               ) : (
                 <Text className="text-base font-semibold text-gray-700">
@@ -514,12 +543,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
-                isLoading || compoundLoading ? 'opacity-60' : ''
+                isLoading ? 'opacity-60' : ''
               }`}
               onPress={handleDeposit}
-              disabled={isLoading || compoundLoading}
+              disabled={isLoading}
             >
-              {isLoading || compoundLoading ? (
+              {isLoading ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Text className="text-base font-semibold text-white">

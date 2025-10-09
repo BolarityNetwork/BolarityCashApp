@@ -1,6 +1,11 @@
 import { useCallback } from 'react';
 import { useAPRStore } from '@/stores/aprStore';
-import { ProtocolService, ProtocolInfo } from './protocols/types';
+import {
+  ProtocolService,
+  ProtocolInfo,
+  DepositParams,
+  WithdrawParams,
+} from './protocols/types';
 import { protocolServiceRegistry } from './protocols/ProtocolServiceRegistry';
 
 // Protocol Service Manager
@@ -154,6 +159,55 @@ export class ProtocolServiceManager {
     };
     return risks[protocolName.toLowerCase()] || 'Medium';
   }
+
+  // Deposit to Protocol
+  async deposit(protocolName: string, params: DepositParams): Promise<string> {
+    const service = this.getService(protocolName);
+    if (!service) {
+      throw new Error(`Protocol ${protocolName} not found`);
+    }
+
+    if (!service.deposit) {
+      throw new Error(`${protocolName} does not support deposit yet`);
+    }
+
+    return service.deposit(params);
+  }
+
+  // Withdraw from Protocol
+  async withdraw(
+    protocolName: string,
+    params: WithdrawParams
+  ): Promise<string> {
+    const service = this.getService(protocolName);
+    if (!service) {
+      throw new Error(`Protocol ${protocolName} not found`);
+    }
+
+    if (!service.withdraw) {
+      throw new Error(`${protocolName} does not support withdrawal yet`);
+    }
+
+    return service.withdraw(params);
+  }
+
+  // Get Balance from Protocol
+  async getBalance(
+    protocolName: string,
+    asset: string,
+    userAddress?: string
+  ): Promise<number> {
+    const service = this.getService(protocolName);
+    if (!service) {
+      throw new Error(`Protocol ${protocolName} not found`);
+    }
+
+    if (!service.getBalance) {
+      throw new Error(`${protocolName} does not support balance query yet`);
+    }
+
+    return service.getBalance(asset, userAddress);
+  }
 }
 
 // Create Global Protocol Service Manager Instance
@@ -196,10 +250,41 @@ export const useProtocolService = () => {
     return protocolServiceManager.getSupportedProtocols();
   }, []);
 
+  // Deposit to Protocol
+  const deposit = useCallback(
+    async (protocolName: string, params: DepositParams) => {
+      return protocolServiceManager.deposit(protocolName, params);
+    },
+    []
+  );
+
+  // Withdraw from Protocol
+  const withdraw = useCallback(
+    async (protocolName: string, params: WithdrawParams) => {
+      return protocolServiceManager.withdraw(protocolName, params);
+    },
+    []
+  );
+
+  // Get Balance from Protocol
+  const getBalance = useCallback(
+    async (protocolName: string, asset: string, userAddress?: string) => {
+      return protocolServiceManager.getBalance(
+        protocolName,
+        asset,
+        userAddress
+      );
+    },
+    []
+  );
+
   return {
     getProtocolInfo,
     getMultipleProtocolsInfo,
     getSupportedProtocols,
+    deposit,
+    withdraw,
+    getBalance,
     aprStore,
   };
 };
