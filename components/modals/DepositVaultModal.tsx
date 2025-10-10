@@ -22,6 +22,8 @@ import { useProtocolWallet } from '@/hooks/useProtocolWallet';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 import { ProtocolInfo } from '@/services/protocols/types';
+import { useMultiChainBalance } from '@/hooks/useBalanceData';
+import AnimatedNumber from '../AnimatedNumber';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -44,6 +46,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
 
   const { activeWallet } = useMultiChainWallet();
+  const {
+    data: balanceData,
+    refetch: refetchBalance,
+    isLoading: isLoadingBalance,
+  } = useMultiChainBalance(activeWallet?.address);
 
   // Initialize protocol wallets (injects wallet instances into services)
   useProtocolWallet();
@@ -124,7 +131,6 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         asset: 'USDC',
         amount: depositAmount,
       });
-
       Alert.alert(
         'Deposit Successful',
         `Successfully deposited ${depositAmount} USDC to ${protocolName}\nTransaction: ${txHash.slice(0, 10)}...`,
@@ -134,6 +140,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             onPress: () => {
               setDepositAmount('');
               loadLiveProtocolData();
+              refetchBalance();
             },
           },
         ]
@@ -191,6 +198,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                     onPress: () => {
                       setDepositAmount('');
                       loadLiveProtocolData();
+                      refetchBalance();
                     },
                   },
                 ]
@@ -487,9 +495,24 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm text-gray-700">Wallet Balance</Text>
               <View className="items-end">
-                <Text className="text-base font-semibold text-gray-900">
-                  $0.00
-                </Text>
+                {isLoadingBalance ? (
+                  <Skeleton width={80} height={20} />
+                ) : (
+                  <Text className="text-base font-semibold text-gray-900">
+                    <AnimatedNumber
+                      value={balanceData?.totalBalance ?? 0}
+                      style={{
+                        fontSize: 14,
+                      }}
+                      duration={1200}
+                      formatOptions={{
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                        prefix: '$',
+                      }}
+                    />
+                  </Text>
+                )}
               </View>
             </View>
             <View className="flex-row justify-between items-center mb-2">
@@ -529,10 +552,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           <View className="flex-row gap-3">
             <TouchableOpacity
               className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
-                isWithdrawing || isDepositing ? 'opacity-60' : ''
+                isWithdrawing || isDepositing || isLoadingBalance
+                  ? 'opacity-60'
+                  : ''
               }`}
               onPress={handleWithdraw}
-              disabled={isWithdrawing || isDepositing}
+              disabled={isWithdrawing || isDepositing || isLoadingBalance}
             >
               {isWithdrawing ? (
                 <ActivityIndicator size="small" color="#374151" />
@@ -544,10 +569,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
-                isDepositing || isWithdrawing ? 'opacity-60' : ''
+                isDepositing || isWithdrawing || isLoadingBalance
+                  ? 'opacity-60'
+                  : ''
               }`}
               onPress={handleDeposit}
-              disabled={isDepositing || isWithdrawing}
+              disabled={isDepositing || isWithdrawing || isLoadingBalance}
             >
               {isDepositing ? (
                 <ActivityIndicator size="small" color="#fff" />
