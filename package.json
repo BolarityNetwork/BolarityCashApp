@@ -29,8 +29,8 @@
     ]
   },
   "dependencies": {
+    "@aave/client": "^0.7.0",
     "@aave/core-v3": "^1.19.3",
-    "@compound-finance/compound-js": "^0.6.2",
     "@ethersproject/shims": "^5.8.0",
     "@expo-google-fonts/inter": "^0.3.0",
     "@expo/vector-icons": "^14.1.0",

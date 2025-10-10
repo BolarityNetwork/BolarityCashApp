@@ -1,19 +1,29 @@
 import { ProtocolService, ProtocolServiceFactory } from './types';
+import { DEFAULT_CHAIN_ID } from '@/utils/blockchain/chainIds';
 
 export class AaveProtocolServiceFactory implements ProtocolServiceFactory {
   isSupported(): boolean {
-    // TODO: Check If AAVE Service Is Available
-    return false; // TODO: temporarily not supported
+    try {
+      // Check If AaveService Is Available
+      require('@/api/AaveService');
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   createService(config?: any): ProtocolService {
     if (!this.isSupported()) {
-      throw new Error('AAVE service is not supported');
+      throw new Error('Aave service is not supported');
     }
 
-    // TODO: Implement AAVE Service Creation Logic
+    const AaveService = require('@/api/AaveService').default;
+    const chainId = config?.chainId || DEFAULT_CHAIN_ID;
+    const token = config?.token || 'USDC';
+    const aaveService = new AaveService(chainId, token);
+
     const { AaveProtocolService } = require('./AaveProtocolService');
-    return new AaveProtocolService(config?.aaveService);
+    return new AaveProtocolService(aaveService);
   }
 }
 

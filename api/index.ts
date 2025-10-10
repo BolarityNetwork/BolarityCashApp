@@ -102,3 +102,7 @@ axiosToken.interceptors.response.use(
 );
 
 export { axios, axiosToken };
+
+// Export Protocol Services
+export { default as CompoundService } from './CompoundService';
+export { default as AaveService } from './AaveService';
