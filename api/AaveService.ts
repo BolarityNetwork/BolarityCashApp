@@ -205,24 +205,25 @@ class AaveService {
    * @param userAddress 用户地址
    * @returns 用户余额信息
    */
-  // async getUserBalance(userAddress: string) {
-  //   try {
-  //     // TODO: 实现获取用户在 Aave 的余额
-  //     // 需要使用 @aave/client 的 userPositions 或类似方法
-  //     console.warn(
-  //       'getUserBalance not fully implemented yet. Returning mock data.'
-  //     );
+  async getUserBalance(userAddress: string) {
+    try {
+      // TODO: 实现获取用户在 Aave 的余额
+      console.log(22280, userAddress);
+      // 需要使用 @aave/client 的 userPositions 或类似方法
+      console.warn(
+        'getUserBalance not fully implemented yet. Returning mock data.'
+      );
 
-  //     return {
-  //       supplied: 0,
-  //       borrowed: 0,
-  //       totalValue: 0,
-  //       healthFactor: 0,
-  //     };
-  //   } catch (error: any) {
-  //     throw new Error(`获取余额失败: ${error.message}`);
-  //   }
-  // }
+      return {
+        supplied: 0,
+        borrowed: 0,
+        totalValue: 0,
+        healthFactor: 0,
+      };
+    } catch (error: any) {
+      throw new Error(`获取余额失败: ${error.message}`);
+    }
+  }
 
   /**
    * 存款到 Aave
