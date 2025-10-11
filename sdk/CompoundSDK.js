@@ -294,7 +294,7 @@ class CompoundSDK {
 
       // For simplification, calculate based on total rewards distributed
       // In production, you'd need COMP price and more detailed calculations
-      if (totalSupply.eq(0)) {
+      if (totalSupply === 0n || totalSupply == 0) {
         return 0;
       }
 
@@ -401,8 +401,7 @@ class CompoundSDK {
       // Get base token price (assume USDC = $1 for simplicity)
       const basePrice = 1.0; // In production: await comet.getPrice(baseTokenPriceFeedAddr)
       const baseTVL =
-        Number(ethers.utils.formatUnits(totalSupplyBase.toString(), 6)) *
-        basePrice;
+        Number(ethers.formatUnits(totalSupplyBase.toString(), 6)) * basePrice;
       console.log('baseTVL', baseTVL);
       this._log(`Base TVL: $${baseTVL.toLocaleString()}`);
 
@@ -652,7 +651,7 @@ class CompoundSDK {
 
   _getProvider() {
     if (!this._provider) {
-      this._provider = new ethers.providers.JsonRpcProvider(this.rpcUrl);
+      this._provider = new ethers.JsonRpcProvider(this.rpcUrl);
     }
     return this._provider;
   }
@@ -706,17 +705,17 @@ class CompoundSDK {
     this._log(`Approving ${tokenAddress} for ${spenderAddress}`);
     const approveTx = await token
       .connect(wallet)
-      .approve(spenderAddress, ethers.constants.MaxUint256);
+      .approve(spenderAddress, ethers.MaxUint256);
     await approveTx.wait();
     this._log(`Approval confirmed: ${approveTx.hash}`);
   }
 
   _toWei(amount, decimals = 18) {
-    return ethers.utils.parseUnits(amount.toString(), decimals);
+    return ethers.parseUnits(amount.toString(), decimals);
   }
 
   _fromWei(amount, decimals = 18) {
-    return Number(ethers.utils.formatUnits(amount, decimals));
+    return Number(ethers.formatUnits(amount, decimals));
   }
 
   _log(message) {
@@ -759,8 +758,10 @@ class CompoundSDK {
   _createProviderForChain(chainId) {
     // For simplicity, use same RPC pattern (in production, have per-chain RPCs)
     const rpcUrl =
-      chainId === 1 ? 'https://eth.llamarpc.com' : 'https://1rpc.io/base';
-    return new ethers.providers.JsonRpcProvider(rpcUrl);
+      chainId === 1
+        ? 'https://eth.llamarpc.com'
+        : 'https://rpc.ankr.com/base/d71a9cd8dd190bf86a472bb7c7211ec1d99f131c9739266c6420a2efcafe4325';
+    return new ethers.JsonRpcProvider(rpcUrl);
   }
 
   _getAssetPrice(assetSymbol) {

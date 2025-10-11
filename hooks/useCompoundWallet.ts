@@ -92,10 +92,7 @@ export function useCompoundWallet(chainId: number = 8453): CompoundHookReturn {
   const encodeFunctionCall = useCallback(
     (methodSignature: string, params: any[]): string => {
       try {
-        // Create interface
-        const iface = new ethers.utils.Interface([
-          `function ${methodSignature}`,
-        ]);
+        const iface = new ethers.Interface([`function ${methodSignature}`]);
 
         // Encode function call
         const encodedData = iface.encodeFunctionData(
