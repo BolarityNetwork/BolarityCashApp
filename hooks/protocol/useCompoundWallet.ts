@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { usePrivyWallet } from './usePrivyWallet';
+import { usePrivyWallet } from '../usePrivyWallet';
 import { ethers } from 'ethers';
 import { COMPOUND_MARKETS } from '@/constants/abis/compound';
 

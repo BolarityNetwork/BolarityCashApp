@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useCompoundWallet } from './protocol/useCompoundWallet';
-import { useAaveWallet } from './protocol/useAaveWallet';
+import { useCompoundWallet } from './useCompoundWallet';
+import { useAaveWallet } from './useAaveWallet';
 import { CHAIN_IDS } from '@/utils/blockchain/chainIds';
 import { protocolServiceManager } from '@/services/protocolService';
 import { CompoundProtocolService } from '@/services/protocols/CompoundProtocolService';

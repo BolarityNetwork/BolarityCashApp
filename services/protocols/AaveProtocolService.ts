@@ -24,7 +24,6 @@ export class AaveProtocolService implements ProtocolService {
     try {
       // Get APY data (7-day average)
       const apyData = await this.aaveService.getAPYInfo(TimeWindow.LastWeek);
-      console.log(22277, apyData);
 
       // Get user balance
       const balance = await this.aaveService.getUserBalance(userAddress);
@@ -90,34 +89,84 @@ export class AaveProtocolService implements ProtocolService {
   }
 
   // Deposit to Aave
-  async deposit(_params: DepositParams): Promise<string> {
+  async deposit(params: DepositParams): Promise<string> {
     if (!this.aaveWallet) {
       throw new Error(
         'Aave wallet not initialized. Please set up wallet first.'
       );
     }
-    // TODO: Implement deposit logic using aaveWallet
-    throw new Error('Aave deposit not implemented yet');
+
+    try {
+      console.log(`💰 Aave deposit: ${params.amount} ${params.asset}`);
+
+      // 调用 useAaveWallet 的 supply 方法
+      const txHash = await this.aaveWallet.supply({
+        asset: params.asset,
+        amount: params.amount,
+        userAddress: params.userAddress,
+      });
+
+      console.log(`✅ Aave deposit successful: ${txHash}`);
+      return txHash;
+    } catch (error) {
+      console.error('❌ Aave deposit failed:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Aave deposit failed: ${errorMessage}`);
+    }
   }
 
   // Withdraw from Aave
-  async withdraw(_params: WithdrawParams): Promise<string> {
+  async withdraw(params: WithdrawParams): Promise<string> {
     if (!this.aaveWallet) {
       throw new Error(
         'Aave wallet not initialized. Please set up wallet first.'
       );
     }
-    // TODO: Implement withdraw logic using aaveWallet
-    throw new Error('Aave withdraw not implemented yet');
+
+    try {
+      console.log(`💸 Aave withdraw: ${params.amount} ${params.asset}`);
+
+      // 调用 useAaveWallet 的 withdraw 方法
+      const txHash = await this.aaveWallet.withdraw({
+        asset: params.asset,
+        amount: params.amount,
+        userAddress: params.userAddress,
+      });
+
+      console.log(`✅ Aave withdrawal successful: ${txHash}`);
+      return txHash;
+    } catch (error) {
+      console.error('❌ Aave withdrawal failed:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Aave withdrawal failed: ${errorMessage}`);
+    }
   }
 
   // Get Balance
   async getBalance(asset: string, userAddress?: string): Promise<number> {
-    if (!userAddress) {
-      throw new Error('User address is required');
+    try {
+      // 如果有 aaveWallet 实例，使用它获取余额
+      if (this.aaveWallet) {
+        console.log(`💎 Getting Aave balance for ${asset}`);
+        const balance = await this.aaveWallet.getBalance(asset, userAddress);
+        console.log(`💎 Aave balance: ${balance}`);
+        return balance;
+      }
+
+      // 降级方案：使用 AaveService
+      if (!userAddress) {
+        throw new Error('User address is required');
+      }
+
+      const balance = await this.aaveService.getUserBalance(userAddress);
+      return balance.totalValue;
+    } catch (error) {
+      console.error('❌ Failed to get Aave balance:', error);
+      // 返回 0 而不是抛出错误，避免影响其他功能
+      return 0;
     }
-    const balance = await this.aaveService.getUserBalance(userAddress);
-    return balance.totalValue;
   }
 }
 

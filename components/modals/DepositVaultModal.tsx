@@ -18,7 +18,7 @@ import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProtocolService } from '@/services/protocolService';
-import { useProtocolWallet } from '@/hooks/useProtocolWallet';
+import { useProtocolWallet } from '@/hooks/protocol/useProtocolWallet';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 import { ProtocolInfo } from '@/services/protocols/types';
