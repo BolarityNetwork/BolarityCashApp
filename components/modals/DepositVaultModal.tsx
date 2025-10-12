@@ -18,11 +18,14 @@ import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProtocolService } from '@/services/protocolService';
-import { useProtocolWallet } from '@/hooks/protocol/useProtocolWallet';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
 import { ProtocolInfo } from '@/services/protocols/types';
-import { useMultiChainBalance } from '@/hooks/useBalanceData';
+import {
+  useUserBalances,
+  getProtocolUSDCAmount,
+  getWalletUSDCBalance as getWalletUSDC,
+} from '@/api/account';
 import AnimatedNumber from '../AnimatedNumber';
 
 interface DepositVaultModalProps {
@@ -44,16 +47,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
-
   const { activeWallet } = useMultiChainWallet();
+
   const {
-    data: balanceData,
+    data: balancesData,
     refetch: refetchBalance,
     isLoading: isLoadingBalance,
-  } = useMultiChainBalance(activeWallet?.address);
-
-  // Initialize protocol wallets (injects wallet instances into services)
-  useProtocolWallet();
+  } = useUserBalances(activeWallet?.address || '', activeWallet?.address);
 
   const {
     getProtocolInfo,
@@ -68,6 +68,18 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     }
     return null;
   }, [selectedSpecificVault]);
+
+  // 获取协议的存款金额
+  const getProtocolDepositAmount = useCallback(() => {
+    if (!selectedSpecificVault) return 0;
+    const protocolName = selectedSpecificVault.name.toLowerCase();
+    return getProtocolUSDCAmount(balancesData, protocolName);
+  }, [balancesData, selectedSpecificVault]);
+
+  // 获取钱包的 USDC 余额
+  const getWalletUSDCBalance = useCallback(() => {
+    return getWalletUSDC(balancesData);
+  }, [balancesData]);
 
   const loadLiveProtocolData = useCallback(async () => {
     if (!selectedSpecificVault) return;
@@ -98,15 +110,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     } finally {
       setLoadingProtocolData(false);
     }
-  }, [selectedSpecificVault, getProtocolInfo]);
+  }, [selectedSpecificVault, getProtocolInfo, activeWallet?.address]);
 
-  // Load live protocol data
+  // Load live protocol data (只在 modal 打开或选择的 vault 变化时加载)
   useEffect(() => {
     if (visible && selectedSpecificVault) {
       console.log('🎯 Modal opened, loading live protocol data...');
       loadLiveProtocolData();
     }
-  }, [visible, selectedSpecificVault, loadLiveProtocolData]);
+  }, [visible, selectedSpecificVault]);
 
   // Handle deposit
   const handleDeposit = useCallback(async () => {
@@ -493,14 +505,14 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           {/* Balance and input area */}
           <View className="bg-gray-50 rounded-2xl p-4 mb-6">
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-700">Wallet Balance</Text>
+              <Text className="text-sm text-gray-700">Wallet USDC Balance</Text>
               <View className="items-end">
                 {isLoadingBalance ? (
                   <Skeleton width={80} height={20} />
                 ) : (
                   <Text className="text-base font-semibold text-gray-900">
                     <AnimatedNumber
-                      value={balanceData?.totalBalance ?? 0}
+                      value={getWalletUSDCBalance()}
                       style={{
                         fontSize: 14,
                       }}
@@ -508,7 +520,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                       formatOptions={{
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                        prefix: '$',
+                        suffix: ' $',
                       }}
                     />
                   </Text>
@@ -518,19 +530,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm text-gray-700">
                 {isSpecificVault
-                  ? `${displayVault?.name} Deposit Amount`
-                  : 'Deposit Amount'}
+                  ? `${displayVault?.name} Deposited`
+                  : 'Deposited Amount'}
               </Text>
               <View className="items-end">
-                {loadingProtocolData ? (
+                {isLoadingBalance ? (
                   <Skeleton width={60} height={20} />
-                ) : protocolData ? (
-                  <Text className="text-base font-semibold text-gray-900">
-                    ${protocolData.balance.toFixed(2)}
-                  </Text>
                 ) : (
                   <Text className="text-base font-semibold text-gray-900">
-                    $0.00
+                    {getProtocolDepositAmount().toFixed(2)} $
                   </Text>
                 )}
               </View>

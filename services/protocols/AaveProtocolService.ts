@@ -20,13 +20,10 @@ export class AaveProtocolService implements ProtocolService {
     this.aaveWallet = wallet;
   }
 
-  async getAPRInfo(userAddress: string): Promise<ProtocolInfo> {
+  async getAPRInfo(): Promise<ProtocolInfo> {
     try {
       // Get APY data (7-day average)
       const apyData = await this.aaveService.getAPYInfo(TimeWindow.LastWeek);
-
-      // Get user balance
-      const balance = await this.aaveService.getUserBalance(userAddress);
 
       // Try to get TVL data
       let tvlDisplay = '$0';
@@ -62,7 +59,6 @@ export class AaveProtocolService implements ProtocolService {
         risk: 'Low-Medium',
         isLive: true,
         lastUpdated: Date.now(),
-        balance: balance.totalValue,
       };
     } catch (error) {
       console.error('Failed to get Aave APY:', error);
@@ -75,7 +71,6 @@ export class AaveProtocolService implements ProtocolService {
         risk: 'Low-Medium',
         isLive: false,
         lastUpdated: Date.now(),
-        balance: 0,
       };
     }
   }

@@ -65,6 +65,7 @@ function AppContent({
   return (
     <MultiChainWalletProvider>
       <ThemeProvider>
+        <ProtocolWalletInitializer />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
@@ -78,4 +79,10 @@ function AppContent({
       </ThemeProvider>
     </MultiChainWalletProvider>
   );
+}
+
+function ProtocolWalletInitializer() {
+  const { useProtocolWallet } = require('@/hooks/protocol/useProtocolWallet');
+  useProtocolWallet();
+  return null;
 }

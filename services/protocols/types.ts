@@ -7,7 +7,6 @@ export interface ProtocolInfo {
   risk: string;
   isLive: boolean;
   lastUpdated?: number;
-  balance: number;
 }
 
 export interface DepositParams {
@@ -25,7 +24,7 @@ export interface WithdrawParams {
 export interface ProtocolService {
   name: string;
   chainId: number;
-  getAPRInfo: (userAddress: string) => Promise<ProtocolInfo>;
+  getAPRInfo: () => Promise<ProtocolInfo>;
   getCacheKey: () => string;
   isSupported: () => boolean;
   // Transaction methods (optional, not all services need to implement)
