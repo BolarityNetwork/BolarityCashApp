@@ -53,7 +53,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     data: balancesData,
     refetch: refetchBalance,
     isLoading: isLoadingBalance,
-  } = useUserBalances(activeWallet?.address || '', activeWallet?.address);
+  } = useUserBalances(activeWallet?.address || '', !!activeWallet?.address);
 
   const {
     getProtocolInfo,

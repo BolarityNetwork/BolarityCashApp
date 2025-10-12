@@ -1,176 +1,192 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { formatAddress } from '@/utils/profile';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
-import { useMultiChainBalance } from '@/hooks/useBalanceData';
-import { calculateAssetDistribution, AssetDistribution } from '@/utils/balance';
+import { useUserBalances, getProtocolTotalUSD } from '@/api/account';
 
 interface BalanceCardProps {
   address: string;
-  totalBalance?: number;
-  assetDistribution?: AssetDistribution;
   profileState?: any;
 }
 
 export const BalanceCard: React.FC<BalanceCardProps> = ({
   address,
-  totalBalance: propTotalBalance,
-  assetDistribution: propAssetDistribution,
-  profileState,
+  profileState: _profileState,
 }) => {
   const {
-    data: balanceData,
+    data: balancesData,
     isLoading,
     isError,
-  } = useMultiChainBalance(address);
+    refetch,
+  } = useUserBalances(address, true);
 
-  const totalBalance = balanceData?.totalBalance ?? propTotalBalance ?? 0;
+  const totalBalance = balancesData?.totals.usd || 0;
+  const depositsTotal = balancesData?.totals.depositsUsd || 0;
+  const walletTotal = balancesData?.totals.walletUsd || 0;
+  const protocolsCount = balancesData?.protocols.length || 0;
 
-  // Calculate dynamic asset distribution from balance data
-  const dynamicAssetDistribution = balanceData?.allTokens
-    ? calculateAssetDistribution(balanceData.allTokens)
-    : (propAssetDistribution ?? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 });
-
-  // Use dynamic distribution if available, otherwise fall back to prop
-  const assetDistribution =
-    totalBalance === 0
-      ? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 }
-      : balanceData?.allTokens
-        ? dynamicAssetDistribution
-        : (propAssetDistribution ?? { USD: 1.0, BTC: 0, ETH: 0, Other: 0 });
-
-  const usdPercentage = assetDistribution.USD;
-  const btcPercentage = assetDistribution.BTC;
-  const ethPercentage = assetDistribution.ETH;
-  const otherPercentage = assetDistribution.Other;
+  // Protocol balances
+  const aaveBalance = getProtocolTotalUSD(balancesData, 'aave');
+  const compoundBalance = getProtocolTotalUSD(balancesData, 'compound');
+  const pendleBalance = getProtocolTotalUSD(balancesData, 'pendle');
 
   return (
     <View className="bg-white mx-5 mt-5 rounded-2xl p-5 shadow-sm border border-slate-100">
+      {/* Header */}
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center">
+          <Text className="text-lg font-bold text-slate-800">
+            Account Balances
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => refetch()} className="p-1">
+          <Text className="text-lg">🔄</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Total Balance */}
       <View className="mb-4">
-        <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-sm font-medium text-slate-600">balance</Text>
-          <View className="flex-row items-center">
-            {isLoading ? (
-              <Text className="text-lg font-bold text-slate-800">
-                Loading...
-              </Text>
-            ) : isError ? (
-              <Text className="text-lg font-bold text-red-500">Error</Text>
-            ) : (
-              <AnimatedNumber
-                value={totalBalance}
-                style={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#1e293b',
-                }}
-                duration={1200}
-                formatOptions={{
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                  prefix: '$',
-                }}
-              />
-            )}
-          </View>
+        <View className="flex-row items-center justify-between">
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : isError ? (
+            <Text className="text-2xl font-bold text-red-500">Error</Text>
+          ) : (
+            <AnimatedNumber
+              value={totalBalance}
+              style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: '#1e293b',
+              }}
+              duration={1200}
+              formatOptions={{
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+              }}
+            />
+          )}
+          <Text className="text-sm text-slate-500">Total Balance</Text>
         </View>
-        <View className="mb-2 flex-row items-center justify-between">
-          <Text className="text-sm font-medium text-slate-600">account</Text>
-          <TouchableOpacity
-            className="flex-row items-center"
-            onPress={() => profileState?.openModal('walletSwitch')}
-            activeOpacity={0.7}
-          >
+      </View>
+
+      {/* Separator */}
+      <View className="h-px bg-slate-200 mb-4" />
+
+      {/* Balance Breakdown */}
+      <View className="flex-row justify-between mb-4">
+        <View className="items-center">
+          <Text className="text-sm text-slate-500 mb-1">Deposits</Text>
+          <AnimatedNumber
+            value={depositsTotal}
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: '#10B981',
+            }}
+            duration={800}
+            formatOptions={{
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              prefix: '$',
+            }}
+          />
+        </View>
+        <View className="items-center">
+          <Text className="text-sm text-slate-500 mb-1">Wallet</Text>
+          <AnimatedNumber
+            value={walletTotal}
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: '#3B82F6',
+            }}
+            duration={800}
+            formatOptions={{
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+              prefix: '$',
+            }}
+          />
+        </View>
+        <View className="items-center">
+          <Text className="text-sm text-slate-500 mb-1">Protocols</Text>
+          <Text className="text-lg font-bold text-slate-800">
+            {protocolsCount}
+          </Text>
+        </View>
+      </View>
+
+      {/* Separator */}
+      <View className="h-px bg-slate-200 mb-4" />
+
+      {/* Protocol Breakdown */}
+      <View className="mb-4">
+        <Text className="text-sm font-medium text-slate-600 mb-3">
+          Protocol Breakdown
+        </Text>
+        <View className="space-y-2">
+          <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <Text className="text-sm font-mono text-slate-800 mr-2">
-                {formatAddress(address)}
-              </Text>
-              <View className="flex-row items-center">
-                <Text className="text-xs text-indigo-500">🔄</Text>
-              </View>
+              <View className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
+              <Text className="text-sm text-slate-700">Aave</Text>
             </View>
-          </TouchableOpacity>
+            <AnimatedNumber
+              value={aaveBalance}
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#1e293b',
+              }}
+              duration={800}
+              formatOptions={{
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+              }}
+            />
+          </View>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+              <Text className="text-sm text-slate-700">Compound</Text>
+            </View>
+            <AnimatedNumber
+              value={compoundBalance}
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#1e293b',
+              }}
+              duration={800}
+              formatOptions={{
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+              }}
+            />
+          </View>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-purple-500 mr-2" />
+              <Text className="text-sm text-slate-700">Pendle</Text>
+            </View>
+            <AnimatedNumber
+              value={pendleBalance}
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#1e293b',
+              }}
+              duration={800}
+              formatOptions={{
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+              }}
+            />
+          </View>
         </View>
-      </View>
-      <View className="mb-3">
-        <View className="h-6 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-          <View className="flex-row h-full">
-            <View
-              style={{
-                width: `${usdPercentage * 100}%`,
-                backgroundColor: '#10B981',
-              }}
-            />
-            <View
-              style={{
-                width: `${btcPercentage * 100}%`,
-                backgroundColor: '#F59E0B',
-              }}
-            />
-            <View
-              style={{
-                width: `${ethPercentage * 100}%`,
-                backgroundColor: '#3B82F6',
-              }}
-            />
-            <View
-              style={{
-                width: `${otherPercentage * 100}%`,
-                backgroundColor: '#8B5CF6',
-              }}
-            />
-          </View>
-        </View>
-      </View>
-
-      <View className="flex-row relative h-6">
-        {usdPercentage > 0 && (
-          <View
-            className="absolute items-center"
-            style={{
-              left: `${usdPercentage * 50}%`,
-              transform: [{ translateX: -15 }],
-            }}
-          >
-            <Text className="text-xs font-medium text-slate-600">USD</Text>
-          </View>
-        )}
-
-        {btcPercentage > 0 && (
-          <View
-            className="absolute items-center"
-            style={{
-              left: `${(usdPercentage + btcPercentage * 0.5) * 100}%`,
-              transform: [{ translateX: -15 }],
-            }}
-          >
-            <Text className="text-xs font-medium text-slate-600">BTC</Text>
-          </View>
-        )}
-
-        {ethPercentage > 0 && (
-          <View
-            className="absolute items-center"
-            style={{
-              left: `${(usdPercentage + btcPercentage + ethPercentage * 0.5) * 100}%`,
-              transform: [{ translateX: -15 }],
-            }}
-          >
-            <Text className="text-xs font-medium text-slate-600">ETH</Text>
-          </View>
-        )}
-
-        {otherPercentage > 0 && (
-          <View
-            className="absolute items-center"
-            style={{
-              left: `${(usdPercentage + btcPercentage + ethPercentage + otherPercentage * 0.5) * 100}%`,
-              transform: [{ translateX: -20 }],
-            }}
-          >
-            <Text className="text-xs font-medium text-slate-600">Other</Text>
-          </View>
-        )}
       </View>
     </View>
   );
