@@ -30,6 +30,7 @@ const IconComponent: React.FC<IconComponentProps> = ({
     Home: '🏠',
     User: '👤',
     Grid3X3: '⚏',
+    Notification: '🔔',
   };
 
   return <Text style={{ fontSize: size, color }}>{icons[name] || '⚫'}</Text>;

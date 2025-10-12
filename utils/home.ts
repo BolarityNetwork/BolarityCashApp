@@ -134,16 +134,16 @@ export const vaultProducts: VaultProduct[] = [
     gradientColors: ['#764ba2', '#9f7aea'],
     icon: 'Clock',
   },
-  {
-    name: 'MaxVault Elite',
-    type: 'Premium Savings',
-    apy: '15.75%',
-    description: 'Maximum yield for VIP',
-    minimum: '$10,000',
-    features: ['18-month term', 'Premium rates', 'Priority support'],
-    gradientColors: ['#c084fc', '#f093fb'],
-    icon: 'Star',
-  },
+  // {
+  //   name: 'MaxVault Elite',
+  //   type: 'Premium Savings',
+  //   apy: '15.75%',
+  //   description: 'Maximum yield for VIP',
+  //   minimum: '$10,000',
+  //   features: ['18-month term', 'Premium rates', 'Priority support'],
+  //   gradientColors: ['#c084fc', '#f093fb'],
+  //   icon: 'Star',
+  // },
 ];
 
 export const savingsHistory: Transaction[] = [

@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import IconComponent from '@/components/home/IconComponent';
 import bolarityLogo from '@/assets/images/icon.png';
+import { router } from 'expo-router';
 
 interface HeaderProps {
   user: any;
@@ -42,10 +43,14 @@ const Header: React.FC<HeaderProps> = ({
         </View>
         <View className="flex-row items-center gap-4">
           <View className="relative">
-            <IconComponent name="Gift" size={24} color="#f59e0b" />
-            <View className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
+            <IconComponent name="Notification" size={24} color="#f59e0b" />
           </View>
-          <TouchableOpacity className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center">
+          <TouchableOpacity
+            className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
+            onPress={() => {
+              router.push('/profile');
+            }}
+          >
             <Text className="text-lg text-gray-500">👤</Text>
           </TouchableOpacity>
         </View>

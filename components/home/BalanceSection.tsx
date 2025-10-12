@@ -130,11 +130,6 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
               </View>
             )}
           </View>
-          <View className="bg-green-500 px-3 py-1.5 rounded-2xl items-center self-start -mt-1">
-            <Text className="text-sm font-semibold text-white">
-              Earning APY
-            </Text>
-          </View>
         </View>
       </View>
     </View>
