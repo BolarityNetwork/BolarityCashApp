@@ -69,7 +69,6 @@ export class ProtocolServiceManager {
           apyDisplay: `${cachedData.totalAPR.toFixed(2)}%`,
           description: this.getDefaultDescription(service.name),
           tvl: cachedData.totalTVL,
-          balance: cachedData.balance,
           risk: this.getDefaultRisk(service.name),
           isLive: true,
           lastUpdated: Date.now(),
@@ -81,7 +80,7 @@ export class ProtocolServiceManager {
     try {
       this.aprStore.setLoading(cacheKey, true);
 
-      const protocolInfo = await service.getAPRInfo(userAddress);
+      const protocolInfo = await service.getAPRInfo();
       // Cache APR Data
       if (protocolInfo.isLive) {
         this.aprStore.setAPRData(cacheKey, {
@@ -89,7 +88,7 @@ export class ProtocolServiceManager {
           compAPR: protocolInfo.apy * 0.2, // Assume 20% is reward APR
           totalAPR: protocolInfo.apy,
           totalTVL: protocolInfo.tvl,
-          balance: protocolInfo.balance,
+          balance: 0,
         });
       }
 
