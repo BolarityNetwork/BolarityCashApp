@@ -3,19 +3,41 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import VaultLogo from './VaultLogo';
-import { VaultProduct } from '../constants';
+import { CategoryInfo } from '@/api/vault';
 
 interface VaultListProps {
-  vaultProducts: VaultProduct[];
-  onVaultPress: (vault: VaultProduct) => void;
+  categories: CategoryInfo[];
+  onVaultPress: (category: CategoryInfo) => void;
   onTestPress?: () => void;
 }
 
 const VaultList: React.FC<VaultListProps> = ({
-  vaultProducts,
+  categories,
   onVaultPress,
   onTestPress,
 }) => {
+  const getGradientColors = (categoryId: string) => {
+    switch (categoryId) {
+      case 'flexi':
+        return ['#10b981', '#06b6d4'];
+      case 'time':
+        return ['#8b5cf6', '#ec4899'];
+      default:
+        return ['#6b7280', '#9ca3af'];
+    }
+  };
+
+  const getVaultIcon = (categoryId: string) => {
+    switch (categoryId) {
+      case 'flexi':
+        return 'FlexiVault';
+      case 'time':
+        return 'TimeVault Pro';
+      default:
+        return 'Vault';
+    }
+  };
+
   return (
     <View style={styles.vaultSection}>
       <View style={styles.sectionHeader}>
@@ -33,30 +55,35 @@ const VaultList: React.FC<VaultListProps> = ({
       </View>
 
       <View style={styles.vaultList}>
-        {vaultProducts.map((vault, index) => (
+        {categories.map(category => (
           <TouchableOpacity
-            key={index}
+            key={category.id}
             style={styles.vaultCardBorder}
-            onPress={() => onVaultPress(vault)}
+            onPress={() => onVaultPress(category)}
           >
             <View style={styles.vaultCard}>
               <View style={styles.vaultHeader}>
                 <View style={styles.vaultInfo}>
                   <LinearGradient
-                    colors={vault.gradientColors}
+                    colors={getGradientColors(category.id) as [string, string]}
                     style={styles.vaultIcon}
                   >
-                    <VaultLogo vaultName={vault.name} size={24} />
+                    <VaultLogo
+                      vaultName={getVaultIcon(category.id)}
+                      size={24}
+                    />
                   </LinearGradient>
                   <View>
-                    <Text style={styles.vaultName}>{vault.name}</Text>
+                    <Text style={styles.vaultName}>{category.name}</Text>
                     <Text style={styles.vaultDescription}>
-                      {vault.description}
+                      {category.description}
                     </Text>
                   </View>
                 </View>
                 <View style={styles.vaultApy}>
-                  <Text style={styles.vaultApyText}>{vault.apy}</Text>
+                  <Text style={styles.vaultApyText}>
+                    {category.id === 'flexi' ? '6.29%' : '11.28%'}
+                  </Text>
                   <Text style={styles.vaultApyLabel}>APY</Text>
                 </View>
               </View>
@@ -65,11 +92,15 @@ const VaultList: React.FC<VaultListProps> = ({
                 <View style={styles.vaultDetails}>
                   <View>
                     <Text style={styles.vaultTypeLabel}>Type</Text>
-                    <Text style={styles.vaultTypeValue}>{vault.type}</Text>
+                    <Text style={styles.vaultTypeValue}>
+                      {category.id === 'flexi'
+                        ? 'Current Savings'
+                        : 'Fixed Term Savings'}
+                    </Text>
                   </View>
                   <View>
                     <Text style={styles.vaultMinLabel}>Minimum</Text>
-                    <Text style={styles.vaultMinValue}>{vault.minimum}</Text>
+                    <Text style={styles.vaultMinValue}>$10</Text>
                   </View>
                 </View>
                 <View style={styles.depositButton}>
@@ -128,7 +159,7 @@ const styles = StyleSheet.create({
   vaultCardBorder: {
     borderRadius: 24,
     padding: 2,
-    background: 'linear-gradient(45deg, #10b981, #06b6d4, #8b5cf6)',
+    backgroundColor: 'linear-gradient(45deg, #10b981, #06b6d4, #8b5cf6)',
   },
   vaultCard: {
     backgroundColor: '#fff',

@@ -1,5 +1,5 @@
 // components/PerfectVaultSavingsPlatform/modals/TimeVaultModal.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Modal,
   View,
@@ -10,22 +10,74 @@ import {
   StyleSheet,
 } from 'react-native';
 import ProtocolLogo from '@/components/home/ProtocolLogo';
-import { getProtocolFromVaultName } from '@/utils/home';
-import { TimeVaultOption } from '@/interfaces/home';
+import { useVaultData } from '@/hooks/useVaultData';
+import { VaultItem } from '@/api/vault';
+import VaultSkeleton from '../common/VaultSkeleton';
 
 interface TimeVaultModalProps {
   visible: boolean;
-  timeVaultOptions: TimeVaultOption[];
   onClose: () => void;
-  onSelect: (vault: TimeVaultOption) => void;
+  onSelect: (vault: VaultItem) => void;
 }
 
 const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
   visible,
-  timeVaultOptions,
   onClose,
   onSelect,
 }) => {
+  const { vaults, isLoading, loadVaultsByCategory } = useVaultData();
+
+  useEffect(() => {
+    if (visible) {
+      // Load time vaults when modal opens
+      loadVaultsByCategory('time');
+    }
+  }, [visible, loadVaultsByCategory]);
+
+  const timeVaults = vaults.time || [];
+
+  const renderVaultList = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.modalVaultList}>
+          {Array.from({ length: 2 }).map((_, index) => (
+            <VaultSkeleton key={index} />
+          ))}
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.modalVaultList}>
+        {timeVaults.map(vault => (
+          <TouchableOpacity
+            key={vault.id}
+            style={styles.modalVaultItem}
+            onPress={() => onSelect(vault)}
+          >
+            <View style={styles.modalVaultLeft}>
+              <ProtocolLogo protocol={vault.protocol} size={40} />
+              <View style={styles.modalVaultInfo}>
+                <Text style={styles.modalVaultName}>
+                  {vault.protocol.toUpperCase()}
+                </Text>
+                <Text style={styles.modalTimeVaultMaturity}>{vault.note}</Text>
+              </View>
+            </View>
+            <View style={styles.modalVaultRight}>
+              <Text style={styles.modalVaultApy}>{vault.apy}</Text>
+              <Text style={styles.modalVaultApyLabel}>APY</Text>
+            </View>
+            <View style={styles.modalVaultBottom}>
+              <Text style={styles.modalVaultTvl}>TVL: {vault.tvl}</Text>
+              <Text style={styles.modalVaultRisk}>Risk: {vault.risk}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <Modal
       visible={visible}
@@ -46,36 +98,7 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
             Select a fixed-term vault with guaranteed returns
           </Text>
 
-          <View style={styles.modalVaultList}>
-            {timeVaultOptions.map((vault, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.modalVaultItem}
-                onPress={() => onSelect(vault)}
-              >
-                <View style={styles.modalVaultLeft}>
-                  <ProtocolLogo
-                    protocol={getProtocolFromVaultName(vault.name as string)}
-                    size={40}
-                  />
-                  <View style={styles.modalVaultInfo}>
-                    <Text style={styles.modalVaultName}>{vault.name}</Text>
-                    <Text style={styles.modalTimeVaultMaturity}>
-                      {vault.maturity}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.modalVaultRight}>
-                  <Text style={styles.modalVaultApy}>{vault.apy}</Text>
-                  <Text style={styles.modalVaultApyLabel}>APY</Text>
-                </View>
-                <View style={styles.modalVaultBottom}>
-                  <Text style={styles.modalVaultTvl}>TVL: {vault.tvl}</Text>
-                  <Text style={styles.modalVaultRisk}>Risk: {vault.risk}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {renderVaultList()}
         </ScrollView>
       </SafeAreaView>
     </Modal>

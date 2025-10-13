@@ -17,10 +17,9 @@ import TimeVaultModal from '@/components/modals/TimeVaultModal';
 import DepositVaultModal from '@/components/modals/DepositVaultModal';
 import ActionsMenu from '@/components/modals/ActionsMenu';
 
-// Import Constants
-import { vaultOptions, timeVaultOptions, vaultProducts } from '@/utils/home';
-
-import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
+// Import API and Types
+import { useVaultData } from '@/hooks/useVaultData';
+import { CategoryInfo, VaultItem } from '@/api/vault';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
@@ -28,15 +27,15 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showVaultListModal, setShowVaultListModal] = useState(false);
   const [showTimeVaultListModal, setShowTimeVaultListModal] = useState(false);
-  const [selectedVault, setSelectedVault] = useState<VaultProduct | null>(null);
-  const [selectedSpecificVault, setSelectedSpecificVault] = useState<
-    VaultOption | TimeVaultOption | null
-  >(null);
+  const [_selectedCategory, setSelectedCategory] =
+    useState<CategoryInfo | null>(null);
+  const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
   const [totalBalance, setTotalBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [monthlyEarnings, setMonthlyEarnings] = useState(0);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const { activeWallet } = useMultiChainWallet();
+  const { categories } = useVaultData();
   const actionMenuOpacity = new Animated.Value(0);
   const actionMenuScale = new Animated.Value(0.8);
 
@@ -85,16 +84,16 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     }
   }, [showActionsMenu]);
 
-  const handleVaultSelection = (vaultOption: VaultOption) => {
-    setSelectedSpecificVault(vaultOption);
-    setSelectedVault(null);
+  const handleVaultSelection = (vault: VaultItem) => {
+    setSelectedVault(vault);
+    setSelectedCategory(null);
     setShowVaultListModal(false);
     setShowDepositModal(true);
   };
 
-  const handleTimeVaultSelection = (timeVaultOption: TimeVaultOption) => {
-    setSelectedSpecificVault(timeVaultOption);
-    setSelectedVault(null);
+  const handleTimeVaultSelection = (vault: VaultItem) => {
+    setSelectedVault(vault);
+    setSelectedCategory(null);
     setShowTimeVaultListModal(false);
     setShowDepositModal(true);
   };
@@ -123,22 +122,22 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
 
   const currentWalletInfo = getCurrentWalletInfo();
 
-  const handleVaultPress = (vault: VaultProduct) => {
-    if (vault.name === 'FlexiVault') {
-      setSelectedVault(vault);
-      setSelectedSpecificVault(null);
+  const handleVaultPress = (category: CategoryInfo) => {
+    if (category.id === 'flexi') {
+      setSelectedCategory(category);
+      setSelectedVault(null);
       setShowVaultListModal(true);
       setShowDepositModal(false);
       setShowTimeVaultListModal(false);
-    } else if (vault.name === 'TimeVault Pro') {
-      setSelectedVault(vault);
-      setSelectedSpecificVault(null);
+    } else if (category.id === 'time') {
+      setSelectedCategory(category);
+      setSelectedVault(null);
       setShowTimeVaultListModal(true);
       setShowVaultListModal(false);
       setShowDepositModal(false);
     } else {
-      setSelectedVault(vault);
-      setSelectedSpecificVault(null);
+      setSelectedCategory(category);
+      setSelectedVault(null);
       setShowDepositModal(true);
       setShowVaultListModal(false);
       setShowTimeVaultListModal(false);
@@ -171,10 +170,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         <ChartSection />
 
         {/* Vault Products */}
-        <VaultList
-          vaultProducts={vaultProducts}
-          onVaultPress={handleVaultPress}
-        />
+        <VaultList categories={categories} onVaultPress={handleVaultPress} />
 
         {/* Recent Activity */}
         <ActivityList />
@@ -194,7 +190,6 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       {/* FlexiVault Selection Modal */}
       <VaultSelectionModal
         visible={showVaultListModal}
-        vaultOptions={vaultOptions}
         onClose={() => setShowVaultListModal(false)}
         onSelect={handleVaultSelection}
       />
@@ -202,7 +197,6 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       {/* TimeVault Pro Selection Modal */}
       <TimeVaultModal
         visible={showTimeVaultListModal}
-        timeVaultOptions={timeVaultOptions}
         onClose={() => setShowTimeVaultListModal(false)}
         onSelect={handleTimeVaultSelection}
       />
@@ -211,7 +205,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       <DepositVaultModal
         visible={showDepositModal}
         selectedVault={selectedVault}
-        selectedSpecificVault={selectedSpecificVault}
+        selectedSpecificVault={null}
         onClose={() => setShowDepositModal(false)}
       />
     </CommonSafeAreaView>
