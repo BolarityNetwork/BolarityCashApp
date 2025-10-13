@@ -1,17 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
 import { useUserBalances, getProtocolTotalUSD } from '@/api/account';
+import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
+import { WalletLogo } from '@/components/profile/WalletLogo';
+import { formatAddress } from '@/utils/profile';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
-interface BalanceCardProps {
+interface AccountCardProps {
   address: string;
   profileState?: any;
 }
 
-export const BalanceCard: React.FC<BalanceCardProps> = ({
+export const AccountCard: React.FC<AccountCardProps> = ({
   address,
   profileState: _profileState,
 }) => {
+  const [showWalletSwitchModal, setShowWalletSwitchModal] = useState(false);
+  const { activeWallet } = useMultiChainWallet();
   const {
     data: balancesData,
     isLoading,
@@ -33,10 +39,26 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({
     <View className="bg-white mx-5 mt-5 rounded-2xl p-5 shadow-sm border border-slate-100">
       {/* Header */}
       <View className="flex-row items-center justify-between mb-4">
-        <View className="flex-row items-center">
+        <View className="flex-1">
           <Text className="text-lg font-bold text-slate-800">
             Account Balances
           </Text>
+          <TouchableOpacity
+            onPress={() => setShowWalletSwitchModal(true)}
+            className="mt-1"
+          >
+            <View className="flex-row items-center">
+              <Text className="text-sm text-slate-500 font-mono">
+                {formatAddress(address)}
+              </Text>
+              <WalletLogo
+                type={activeWallet.type === 'ethereum' ? 'ethereum' : 'solana'}
+                size={16}
+                style={{ marginLeft: 8, marginRight: 4 }}
+              />
+              <Text className="text-xs text-slate-400">▼</Text>
+            </View>
+          </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => refetch()} className="p-1">
           <Text className="text-lg">🔄</Text>
@@ -188,6 +210,12 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({
           </View>
         </View>
       </View>
+
+      {/* Wallet Switch Modal */}
+      <WalletSwitchModal
+        visible={showWalletSwitchModal}
+        onClose={() => setShowWalletSwitchModal(false)}
+      />
     </View>
   );
 };

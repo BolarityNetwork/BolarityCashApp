@@ -12,7 +12,7 @@ import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProfileState } from '@/hooks/profile/useProfileState';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { NetworkSwitchModal } from '@/components/modals/NetworkSwitchModal';
-import { BalanceCard } from '@/components/profile/BalanceCard';
+import { AccountCard } from '@/components/profile/AccountCard';
 import { SettingItem } from '@/components/profile/SettingItem';
 import { SettingSection } from '@/components/profile/SettingSection';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
@@ -126,13 +126,11 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Balance Card */}
-        <BalanceCard
+        <AccountCard
           address={activeWallet.address || ''}
           profileState={profileState}
         />
 
-        {/* Security Section */}
         <SettingSection title="Security">
           <SettingItem
             icon="🔑"
