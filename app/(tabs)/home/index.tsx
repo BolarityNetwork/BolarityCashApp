@@ -206,6 +206,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
         visible={showDepositModal}
         selectedVault={selectedVault}
         selectedSpecificVault={null}
+        vaultId={selectedVault?.id}
         onClose={() => setShowDepositModal(false)}
       />
     </CommonSafeAreaView>
