@@ -1,5 +1,5 @@
 // components/PerfectVaultSavingsPlatform/modals/DepositModal.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Modal,
   View,
@@ -13,16 +13,12 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import ProtocolLogo from '@/components/home/ProtocolLogo';
-import VaultLogo from '@/components/home/VaultLogo';
-import { getProtocolFromVaultName } from '@/utils/home';
-import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
 import { VaultItem } from '@/api/vault';
-import { useVaultStore } from '@/stores/vaultStore';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
-import { useProtocolService } from '@/services/protocolService';
+import { useVaultOperations } from '@/hooks/useVaultOperations';
+import { createVaultMarketInfo } from '@/services/VaultService';
 import getErrorMessage from '@/utils/error';
 import Skeleton from '@/components/common/Skeleton';
-import { ProtocolInfo } from '@/services/protocols/types';
 import {
   useUserBalances,
   getProtocolUSDCAmount,
@@ -33,46 +29,19 @@ import AnimatedNumber from '../AnimatedNumber';
 interface DepositVaultModalProps {
   visible: boolean;
   selectedVault: VaultItem | null;
-  selectedSpecificVault: VaultOption | TimeVaultOption | null;
-  vaultId?: string; // Optional vault ID for direct access
   onClose: () => void;
 }
 
 const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   visible,
   selectedVault,
-  selectedSpecificVault,
-  vaultId,
   onClose,
 }) => {
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isDepositing, setIsDepositing] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
-  const [loadingProtocolData, setLoadingProtocolData] = useState(false);
   const { activeWallet } = useMultiChainWallet();
-
-  // Get vault from store by ID if provided
-  const { getVaultById } = useVaultStore();
-  const vaultFromStore = vaultId ? getVaultById(vaultId) : null;
-
-  // Type guards
-  const isVaultItem = (vault: any): vault is VaultItem => {
-    return vault && 'protocol' in vault && 'id' in vault;
-  };
-
-  const isVaultOption = (vault: any): vault is VaultOption => {
-    return vault && 'name' in vault && !('protocol' in vault);
-  };
-
-  const isTimeVaultOption = (vault: any): vault is TimeVaultOption => {
-    return vault && 'lockPeriod' in vault;
-  };
-
-  const isVaultProduct = (vault: any): vault is VaultProduct => {
-    return vault && 'features' in vault && 'gradientColors' in vault;
-  };
 
   const {
     data: balancesData,
@@ -80,70 +49,21 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     isLoading: isLoadingBalance,
   } = useUserBalances(activeWallet?.address || '', !!activeWallet?.address);
 
-  const {
-    getProtocolInfo,
-    deposit: depositToProtocol,
-    withdraw: withdrawFromProtocol,
-  } = useProtocolService();
-
-  // Get current protocol name
-  const getProtocolName = useCallback(() => {
-    if (selectedSpecificVault) {
-      return selectedSpecificVault.name;
-    }
-    return null;
-  }, [selectedSpecificVault]);
+  // Use vault operations for new architecture
+  const { deposit: vaultDeposit, withdraw: vaultWithdraw } =
+    useVaultOperations();
 
   // 获取协议的存款金额
   const getProtocolDepositAmount = useCallback(() => {
-    if (!selectedSpecificVault) return 0;
-    const protocolName = selectedSpecificVault.name.toLowerCase();
+    if (!selectedVault) return 0;
+    const protocolName = selectedVault.protocol.toLowerCase();
     return getProtocolUSDCAmount(balancesData, protocolName);
-  }, [balancesData, selectedSpecificVault]);
+  }, [balancesData, selectedVault]);
 
   // 获取钱包的 USDC 余额
   const getWalletUSDCBalance = useCallback(() => {
     return getWalletUSDC(balancesData);
   }, [balancesData]);
-
-  const loadLiveProtocolData = useCallback(async () => {
-    if (!selectedSpecificVault) return;
-
-    setLoadingProtocolData(true);
-    try {
-      console.log(
-        '🔄 Loading live protocol data for:',
-        selectedSpecificVault.name
-      );
-
-      const protocolData = await getProtocolInfo(
-        selectedSpecificVault.name,
-        activeWallet?.address,
-        true
-      );
-
-      if (protocolData) {
-        setProtocolData(protocolData);
-        console.log('✅ Live protocol data loaded:', protocolData);
-      } else {
-        console.warn('⚠️ No live protocol data available');
-        setProtocolData(null);
-      }
-    } catch (error) {
-      console.error('❌ Failed to load live protocol data:', error);
-      setProtocolData(null);
-    } finally {
-      setLoadingProtocolData(false);
-    }
-  }, [selectedSpecificVault, getProtocolInfo, activeWallet?.address]);
-
-  // Load live protocol data (只在 modal 打开或选择的 vault 变化时加载)
-  useEffect(() => {
-    if (visible && selectedSpecificVault) {
-      console.log('🎯 Modal opened, loading live protocol data...');
-      loadLiveProtocolData();
-    }
-  }, [visible, selectedSpecificVault]);
 
   // Handle deposit
   const handleDeposit = useCallback(async () => {
@@ -152,9 +72,17 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
-    const protocolName = getProtocolName();
-    if (!protocolName) {
-      Alert.alert('Error', 'No protocol selected');
+    if (!selectedVault) {
+      Alert.alert('Error', 'No vault selected');
+      return;
+    }
+
+    // Pendle requires minimum $0.01
+    if (
+      selectedVault.protocol.toLowerCase() === 'pendle' &&
+      parseFloat(depositAmount) < 0.01
+    ) {
+      Alert.alert('Error', 'Pendle requires minimum deposit of $0.01 USD');
       return;
     }
 
@@ -162,26 +90,67 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     setError(null);
 
     try {
-      console.log(`💰 Depositing ${depositAmount} USDC to ${protocolName}...`);
+      const protocol = selectedVault.protocol.toLowerCase() as
+        | 'aave'
+        | 'compound'
+        | 'pendle';
 
-      const txHash = await depositToProtocol(protocolName, {
-        asset: 'USDC',
-        amount: depositAmount,
-      });
-      Alert.alert(
-        'Deposit Successful',
-        `Successfully deposited ${depositAmount} USDC to ${protocolName}\nTransaction: ${txHash.slice(0, 10)}...`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setDepositAmount('');
-              loadLiveProtocolData();
-              refetchBalance();
-            },
-          },
-        ]
+      console.log(
+        `💰 Depositing ${depositAmount} USDC to ${selectedVault.protocol}...`
       );
+
+      // Create vault market info for the selected protocol
+      const vaultMarketInfo = createVaultMarketInfo(protocol, {
+        assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
+        marketAddress: selectedVault.id,
+        chainId: 8453, // Base
+        network: 'base',
+        decimals: 6,
+        symbol: 'USDC',
+        // Aave specific
+        poolAddress:
+          protocol === 'aave'
+            ? '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5'
+            : undefined,
+        // Compound specific
+        cometAddress:
+          protocol === 'compound'
+            ? '0xb125E6687d4313864e53df431d5425969c15Eb2F'
+            : undefined,
+        // Pendle specific
+        ptAddress:
+          protocol === 'pendle'
+            ? '0x194b8fed256c02ef1036ed812cae0c659ee6f7fd' // PT USDe Dec 2025
+            : undefined,
+        ytAddress:
+          protocol === 'pendle'
+            ? '0x1490516d8391e4d0bcbd13b7a56b4fe4996478be' // YT USDe Dec 2025
+            : undefined,
+      });
+
+      const result = await vaultDeposit(
+        vaultMarketInfo,
+        depositAmount,
+        activeWallet?.address
+      );
+
+      if (result.success) {
+        Alert.alert(
+          'Deposit Successful',
+          `Successfully deposited ${depositAmount} USDC to ${selectedVault.protocol}\nTransaction: ${result.txHash?.slice(0, 10)}...`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setDepositAmount('');
+                refetchBalance();
+              },
+            },
+          ]
+        );
+      } else {
+        throw new Error(result.error || 'Deposit failed');
+      }
     } catch (err) {
       console.error('❌ Deposit error:', err);
       const errorMsg = getErrorMessage(err);
@@ -190,7 +159,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     } finally {
       setIsDepositing(false);
     }
-  }, [depositAmount, getProtocolName, depositToProtocol, loadLiveProtocolData]);
+  }, [
+    depositAmount,
+    selectedVault,
+    vaultDeposit,
+    activeWallet?.address,
+    refetchBalance,
+  ]);
 
   // Handle withdraw
   const handleWithdraw = useCallback(async () => {
@@ -199,15 +174,14 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
-    const protocolName = getProtocolName();
-    if (!protocolName) {
-      Alert.alert('Error', 'No protocol selected');
+    if (!selectedVault) {
+      Alert.alert('Error', 'No vault selected');
       return;
     }
 
     Alert.alert(
       'Confirm Withdrawal',
-      `Are you sure you want to withdraw ${depositAmount} USDC from ${protocolName}?`,
+      `Are you sure you want to withdraw ${depositAmount} USDC from ${selectedVault.protocol}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -217,29 +191,67 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             setError(null);
 
             try {
+              const protocol = selectedVault.protocol.toLowerCase() as
+                | 'aave'
+                | 'compound'
+                | 'pendle';
+
               console.log(
-                `💸 Withdrawing ${depositAmount} USDC from ${protocolName}...`
+                `💸 Withdrawing ${depositAmount} USDC from ${selectedVault.protocol}...`
               );
 
-              const txHash = await withdrawFromProtocol(protocolName, {
-                asset: 'USDC',
-                amount: depositAmount,
+              // Create vault market info for the selected protocol
+              const vaultMarketInfo = createVaultMarketInfo(protocol, {
+                assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
+                marketAddress: selectedVault.id,
+                chainId: 8453, // Base
+                network: 'base',
+                decimals: 6,
+                symbol: 'USDC',
+                // Aave specific
+                poolAddress:
+                  protocol === 'aave'
+                    ? '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5'
+                    : undefined,
+                // Compound specific
+                cometAddress:
+                  protocol === 'compound'
+                    ? '0xb125E6687d4313864e53df431d5425969c15Eb2F'
+                    : undefined,
+                // Pendle specific
+                ptAddress:
+                  protocol === 'pendle'
+                    ? '0x194b8fed256c02ef1036ed812cae0c659ee6f7fd' // PT USDe Dec 2025
+                    : undefined,
+                ytAddress:
+                  protocol === 'pendle'
+                    ? '0x1490516d8391e4d0bcbd13b7a56b4fe4996478be' // YT USDe Dec 2025
+                    : undefined,
               });
 
-              Alert.alert(
-                'Withdrawal Successful',
-                `Successfully withdrew ${depositAmount} USDC from ${protocolName}\nTransaction: ${txHash.slice(0, 10)}...`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      setDepositAmount('');
-                      loadLiveProtocolData();
-                      refetchBalance();
-                    },
-                  },
-                ]
+              const result = await vaultWithdraw(
+                vaultMarketInfo,
+                depositAmount,
+                activeWallet?.address
               );
+
+              if (result.success) {
+                Alert.alert(
+                  'Withdrawal Successful',
+                  `Successfully withdrew ${depositAmount} USDC from ${selectedVault.protocol}\nTransaction: ${result.txHash?.slice(0, 10)}...`,
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        setDepositAmount('');
+                        refetchBalance();
+                      },
+                    },
+                  ]
+                );
+              } else {
+                throw new Error(result.error || 'Withdrawal failed');
+              }
             } catch (err) {
               console.error('❌ Withdrawal error:', err);
               const errorMsg = getErrorMessage(err);
@@ -254,18 +266,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     );
   }, [
     depositAmount,
-    getProtocolName,
-    withdrawFromProtocol,
-    loadLiveProtocolData,
+    selectedVault,
+    vaultWithdraw,
+    activeWallet?.address,
+    refetchBalance,
   ]);
 
-  // Determine the vault to display - prioritize vault from store by ID
-  const displayVault = vaultFromStore || selectedSpecificVault || selectedVault;
-  const isSpecificVault = !!selectedSpecificVault;
-  const isTimeVault = isTimeVaultOption(displayVault);
-  const isVaultFromStore = !!vaultFromStore;
-
-  if (!visible || !displayVault) {
+  if (!visible || !selectedVault) {
     return null;
   }
 
@@ -279,15 +286,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
           <Text className="text-xl font-bold text-gray-900">
-            {isVaultFromStore && isVaultItem(displayVault)
-              ? `Open ${displayVault.protocol.toUpperCase()} Vault`
-              : isTimeVault && isTimeVaultOption(displayVault)
-                ? `Open ${displayVault.name}`
-                : isSpecificVault && isVaultOption(displayVault)
-                  ? `Open ${displayVault.name} Vault`
-                  : isVaultProduct(displayVault)
-                    ? `Open ${displayVault.name}`
-                    : 'Open Vault'}
+            {`Open ${selectedVault.protocol.toUpperCase()} Vault`}
           </Text>
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
@@ -316,291 +315,71 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
           )}
 
-          {/* Vault Header - Support vault from store */}
-          {isVaultFromStore && isVaultItem(displayVault) ? (
-            <LinearGradient
-              colors={['#10b981', '#06b6d4']}
-              className="rounded-2xl p-6 mb-6"
-              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
+          {/* Vault Header */}
+          <LinearGradient
+            colors={['#10b981', '#06b6d4']}
+            className="rounded-2xl p-6 mb-6"
+            style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
+          >
+            <View
+              className="flex-row items-center mb-4"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 16,
+              }}
             >
-              <View
-                className="flex-row items-center mb-4"
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 16,
-                }}
-              >
-                <ProtocolLogo protocol={displayVault.protocol} size={48} />
-                <View
-                  className="ml-3 flex-1"
-                  style={{ marginLeft: 12, flex: 1 }}
-                >
-                  <Text className="text-xl font-bold text-white">
-                    {displayVault.protocol.toUpperCase()}
-                  </Text>
-                  <Text className="text-sm text-white/80">
-                    {displayVault.note}
-                  </Text>
-                </View>
-              </View>
-              <View
-                className="flex-row gap-4"
-                style={{ flexDirection: 'row', gap: 16 }}
-              >
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">APY Rate</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault.apy}
-                  </Text>
-                </View>
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">TVL</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault.tvl}
-                  </Text>
-                </View>
-              </View>
-              <View className="mt-3" style={{ marginTop: 12 }}>
-                <Text className="text-sm text-white/80">Risk Level</Text>
-                <Text className="text-lg font-bold text-white">
-                  {displayVault.risk}
-                </Text>
-              </View>
-            </LinearGradient>
-          ) : isTimeVault && isTimeVaultOption(displayVault) ? (
-            <LinearGradient
-              colors={['#667eea', '#764ba2']}
-              className="rounded-2xl p-6 mb-6"
-              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
-            >
-              <View
-                className="flex-row items-center mb-4"
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 16,
-                }}
-              >
-                <ProtocolLogo
-                  protocol={getProtocolFromVaultName(displayVault.name)}
-                  size={48}
-                />
-                <View
-                  className="ml-3 flex-1"
-                  style={{ marginLeft: 12, flex: 1 }}
-                >
-                  <Text className="text-xl font-bold text-white">
-                    {displayVault.name}
-                  </Text>
-                  <Text className="text-sm text-white/80">
-                    {displayVault.description}
-                  </Text>
-                </View>
-              </View>
-              <View
-                className="flex-row gap-4"
-                style={{ flexDirection: 'row', gap: 16 }}
-              >
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">APY Rate</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault?.apy}
-                  </Text>
-                </View>
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">Lock Period</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {(displayVault as TimeVaultOption).lockPeriod}
-                  </Text>
-                </View>
-              </View>
-              <View className="mt-3" style={{ marginTop: 12 }}>
-                <Text className="text-sm text-white/80">Protocol</Text>
-                <Text className="text-lg font-bold text-white">
-                  {(displayVault as TimeVaultOption).protocol}
-                </Text>
-              </View>
-            </LinearGradient>
-          ) : isSpecificVault && isVaultOption(displayVault) ? (
-            <LinearGradient
-              colors={['#764ba2', '#c084fc']}
-              className="rounded-2xl p-6 mb-6"
-              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
-            >
-              <View
-                className="flex-row items-center mb-4"
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginBottom: 16,
-                }}
-              >
-                <ProtocolLogo protocol={displayVault.name} size={48} />
-                <View
-                  className="ml-3 flex-1"
-                  style={{ marginLeft: 12, flex: 1 }}
-                >
-                  <Text className="text-xl font-bold text-white">
-                    {displayVault.name}
-                  </Text>
-                  <Text className="text-sm text-white/80">
-                    {protocolData?.description || displayVault.description}
-                  </Text>
-                </View>
-              </View>
-              <View
-                className="flex-row gap-4"
-                style={{ flexDirection: 'row', gap: 16 }}
-              >
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">APY Rate</Text>
-                  {loadingProtocolData ? (
-                    <Skeleton width={60} height={20} />
-                  ) : protocolData ? (
-                    <View className="flex-row items-center">
-                      <Text className="text-lg font-bold text-white">
-                        {protocolData.apyDisplay}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text className="text-lg font-bold text-white">
-                      {displayVault.apy}
-                    </Text>
-                  )}
-                </View>
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">TVL</Text>
-                  {loadingProtocolData ? (
-                    <Skeleton width={80} height={20} />
-                  ) : protocolData ? (
-                    <View className="flex-row items-center">
-                      <Text className="text-lg font-bold text-white">
-                        {protocolData.tvl}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text className="text-lg font-bold text-white">
-                      {displayVault.tvl}
-                    </Text>
-                  )}
-                </View>
-              </View>
-              <View className="mt-3" style={{ marginTop: 12 }}>
-                <Text className="text-sm text-white/80">Risk Level</Text>
-                {loadingProtocolData ? (
-                  <Skeleton width={100} height={20} />
-                ) : protocolData ? (
-                  <View className="flex-row items-center">
-                    <Text className="text-lg font-bold text-white">
-                      {protocolData.risk}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault.risk}
-                  </Text>
-                )}
-              </View>
-            </LinearGradient>
-          ) : isVaultProduct(displayVault) ? (
-            <LinearGradient
-              colors={
-                (displayVault.gradientColors as [
-                  string,
-                  string,
-                  ...string[],
-                ]) || ['#c084fc', '#f472b6']
-              }
-              className="rounded-2xl p-6 mb-6"
-              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
-            >
-              <View className="flex-row justify-between items-center mb-4">
+              <ProtocolLogo protocol={selectedVault.protocol} size={48} />
+              <View className="ml-3 flex-1" style={{ marginLeft: 12, flex: 1 }}>
                 <Text className="text-xl font-bold text-white">
-                  {displayVault.name}
+                  {selectedVault.protocol.toUpperCase()}
                 </Text>
-                <VaultLogo vaultName={displayVault.name} size={24} />
+                <Text className="text-sm text-white/80">
+                  {selectedVault.note}
+                </Text>
               </View>
-              <View
-                className="flex-row gap-4"
-                style={{ flexDirection: 'row', gap: 16 }}
-              >
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">APY Rate</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault.apy}
-                  </Text>
-                </View>
-                <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">Minimum</Text>
-                  <Text className="text-lg font-bold text-white">
-                    {displayVault.minimum}
-                  </Text>
-                </View>
+            </View>
+            <View
+              className="flex-row gap-4"
+              style={{ flexDirection: 'row', gap: 16 }}
+            >
+              <View className="flex-1" style={{ flex: 1 }}>
+                <Text className="text-sm text-white/80">APY Rate</Text>
+                <Text className="text-lg font-bold text-white">
+                  {selectedVault.apy}
+                </Text>
               </View>
-            </LinearGradient>
-          ) : null}
+              <View className="flex-1" style={{ flex: 1 }}>
+                <Text className="text-sm text-white/80">TVL</Text>
+                <Text className="text-lg font-bold text-white">
+                  {selectedVault.tvl}
+                </Text>
+              </View>
+            </View>
+            <View className="mt-3" style={{ marginTop: 12 }}>
+              <Text className="text-sm text-white/80">Risk Level</Text>
+              <Text className="text-lg font-bold text-white">
+                {selectedVault.risk}
+              </Text>
+            </View>
+          </LinearGradient>
 
-          {/* Restore original feature description */}
+          {/* Features */}
           <View className="mb-6">
             <Text className="text-base font-bold text-gray-900 mb-4">
-              {isVaultFromStore
-                ? 'Protocol Features:'
-                : isTimeVault
-                  ? 'Vault Features:'
-                  : isSpecificVault
-                    ? 'Protocol Features:'
-                    : 'Key Features:'}
+              Protocol Features:
             </Text>
-            {isVaultFromStore
-              ? [
-                  'Flexible access anytime',
-                  'Auto-compounding rewards',
-                  'Audited smart contracts',
-                  '24/7 yield optimization',
-                ].map((feature, index) => (
-                  <View key={index} className="flex-row items-center mb-2">
-                    <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
-                    <Text className="text-sm text-gray-700">{feature}</Text>
-                  </View>
-                ))
-              : isTimeVault
-                ? [
-                    'Fixed-term guaranteed returns',
-                    'No early withdrawal penalty',
-                    'Automated yield optimization',
-                    'Institutional-grade security',
-                  ].map((feature, index) => (
-                    <View key={index} className="flex-row items-center mb-2">
-                      <View className="w-2 h-2 rounded-full bg-indigo-500 mr-3" />
-                      <Text className="text-sm text-gray-700">{feature}</Text>
-                    </View>
-                  ))
-                : isSpecificVault
-                  ? [
-                      'Flexible access anytime',
-                      'Auto-compounding rewards',
-                      'Audited smart contracts',
-                      '24/7 yield optimization',
-                    ].map((feature, index) => (
-                      <View key={index} className="flex-row items-center mb-2">
-                        <View className="w-2 h-2 rounded-full bg-purple-600 mr-3" />
-                        <Text className="text-sm text-gray-700">{feature}</Text>
-                      </View>
-                    ))
-                  : isVaultProduct(displayVault)
-                    ? displayVault.features.map((feature, index) => (
-                        <View
-                          key={index}
-                          className="flex-row items-center mb-2"
-                        >
-                          <View className="w-2 h-2 rounded-full bg-purple-400 mr-3" />
-                          <Text className="text-sm text-gray-700">
-                            {feature}
-                          </Text>
-                        </View>
-                      ))
-                    : null}
+            {[
+              'Flexible access anytime',
+              'Auto-compounding rewards',
+              'Audited smart contracts',
+              '24/7 yield optimization',
+            ].map((feature, index) => (
+              <View key={index} className="flex-row items-center mb-2">
+                <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
+                <Text className="text-sm text-gray-700">{feature}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Balance and input area */}
@@ -630,11 +409,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm text-gray-700">
-                {isVaultFromStore && isVaultItem(displayVault)
-                  ? `${displayVault.protocol.toUpperCase()} Deposited`
-                  : isSpecificVault && isVaultOption(displayVault)
-                    ? `${displayVault.name} Deposited`
-                    : 'Deposited Amount'}
+                {`${selectedVault.protocol.toUpperCase()} Deposited`}
               </Text>
               <View className="items-end">
                 {isLoadingBalance ? (
