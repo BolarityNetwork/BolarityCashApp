@@ -12,8 +12,11 @@ import { fetchDeviceUniqueId, sleep } from '@/utils/utils';
 
 const axiosToken = axios.create();
 
+// Configure axios defaults
 axios.defaults.baseURL = APP_CONFIG.apiUrl;
+axios.defaults.timeout = 30000; // 30 seconds timeout
 axiosToken.defaults.baseURL = APP_CONFIG.apiUrl;
+axiosToken.defaults.timeout = 30000; // 30 seconds timeout
 
 let requestList: (() => void)[] = [];
 
@@ -102,7 +105,3 @@ axiosToken.interceptors.response.use(
 );
 
 export { axios, axiosToken };
-
-// Export Protocol Services
-export { default as CompoundService } from './CompoundService';
-export { default as AaveService } from './AaveService';

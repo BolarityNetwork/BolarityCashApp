@@ -200,7 +200,7 @@ export const getProtocolUSDCAmount = (
   protocolName: string
 ): number => {
   const protocol = getProtocolBalance(balances, protocolName);
-  return protocol?.totals.breakdown['USDC']?.amount || 0;
+  return protocol?.totals?.usd || 0;
 };
 
 // Helper function to get wallet USDC balance
