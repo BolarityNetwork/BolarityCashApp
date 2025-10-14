@@ -16,6 +16,8 @@ import ProtocolLogo from '@/components/home/ProtocolLogo';
 import VaultLogo from '@/components/home/VaultLogo';
 import { getProtocolFromVaultName } from '@/utils/home';
 import { VaultOption, TimeVaultOption, VaultProduct } from '@/interfaces/home';
+import { VaultItem } from '@/api/vault';
+import { useVaultStore } from '@/stores/vaultStore';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useProtocolService } from '@/services/protocolService';
 import getErrorMessage from '@/utils/error';
@@ -30,8 +32,9 @@ import AnimatedNumber from '../AnimatedNumber';
 
 interface DepositVaultModalProps {
   visible: boolean;
-  selectedVault: VaultProduct | null;
+  selectedVault: VaultItem | null;
   selectedSpecificVault: VaultOption | TimeVaultOption | null;
+  vaultId?: string; // Optional vault ID for direct access
   onClose: () => void;
 }
 
@@ -39,6 +42,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   visible,
   selectedVault,
   selectedSpecificVault,
+  vaultId,
   onClose,
 }) => {
   const [depositAmount, setDepositAmount] = useState<string>('');
@@ -48,6 +52,27 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const [protocolData, setProtocolData] = useState<ProtocolInfo | null>(null);
   const [loadingProtocolData, setLoadingProtocolData] = useState(false);
   const { activeWallet } = useMultiChainWallet();
+
+  // Get vault from store by ID if provided
+  const { getVaultById } = useVaultStore();
+  const vaultFromStore = vaultId ? getVaultById(vaultId) : null;
+
+  // Type guards
+  const isVaultItem = (vault: any): vault is VaultItem => {
+    return vault && 'protocol' in vault && 'id' in vault;
+  };
+
+  const isVaultOption = (vault: any): vault is VaultOption => {
+    return vault && 'name' in vault && !('protocol' in vault);
+  };
+
+  const isTimeVaultOption = (vault: any): vault is TimeVaultOption => {
+    return vault && 'lockPeriod' in vault;
+  };
+
+  const isVaultProduct = (vault: any): vault is VaultProduct => {
+    return vault && 'features' in vault && 'gradientColors' in vault;
+  };
 
   const {
     data: balancesData,
@@ -234,13 +259,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     loadLiveProtocolData,
   ]);
 
-  if (!visible || (!selectedVault && !selectedSpecificVault)) {
+  // Determine the vault to display - prioritize vault from store by ID
+  const displayVault = vaultFromStore || selectedSpecificVault || selectedVault;
+  const isSpecificVault = !!selectedSpecificVault;
+  const isTimeVault = isTimeVaultOption(displayVault);
+  const isVaultFromStore = !!vaultFromStore;
+
+  if (!visible || !displayVault) {
     return null;
   }
-
-  const displayVault = selectedSpecificVault || selectedVault;
-  const isSpecificVault = !!selectedSpecificVault;
-  const isTimeVault = displayVault && 'lockPeriod' in displayVault;
 
   return (
     <Modal
@@ -252,11 +279,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
           <Text className="text-xl font-bold text-gray-900">
-            {isTimeVault
-              ? `Open ${displayVault?.name}`
-              : isSpecificVault
-                ? `Open ${displayVault?.name} Vault`
-                : `Open ${displayVault?.name}`}
+            {isVaultFromStore && isVaultItem(displayVault)
+              ? `Open ${displayVault.protocol.toUpperCase()} Vault`
+              : isTimeVault && isTimeVaultOption(displayVault)
+                ? `Open ${displayVault.name}`
+                : isSpecificVault && isVaultOption(displayVault)
+                  ? `Open ${displayVault.name} Vault`
+                  : isVaultProduct(displayVault)
+                    ? `Open ${displayVault.name}`
+                    : 'Open Vault'}
           </Text>
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
@@ -285,8 +316,59 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
           )}
 
-          {/* Vault Header - Keep original style */}
-          {isTimeVault ? (
+          {/* Vault Header - Support vault from store */}
+          {isVaultFromStore && isVaultItem(displayVault) ? (
+            <LinearGradient
+              colors={['#10b981', '#06b6d4']}
+              className="rounded-2xl p-6 mb-6"
+              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
+            >
+              <View
+                className="flex-row items-center mb-4"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}
+              >
+                <ProtocolLogo protocol={displayVault.protocol} size={48} />
+                <View
+                  className="ml-3 flex-1"
+                  style={{ marginLeft: 12, flex: 1 }}
+                >
+                  <Text className="text-xl font-bold text-white">
+                    {displayVault.protocol.toUpperCase()}
+                  </Text>
+                  <Text className="text-sm text-white/80">
+                    {displayVault.note}
+                  </Text>
+                </View>
+              </View>
+              <View
+                className="flex-row gap-4"
+                style={{ flexDirection: 'row', gap: 16 }}
+              >
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {displayVault.apy}
+                  </Text>
+                </View>
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">TVL</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {displayVault.tvl}
+                  </Text>
+                </View>
+              </View>
+              <View className="mt-3" style={{ marginTop: 12 }}>
+                <Text className="text-sm text-white/80">Risk Level</Text>
+                <Text className="text-lg font-bold text-white">
+                  {displayVault.risk}
+                </Text>
+              </View>
+            </LinearGradient>
+          ) : isTimeVault && isTimeVaultOption(displayVault) ? (
             <LinearGradient
               colors={['#667eea', '#764ba2']}
               className="rounded-2xl p-6 mb-6"
@@ -340,7 +422,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 </Text>
               </View>
             </LinearGradient>
-          ) : isSpecificVault ? (
+          ) : isSpecificVault && isVaultOption(displayVault) ? (
             <LinearGradient
               colors={['#764ba2', '#c084fc']}
               className="rounded-2xl p-6 mb-6"
@@ -354,16 +436,16 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   marginBottom: 16,
                 }}
               >
-                <ProtocolLogo protocol={displayVault?.name || ''} size={48} />
+                <ProtocolLogo protocol={displayVault.name} size={48} />
                 <View
                   className="ml-3 flex-1"
                   style={{ marginLeft: 12, flex: 1 }}
                 >
                   <Text className="text-xl font-bold text-white">
-                    {displayVault?.name}
+                    {displayVault.name}
                   </Text>
                   <Text className="text-sm text-white/80">
-                    {protocolData?.description || displayVault?.description}
+                    {protocolData?.description || displayVault.description}
                   </Text>
                 </View>
               </View>
@@ -383,7 +465,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                     </View>
                   ) : (
                     <Text className="text-lg font-bold text-white">
-                      {displayVault?.apy}
+                      {displayVault.apy}
                     </Text>
                   )}
                 </View>
@@ -399,7 +481,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                     </View>
                   ) : (
                     <Text className="text-lg font-bold text-white">
-                      {(displayVault as VaultOption).tvl}
+                      {displayVault.tvl}
                     </Text>
                   )}
                 </View>
@@ -416,15 +498,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   </View>
                 ) : (
                   <Text className="text-lg font-bold text-white">
-                    {(displayVault as VaultOption).risk}
+                    {displayVault.risk}
                   </Text>
                 )}
               </View>
             </LinearGradient>
-          ) : (
+          ) : isVaultProduct(displayVault) ? (
             <LinearGradient
               colors={
-                ((displayVault as VaultProduct)?.gradientColors as [
+                (displayVault.gradientColors as [
                   string,
                   string,
                   ...string[],
@@ -435,9 +517,9 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             >
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-xl font-bold text-white">
-                  {displayVault?.name}
+                  {displayVault.name}
                 </Text>
-                <VaultLogo vaultName={displayVault?.name || ''} size={24} />
+                <VaultLogo vaultName={displayVault.name} size={24} />
               </View>
               <View
                 className="flex-row gap-4"
@@ -446,60 +528,79 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 <View className="flex-1" style={{ flex: 1 }}>
                   <Text className="text-sm text-white/80">APY Rate</Text>
                   <Text className="text-lg font-bold text-white">
-                    {displayVault?.apy}
+                    {displayVault.apy}
                   </Text>
                 </View>
                 <View className="flex-1" style={{ flex: 1 }}>
                   <Text className="text-sm text-white/80">Minimum</Text>
                   <Text className="text-lg font-bold text-white">
-                    {(displayVault as VaultProduct).minimum}
+                    {displayVault.minimum}
                   </Text>
                 </View>
               </View>
             </LinearGradient>
-          )}
+          ) : null}
 
           {/* Restore original feature description */}
           <View className="mb-6">
             <Text className="text-base font-bold text-gray-900 mb-4">
-              {isTimeVault
-                ? 'Vault Features:'
-                : isSpecificVault
-                  ? 'Protocol Features:'
-                  : 'Key Features:'}
+              {isVaultFromStore
+                ? 'Protocol Features:'
+                : isTimeVault
+                  ? 'Vault Features:'
+                  : isSpecificVault
+                    ? 'Protocol Features:'
+                    : 'Key Features:'}
             </Text>
-            {isTimeVault
+            {isVaultFromStore
               ? [
-                  'Fixed-term guaranteed returns',
-                  'No early withdrawal penalty',
-                  'Automated yield optimization',
-                  'Institutional-grade security',
+                  'Flexible access anytime',
+                  'Auto-compounding rewards',
+                  'Audited smart contracts',
+                  '24/7 yield optimization',
                 ].map((feature, index) => (
                   <View key={index} className="flex-row items-center mb-2">
-                    <View className="w-2 h-2 rounded-full bg-indigo-500 mr-3" />
+                    <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
                     <Text className="text-sm text-gray-700">{feature}</Text>
                   </View>
                 ))
-              : isSpecificVault
+              : isTimeVault
                 ? [
-                    'Flexible access anytime',
-                    'Auto-compounding rewards',
-                    'Audited smart contracts',
-                    '24/7 yield optimization',
+                    'Fixed-term guaranteed returns',
+                    'No early withdrawal penalty',
+                    'Automated yield optimization',
+                    'Institutional-grade security',
                   ].map((feature, index) => (
                     <View key={index} className="flex-row items-center mb-2">
-                      <View className="w-2 h-2 rounded-full bg-purple-600 mr-3" />
+                      <View className="w-2 h-2 rounded-full bg-indigo-500 mr-3" />
                       <Text className="text-sm text-gray-700">{feature}</Text>
                     </View>
                   ))
-                : (displayVault as VaultProduct).features.map(
-                    (feature, index) => (
+                : isSpecificVault
+                  ? [
+                      'Flexible access anytime',
+                      'Auto-compounding rewards',
+                      'Audited smart contracts',
+                      '24/7 yield optimization',
+                    ].map((feature, index) => (
                       <View key={index} className="flex-row items-center mb-2">
-                        <View className="w-2 h-2 rounded-full bg-purple-400 mr-3" />
+                        <View className="w-2 h-2 rounded-full bg-purple-600 mr-3" />
                         <Text className="text-sm text-gray-700">{feature}</Text>
                       </View>
-                    )
-                  )}
+                    ))
+                  : isVaultProduct(displayVault)
+                    ? displayVault.features.map((feature, index) => (
+                        <View
+                          key={index}
+                          className="flex-row items-center mb-2"
+                        >
+                          <View className="w-2 h-2 rounded-full bg-purple-400 mr-3" />
+                          <Text className="text-sm text-gray-700">
+                            {feature}
+                          </Text>
+                        </View>
+                      ))
+                    : null}
           </View>
 
           {/* Balance and input area */}
@@ -529,9 +630,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-sm text-gray-700">
-                {isSpecificVault
-                  ? `${displayVault?.name} Deposited`
-                  : 'Deposited Amount'}
+                {isVaultFromStore && isVaultItem(displayVault)
+                  ? `${displayVault.protocol.toUpperCase()} Deposited`
+                  : isSpecificVault && isVaultOption(displayVault)
+                    ? `${displayVault.name} Deposited`
+                    : 'Deposited Amount'}
               </Text>
               <View className="items-end">
                 {isLoadingBalance ? (

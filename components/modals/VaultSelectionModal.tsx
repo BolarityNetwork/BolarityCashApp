@@ -9,14 +9,14 @@ import {
   SafeAreaView,
 } from 'react-native';
 import ProtocolLogo from '../home/ProtocolLogo';
-import { VaultOption } from '@/interfaces/home';
-import { useVaultSelection } from '@/hooks/useVaultSelection';
+import { useVaultData } from '@/hooks/useVaultData';
 import VaultSkeleton from '../common/VaultSkeleton';
+import { VaultItem } from '@/api/vault';
 
 interface VaultSelectionModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelect: (vault: VaultOption) => void;
+  onSelect: (vault: VaultItem) => void;
 }
 
 const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
@@ -24,17 +24,19 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
   onClose,
   onSelect,
 }) => {
-  const { vaultOptions, isLoadingProtocols, loadProtocolData } =
-    useVaultSelection();
+  const { vaults, isLoading, loadVaultsByCategory } = useVaultData();
 
   useEffect(() => {
     if (visible) {
-      loadProtocolData();
+      // Load flexi vaults when modal opens
+      loadVaultsByCategory('flexi');
     }
-  }, [visible, loadProtocolData]);
+  }, [visible, loadVaultsByCategory]);
+
+  const flexiVaults = vaults.flexi || [];
 
   const renderVaultList = () => {
-    if (isLoadingProtocols) {
+    if (isLoading) {
       // Show skeleton loading
       return (
         <View className="gap-3">
@@ -48,47 +50,42 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
     // Show actual vault options
     return (
       <View className="gap-3">
-        {vaultOptions.map((vault, index) => (
+        {flexiVaults.map(vault => (
           <TouchableOpacity
-            key={index}
+            key={vault.id}
             className="bg-white rounded-2xl p-4 border border-gray-200"
             onPress={() => onSelect(vault)}
           >
             <View className="flex-row items-center mb-3">
-              <ProtocolLogo protocol={vault.name} size={40} />
+              <ProtocolLogo protocol={vault.protocol} size={40} />
               <View className="ml-3 flex-1">
                 <View className="flex-row items-center mb-1">
                   <Text className="text-base font-bold text-gray-900">
-                    {vault.name}
+                    {vault.protocol.toUpperCase()}
                   </Text>
                   <View className="bg-green-500 px-1.5 py-0.5 rounded ml-2">
                     <Text className="text-xs text-white font-bold">LIVE</Text>
                   </View>
                 </View>
-                <Text className="text-sm text-gray-500">
-                  {vault.protocolData.description}
-                </Text>
+                <Text className="text-sm text-gray-500">{vault.note}</Text>
               </View>
             </View>
             <View className="absolute top-4 right-4 items-end">
               <Text className="text-lg font-bold text-green-600">
-                {vault.protocolData.apyDisplay}
+                {vault.apy}
               </Text>
               <Text className="text-xs text-gray-500">APY</Text>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-sm text-gray-500">
-                TVL: {vault.protocolData.tvl}
-              </Text>
-              <Text className="text-sm text-gray-500">
-                Risk: {vault.protocolData.risk}
-              </Text>
+              <Text className="text-sm text-gray-500">TVL: {vault.tvl}</Text>
+              <Text className="text-sm text-gray-500">Risk: {vault.risk}</Text>
             </View>
           </TouchableOpacity>
         ))}
       </View>
     );
   };
+
   return (
     <Modal
       visible={visible}
