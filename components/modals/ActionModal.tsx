@@ -42,15 +42,6 @@ const ActionModal: React.FC<ActionModalProps> = ({
       },
     },
     {
-      id: 'transfer',
-      title: 'Transfer',
-      icon: 'swap-horizontal',
-      color: 'bg-black',
-      onPress: () => {
-        handleClose();
-      },
-    },
-    {
       id: 'actions',
       title: 'Actions',
       icon: 'add-circle',
@@ -66,9 +57,9 @@ const ActionModal: React.FC<ActionModalProps> = ({
       color: 'bg-black',
       onPress: () => {
         handleClose();
-        setTimeout(() => {
-          onReceivePress?.();
-        }, 300);
+        if (onReceivePress) {
+          onReceivePress();
+        }
       },
     },
   ];
@@ -159,7 +150,7 @@ const ActionModal: React.FC<ActionModalProps> = ({
             marginBottom: -300,
           }}
         >
-          <View className="flex-1  items-center px-8">
+          <View className="flex-1 items-center px-8">
             <View className="w-full flex-row justify-center items-center mb-8 gap-x-16">
               <View className="items-center">
                 <TouchableOpacity
@@ -201,25 +192,6 @@ const ActionModal: React.FC<ActionModalProps> = ({
             </View>
 
             <View className="flex-row justify-center items-center gap-x-16">
-              <View className="items-center">
-                <TouchableOpacity
-                  className={`w-16 h-16 ${actions.find(a => a.id === 'transfer')?.color} rounded-full items-center justify-center`}
-                  onPress={actions.find(a => a.id === 'transfer')?.onPress}
-                  style={{
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 4,
-                    elevation: 4,
-                  }}
-                >
-                  <Icon name="swap-horizontal" size={22} color="white" />
-                </TouchableOpacity>
-                <Text className="text-xs text-gray-600 font-medium text-center">
-                  Transfer
-                </Text>
-              </View>
-
               <View className="items-center">
                 <TouchableOpacity
                   className="w-16 h-16 bg-black rounded-full items-center justify-center"

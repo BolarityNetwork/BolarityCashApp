@@ -7,7 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { ModalProps } from '@/interfaces/profile';
+
+interface ModalProps {
+  visible: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+}
 
 export const BaseModal: React.FC<ModalProps> = ({
   visible,
@@ -47,7 +53,7 @@ export const BaseModal: React.FC<ModalProps> = ({
               color: '#1e293b',
             }}
           >
-            {title}
+            {title || ''}
           </Text>
           <TouchableOpacity
             style={{

@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ActionModal from './modals/ActionModal';
-import { ReceiveModal } from './modals/ReceiveModal';
+import { ModalManager } from './ModalManager';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,
@@ -16,6 +15,7 @@ export const TabBar: FC<BottomTabBarProps> = ({
   const routeNameArr = ['home', 'actions', 'profile'];
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
   const handleActionMenuClose = useCallback(() => {
@@ -34,20 +34,37 @@ export const TabBar: FC<BottomTabBarProps> = ({
     setIsReceiveModalOpen(false);
   }, []);
 
+  const handleTransferModalOpen = useCallback(() => {
+    setIsTransferModalOpen(true);
+  }, []);
+
+  const handleTransferModalClose = useCallback(() => {
+    setIsTransferModalOpen(false);
+  }, []);
+
   return (
     <>
-      {/* Action Modal */}
-      <ActionModal
-        visible={isActionMenuOpen}
-        onClose={handleActionMenuClose}
+      {/* Modal Manager */}
+      <ModalManager
+        isActionMenuOpen={isActionMenuOpen}
+        isReceiveModalOpen={isReceiveModalOpen}
+        isTransferModalOpen={isTransferModalOpen}
+        onActionMenuClose={handleActionMenuClose}
+        onReceiveModalClose={handleReceiveModalClose}
+        onTransferModalClose={handleTransferModalClose}
         onReceivePress={handleReceiveModalOpen}
       />
 
-      {/* Receive Modal */}
-      <ReceiveModal
-        visible={isReceiveModalOpen}
-        onClose={handleReceiveModalClose}
-      />
+      {/* Transfer Button - Direct Access */}
+      <Pressable
+        onPress={handleTransferModalOpen}
+        className="absolute right-4 top-20 bg-blue-600 rounded-full p-4 shadow-lg"
+        style={{
+          zIndex: 50,
+        }}
+      >
+        <Icon name="arrow-forward-circle" size={32} color="white" />
+      </Pressable>
 
       {/* TabBar */}
       <View
