@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
-import { useMultiChainBalance } from '@/hooks/useBalanceData';
+import { useUserBalances } from '@/api/account';
 
 interface BalanceSectionProps {
   address: string;
@@ -18,14 +18,15 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
   monthlyEarnings: propMonthlyEarnings,
 }) => {
   const {
-    data: balanceData,
+    data: balancesData,
     isLoading,
     isError,
-  } = useMultiChainBalance(address);
-  const totalBalance = balanceData?.totalBalance ?? propTotalBalance ?? 0;
-  const todayEarnings = balanceData?.todayEarnings ?? propTodayEarnings ?? 0;
+  } = useUserBalances(address, true);
+  const totalBalance = balancesData?.totals.usd ?? propTotalBalance ?? 0;
+  const todayEarnings =
+    balancesData?.totals.depositsUsd ?? propTodayEarnings ?? 0;
   const monthlyEarnings =
-    balanceData?.monthlyEarnings ?? propMonthlyEarnings ?? 0;
+    balancesData?.totals.depositsUsd ?? propMonthlyEarnings ?? 0;
 
   if (isLoading) {
     return (
