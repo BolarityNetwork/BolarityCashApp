@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
 import { useUserBalances, getProtocolTotalUSD } from '@/api/account';
 import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { formatAddress } from '@/utils/profile';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
-
+import RefreshIcon from '@/assets/icon/common/refresh.svg';
+import Skeleton from '../common/Skeleton';
 interface AccountCardProps {
   address: string;
   profileState?: any;
@@ -61,7 +62,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => refetch()} className="p-1">
-          <Text className="text-lg">🔄</Text>
+          <RefreshIcon />
         </TouchableOpacity>
       </View>
 
@@ -69,7 +70,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       <View className="mb-4">
         <View className="flex-row items-center justify-between">
           {isLoading ? (
-            <ActivityIndicator size="small" color="#3B82F6" />
+            <Skeleton width={100} height={24} borderRadius={12} />
           ) : isError ? (
             <Text className="text-2xl font-bold text-red-500">Error</Text>
           ) : (

@@ -1,28 +1,11 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
-import { usePrivy } from '@privy-io/expo';
+import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
+import BackBlack from '@/assets/icon/nav/back-black.svg';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { logout } = usePrivy();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.replace('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
-  console.log('SettingsScreen');
 
   const SettingItem = ({
     title,
@@ -58,26 +41,29 @@ export default function SettingsScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1">
+    <CommonSafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-4 pt-15">
+      <View className="flex-row items-center justify-between px-5 pt-15">
         <TouchableOpacity
           className="w-10 h-10 rounded-full bg-white/20 items-center justify-center"
           onPress={() => router.back()}
         >
-          <Text className="text-2xl text-white font-bold">‹</Text>
+          <BackBlack />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-white">Settings</Text>
+        <Text className="text-[17px] font-medium text-gray-900">Settings</Text>
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1 px-5 py-5"
+        showsVerticalScrollIndicator={false}
+      >
         {/* Account Section */}
         <View className="mb-8">
-          <Text className="text-base font-semibold text-white/80 mb-3 px-1">
+          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
             Account
           </Text>
-          <View className="bg-white/95 rounded-2xl overflow-hidden">
+          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
               title="Profile Information"
               subtitle="Manage your personal details"
@@ -104,10 +90,10 @@ export default function SettingsScreen() {
 
         {/* Preferences Section */}
         <View className="mb-8">
-          <Text className="text-base font-semibold text-white/80 mb-3 px-1">
+          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
             Preferences
           </Text>
-          <View className="bg-white/95 rounded-2xl overflow-hidden">
+          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
               title="Notifications"
               subtitle="Push notifications and alerts"
@@ -148,10 +134,10 @@ export default function SettingsScreen() {
 
         {/* Privacy & Security Section */}
         <View className="mb-8">
-          <Text className="text-base font-semibold text-white/80 mb-3 px-1">
+          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
             Privacy & Security
           </Text>
-          <View className="bg-white/95 rounded-2xl overflow-hidden">
+          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
               title="Privacy Policy"
               onPress={() => {
@@ -176,10 +162,10 @@ export default function SettingsScreen() {
 
         {/* Support Section */}
         <View className="mb-8">
-          <Text className="text-base font-semibold text-white/80 mb-3 px-1">
+          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
             Support
           </Text>
-          <View className="bg-white/95 rounded-2xl overflow-hidden">
+          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
               title="Help Center"
               onPress={() => {
@@ -203,10 +189,10 @@ export default function SettingsScreen() {
 
         {/* About Section */}
         <View className="mb-8">
-          <Text className="text-base font-semibold text-white/80 mb-3 px-1">
+          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
             About
           </Text>
-          <View className="bg-white/95 rounded-2xl overflow-hidden">
+          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
               title="App Version"
               subtitle="1.0.0"
@@ -220,17 +206,7 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
-
-        {/* Logout Button */}
-        <View className="mt-5 mb-10">
-          <TouchableOpacity
-            className="bg-red-500/90 rounded-2xl py-4 items-center shadow-md"
-            onPress={handleLogout}
-          >
-            <Text className="text-base font-semibold text-white">Sign Out</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-    </SafeAreaView>
+    </CommonSafeAreaView>
   );
 }
