@@ -13,45 +13,60 @@ import ActivityList from '@/components/home/ActivityList';
 
 // Import Modals
 import VaultSelectionModal from '@/components/modals/VaultSelectionModal';
-import TimeVaultModal from '@/components/modals/TimeVaultModal';
 import DepositVaultModal from '@/components/modals/DepositVaultModal';
 import ActionsMenu from '@/components/modals/ActionsMenu';
 
 // Import API and Types
-import { useVaultData } from '@/hooks/useVaultData';
 import { CategoryInfo, VaultItem } from '@/api/vault';
+import { useUserRewards, getDailyRewards } from '@/api/user';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showVaultListModal, setShowVaultListModal] = useState(false);
-  const [showTimeVaultListModal, setShowTimeVaultListModal] = useState(false);
-  const [_selectedCategory, setSelectedCategory] =
-    useState<CategoryInfo | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryInfo | null>(
+    null
+  );
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
-  const [totalBalance, setTotalBalance] = useState(0);
-  const [todayEarnings, setTodayEarnings] = useState(0);
-  const [monthlyEarnings, setMonthlyEarnings] = useState(0);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const { activeWallet } = useMultiChainWallet();
-  const { categories } = useVaultData();
+
+  // Fetch user rewards data for earnings calculation
+  const { data: todayRewardsData } = useUserRewards(
+    activeWallet?.address || '',
+    '1',
+    !!activeWallet?.address
+  );
+
+  const { data: monthlyRewardsData } = useUserRewards(
+    activeWallet?.address || '',
+    '30',
+    !!activeWallet?.address
+  );
+  console.log(4447, todayRewardsData);
+
+  // Calculate earnings from API data
+  const todayEarnings = React.useMemo(() => {
+    if (!todayRewardsData) return 0;
+    const dailyRewards = getDailyRewards(todayRewardsData);
+    // Get today's reward (last item in array)
+    return dailyRewards.length > 0
+      ? dailyRewards[dailyRewards.length - 1]?.daily_reward || 0
+      : 0;
+  }, [todayRewardsData]);
+
+  const monthlyEarnings = React.useMemo(() => {
+    if (!monthlyRewardsData) return 0;
+    const dailyRewards = getDailyRewards(monthlyRewardsData);
+    // Sum all rewards in the last 30 days
+    return dailyRewards.reduce(
+      (total, reward) => total + reward.daily_reward,
+      0
+    );
+  }, [monthlyRewardsData]);
   const actionMenuOpacity = new Animated.Value(0);
   const actionMenuScale = new Animated.Value(0.8);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const increment = Math.random() * 0.04 + 0.01;
-      setTotalBalance(prev => prev + increment);
-
-      setTodayEarnings(prev => prev + increment);
-
-      const monthlyIncrement = increment * (Math.random() * 0.5 + 1.2); // 1.2-1.7倍
-      setMonthlyEarnings(prev => prev + monthlyIncrement);
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (showActionsMenu) {
@@ -91,13 +106,6 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     setShowDepositModal(true);
   };
 
-  const handleTimeVaultSelection = (vault: VaultItem) => {
-    setSelectedVault(vault);
-    setSelectedCategory(null);
-    setShowTimeVaultListModal(false);
-    setShowDepositModal(true);
-  };
-
   const formatAddress = (address: string) => {
     if (!address) return 'Not Connected';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -123,25 +131,8 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   const currentWalletInfo = getCurrentWalletInfo();
 
   const handleVaultPress = (category: CategoryInfo) => {
-    if (category.id === 'flexi') {
-      setSelectedCategory(category);
-      setSelectedVault(null);
-      setShowVaultListModal(true);
-      setShowDepositModal(false);
-      setShowTimeVaultListModal(false);
-    } else if (category.id === 'time') {
-      setSelectedCategory(category);
-      setSelectedVault(null);
-      setShowTimeVaultListModal(true);
-      setShowVaultListModal(false);
-      setShowDepositModal(false);
-    } else {
-      setSelectedCategory(category);
-      setSelectedVault(null);
-      setShowDepositModal(true);
-      setShowVaultListModal(false);
-      setShowTimeVaultListModal(false);
-    }
+    setSelectedCategory(category);
+    setShowVaultListModal(true);
   };
 
   return (
@@ -155,27 +146,21 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
       />
       <BalanceSection
         address={activeWallet.address}
-        totalBalance={totalBalance}
         todayEarnings={todayEarnings}
         monthlyEarnings={monthlyEarnings}
       />
 
-      {/* Scrollable Content */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Chart */}
         <ChartSection />
 
-        {/* Vault Products */}
-        <VaultList categories={categories} onVaultPress={handleVaultPress} />
+        <VaultList handleVaultPress={handleVaultPress} />
 
-        {/* Recent Activity */}
         <ActivityList />
 
-        {/* Bottom Padding */}
         <View className="h-5" />
       </ScrollView>
 
@@ -189,16 +174,10 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
 
       {/* FlexiVault Selection Modal */}
       <VaultSelectionModal
+        selectedCategory={selectedCategory}
         visible={showVaultListModal}
         onClose={() => setShowVaultListModal(false)}
         onSelect={handleVaultSelection}
-      />
-
-      {/* TimeVault Pro Selection Modal */}
-      <TimeVaultModal
-        visible={showTimeVaultListModal}
-        onClose={() => setShowTimeVaultListModal(false)}
-        onSelect={handleTimeVaultSelection}
       />
 
       {/* Deposit Modal */}

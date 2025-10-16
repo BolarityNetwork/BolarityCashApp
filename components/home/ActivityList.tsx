@@ -9,12 +9,11 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import IconComponent from './IconComponent';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
+import SentIcon from '@/assets/icon/transaction/sent.png';
+import { Image } from 'expo-image';
 
-interface ActivityListProps {
-  // 保持向后兼容，但现在从 hook 获取真实数据
-}
+interface ActivityListProps {}
 
 const ActivityList: React.FC<ActivityListProps> = () => {
   const {
@@ -26,23 +25,6 @@ const ActivityList: React.FC<ActivityListProps> = () => {
     hasMore,
     currentAddress,
   } = useTransactionHistory();
-
-  // 获取交易类型对应的图标
-  const getTransactionIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'deposit':
-        return { name: 'ArrowDown', color: '#2563eb' };
-      case 'withdraw':
-        return { name: 'ArrowUp', color: '#dc2626' };
-      case 'interest earned':
-      case 'interest':
-        return { name: 'Percent', color: '#059669' };
-      case 'swap':
-        return { name: 'ArrowLeftRight', color: '#7c3aed' };
-      default:
-        return { name: 'DollarSign', color: '#6b7280' };
-    }
-  };
 
   // 如果没有连接钱包
   if (!currentAddress) {
@@ -120,25 +102,13 @@ const ActivityList: React.FC<ActivityListProps> = () => {
           }
         >
           {formattedTransactions.map((transaction, index) => {
-            const icon = getTransactionIcon(transaction.type);
             return (
               <View
                 key={`${transaction.hash || index}`}
                 style={styles.activityItem}
               >
                 <View style={styles.activityLeft}>
-                  <View
-                    style={[
-                      styles.activityIcon,
-                      { backgroundColor: `${icon.color}15` },
-                    ]}
-                  >
-                    <IconComponent
-                      name={icon.name}
-                      size={20}
-                      color={icon.color}
-                    />
-                  </View>
+                  <Image source={SentIcon} style={{ width: 48, height: 48 }} />
                   <View style={styles.activityInfo}>
                     <Text style={styles.activityType}>{transaction.type}</Text>
                     <Text style={styles.activityDetails}>
@@ -250,6 +220,7 @@ const styles = StyleSheet.create({
   activityInfo: {
     flex: 1,
     minWidth: 0, // Allow text to wrap properly
+    marginLeft: 12,
   },
   activityType: {
     fontSize: 16,

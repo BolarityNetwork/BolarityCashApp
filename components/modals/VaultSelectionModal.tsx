@@ -1,5 +1,5 @@
 // components/PerfectVaultSavingsPlatform/modals/VaultSelectionModal.tsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Modal,
   View,
@@ -8,32 +8,33 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import ProtocolLogo from '../home/ProtocolLogo';
-import { useVaultData } from '@/hooks/useVaultData';
 import VaultSkeleton from '../common/VaultSkeleton';
-import { VaultItem } from '@/api/vault';
+import { VaultItem, CategoryInfo, useVaultsByCategory } from '@/api/vault';
+import { Image } from 'expo-image';
 
 interface VaultSelectionModalProps {
   visible: boolean;
+  selectedCategory: CategoryInfo | null;
   onClose: () => void;
   onSelect: (vault: VaultItem) => void;
 }
 
 const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
   visible,
+  selectedCategory,
   onClose,
   onSelect,
 }) => {
-  const { vaults, isLoading, loadVaultsByCategory } = useVaultData();
-
-  useEffect(() => {
-    if (visible) {
-      // Load flexi vaults when modal opens
-      loadVaultsByCategory('flexi');
-    }
-  }, [visible, loadVaultsByCategory]);
-
-  const flexiVaults = vaults.flexi || [];
+  // Use the new API hook to fetch vaults by category
+  const {
+    data: vaults,
+    isLoading,
+    isError,
+    refetch,
+  } = useVaultsByCategory(
+    selectedCategory?.id || 'flexi',
+    visible && !!selectedCategory?.id
+  );
 
   const renderVaultList = () => {
     if (isLoading) {
@@ -47,25 +48,52 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
       );
     }
 
+    if (isError) {
+      return (
+        <View className="items-center justify-center py-10">
+          <Text className="text-sm text-red-500 mb-4">
+            Failed to load vaults
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetch()}
+            className="bg-red-500 px-4 py-2 rounded-lg"
+          >
+            <Text className="text-white font-semibold">Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (!vaults || vaults.length === 0) {
+      return (
+        <View className="items-center justify-center py-10">
+          <Text className="text-sm text-gray-500">
+            No vaults available for this category
+          </Text>
+        </View>
+      );
+    }
+
     // Show actual vault options
     return (
       <View className="gap-3">
-        {flexiVaults.map(vault => (
+        {vaults.map(vault => (
           <TouchableOpacity
             key={vault.id}
             className="bg-white rounded-2xl p-4 border border-gray-200"
             onPress={() => onSelect(vault)}
           >
             <View className="flex-row items-center mb-3">
-              <ProtocolLogo protocol={vault.protocol} size={40} />
+              <Image
+                source={vault.icon}
+                style={{ width: 40, height: 40 }}
+                contentFit="contain"
+              />
               <View className="ml-3 flex-1">
                 <View className="flex-row items-center mb-1">
                   <Text className="text-base font-bold text-gray-900">
                     {vault.protocol.toUpperCase()}
                   </Text>
-                  <View className="bg-green-500 px-1.5 py-0.5 rounded ml-2">
-                    <Text className="text-xs text-white font-bold">LIVE</Text>
-                  </View>
                 </View>
                 <Text className="text-sm text-gray-500">{vault.note}</Text>
               </View>
@@ -96,7 +124,9 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
       <SafeAreaView className="flex-1 bg-gray-50">
         <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
           <Text className="text-xl font-bold text-gray-900">
-            Choose Your Vault
+            {selectedCategory
+              ? `${selectedCategory.name} Vaults`
+              : 'Choose Your Vault'}
           </Text>
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
@@ -108,7 +138,9 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
 
         <ScrollView className="flex-1 p-5">
           <Text className="text-base text-gray-500 mb-6">
-            Select a DeFi protocol to start earning with Bolarity FlexiVault
+            {selectedCategory
+              ? `Select a DeFi protocol to start earning with ${selectedCategory.name}`
+              : 'Select a DeFi protocol to start earning with Bolarity Vault'}
           </Text>
 
           {renderVaultList()}

@@ -98,6 +98,7 @@ export interface UserBalancesResponse {
     usd: number;
     depositsUsd: number;
     walletUsd: number;
+    stableUsd: number;
   };
   protocols: ProtocolBalance[];
   wallet: WalletBalance;

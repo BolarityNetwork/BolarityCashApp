@@ -1,21 +1,22 @@
 // components/PerfectVaultSavingsPlatform/components/VaultList.tsx
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import VaultLogo from './VaultLogo';
-import { CategoryInfo } from '@/api/vault';
+import { CategoryInfo, useVaultCategories } from '@/api/vault';
+import Skeleton from '../common/Skeleton';
 
-interface VaultListProps {
-  categories: CategoryInfo[];
-  onVaultPress: (category: CategoryInfo) => void;
-  onTestPress?: () => void;
-}
+const VaultList: React.FC<{
+  handleVaultPress: (category: CategoryInfo) => void;
+}> = ({ handleVaultPress }) => {
+  // Fetch vault categories from API
+  const {
+    data: categories,
+    isLoading,
+    isError,
+    refetch,
+  } = useVaultCategories();
 
-const VaultList: React.FC<VaultListProps> = ({
-  categories,
-  onVaultPress,
-  onTestPress,
-}) => {
   const getGradientColors = (categoryId: string) => {
     switch (categoryId) {
       case 'flexi':
@@ -26,6 +27,97 @@ const VaultList: React.FC<VaultListProps> = ({
         return ['#6b7280', '#9ca3af'];
     }
   };
+
+  // Handle loading state with skeleton
+  if (isLoading) {
+    return (
+      <View className="px-6 mb-8 mt-4">
+        <Text className="text-xl font-bold text-gray-900 mb-4">
+          Savings Vaults
+        </Text>
+        <View className="gap-4">
+          {/* Render 2 skeleton cards */}
+          {[1, 2].map(index => (
+            <View
+              key={index}
+              className="rounded-3xl p-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500"
+            >
+              <View className="bg-white rounded-[22px] p-5">
+                <View className="flex-row justify-between items-center mb-4">
+                  <View className="flex-row items-center flex-1">
+                    <Skeleton width={48} height={48} borderRadius={16} />
+                    <View className="ml-3 flex-1">
+                      <Skeleton width={120} height={16} borderRadius={8} />
+                      <View className="mt-1">
+                        <Skeleton width={200} height={14} borderRadius={7} />
+                      </View>
+                    </View>
+                  </View>
+                  <View className="items-end">
+                    <Skeleton width={60} height={24} borderRadius={12} />
+                    <View className="mt-0.5">
+                      <Skeleton width={30} height={12} borderRadius={6} />
+                    </View>
+                  </View>
+                </View>
+
+                <View className="flex-row justify-between items-center">
+                  <View className="flex-row gap-4 flex-1">
+                    <View>
+                      <Skeleton width={40} height={12} borderRadius={6} />
+                      <View className="mt-1">
+                        <Skeleton width={100} height={14} borderRadius={7} />
+                      </View>
+                    </View>
+                  </View>
+                  <Skeleton width={80} height={32} borderRadius={20} />
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  // Handle error state
+  if (isError) {
+    return (
+      <View className="px-6 mb-8 mt-4">
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-xl font-bold text-gray-900">
+            Savings Vaults
+          </Text>
+          <TouchableOpacity
+            onPress={() => refetch()}
+            className="bg-red-500 px-3 py-1.5 rounded-2xl"
+          >
+            <Text className="text-xs text-white font-semibold">Retry</Text>
+          </TouchableOpacity>
+        </View>
+        <View className="items-center justify-center py-10">
+          <Text className="text-sm text-red-500">
+            Failed to load vault categories
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!categories || categories.length === 0) {
+    return (
+      <View className="px-6 mb-8 mt-4">
+        <Text className="text-xl font-bold text-gray-900 mb-4">
+          Savings Vaults
+        </Text>
+        <View className="items-center justify-center py-10">
+          <Text className="text-sm text-gray-500">
+            No vault categories available
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   const getVaultIcon = (categoryId: string) => {
     switch (categoryId) {
@@ -39,34 +131,32 @@ const VaultList: React.FC<VaultListProps> = ({
   };
 
   return (
-    <View style={styles.vaultSection}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Savings Vaults</Text>
-        <View style={styles.headerActions}>
-          {onTestPress && (
-            <TouchableOpacity onPress={onTestPress} style={styles.testButton}>
-              <Text style={styles.testButtonText}>Test</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity>
-            <Text style={styles.sectionAction}>Compare All</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.vaultList}>
+    <View className="px-6 mb-8 mt-4">
+      <Text className="text-xl font-bold text-gray-900 mb-4">
+        Savings Vaults
+      </Text>
+      <View className="gap-4">
         {categories.map(category => (
           <TouchableOpacity
             key={category.id}
-            style={styles.vaultCardBorder}
-            onPress={() => onVaultPress(category)}
+            className="rounded-3xl p-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500"
+            onPress={() => {
+              handleVaultPress(category);
+            }}
           >
-            <View style={styles.vaultCard}>
-              <View style={styles.vaultHeader}>
-                <View style={styles.vaultInfo}>
+            <View className="bg-white rounded-[22px] p-5">
+              <View className="flex-row justify-between items-center mb-4">
+                <View className="flex-row items-center flex-1">
                   <LinearGradient
                     colors={getGradientColors(category.id) as [string, string]}
-                    style={styles.vaultIcon}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 12,
+                    }}
                   >
                     <VaultLogo
                       vaultName={getVaultIcon(category.id)}
@@ -74,37 +164,37 @@ const VaultList: React.FC<VaultListProps> = ({
                     />
                   </LinearGradient>
                   <View>
-                    <Text style={styles.vaultName}>{category.name}</Text>
-                    <Text style={styles.vaultDescription}>
+                    <Text className="text-base font-bold text-gray-900">
+                      {category.name}
+                    </Text>
+                    <Text className="text-sm text-gray-500">
                       {category.description}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.vaultApy}>
-                  <Text style={styles.vaultApyText}>
-                    {category.id === 'flexi' ? '6.29%' : '11.28%'}
+                <View className="items-end">
+                  <Text className="text-2xl font-bold text-emerald-600">
+                    {category.apy}
                   </Text>
-                  <Text style={styles.vaultApyLabel}>APY</Text>
+                  <Text className="text-xs text-gray-500">APY</Text>
                 </View>
               </View>
 
-              <View style={styles.vaultFooter}>
-                <View style={styles.vaultDetails}>
+              <View className="flex-row justify-between items-center">
+                <View className="flex-row gap-4 flex-1">
                   <View>
-                    <Text style={styles.vaultTypeLabel}>Type</Text>
-                    <Text style={styles.vaultTypeValue}>
+                    <Text className="text-xs text-gray-500">Type</Text>
+                    <Text className="text-sm font-semibold text-gray-900">
                       {category.id === 'flexi'
                         ? 'Current Savings'
                         : 'Fixed Term Savings'}
                     </Text>
                   </View>
-                  <View>
-                    <Text style={styles.vaultMinLabel}>Minimum</Text>
-                    <Text style={styles.vaultMinValue}>$10</Text>
-                  </View>
                 </View>
-                <View style={styles.depositButton}>
-                  <Text style={styles.depositButtonText}>Deposit</Text>
+                <View className="bg-gray-900 px-6 py-2 rounded-2xl">
+                  <Text className="text-sm font-semibold text-white">
+                    Deposit
+                  </Text>
                 </View>
               </View>
             </View>
@@ -114,137 +204,5 @@ const VaultList: React.FC<VaultListProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  vaultSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-    marginTop: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  testButton: {
-    backgroundColor: '#7c3aed',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  testButtonText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  sectionAction: {
-    fontSize: 14,
-    color: '#059669',
-    fontWeight: '600',
-  },
-  vaultList: {
-    gap: 16,
-  },
-  vaultCardBorder: {
-    borderRadius: 24,
-    padding: 2,
-    backgroundColor: 'linear-gradient(45deg, #10b981, #06b6d4, #8b5cf6)',
-  },
-  vaultCard: {
-    backgroundColor: '#fff',
-    borderRadius: 22,
-    padding: 20,
-  },
-  vaultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  vaultInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  vaultIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  vaultName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  vaultDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  vaultApy: {
-    alignItems: 'flex-end',
-  },
-  vaultApyText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#059669',
-  },
-  vaultApyLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  vaultFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  vaultDetails: {
-    flexDirection: 'row',
-    gap: 16,
-    flex: 1,
-  },
-  vaultTypeLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  vaultTypeValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  vaultMinLabel: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  vaultMinValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-  },
-  depositButton: {
-    backgroundColor: '#111827',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  depositButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
-});
 
 export default VaultList;

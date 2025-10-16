@@ -12,7 +12,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import ProtocolLogo from '@/components/home/ProtocolLogo';
 import { VaultItem } from '@/api/vault';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useVaultOperations } from '@/hooks/useVaultOperations';
@@ -25,6 +24,7 @@ import {
   getWalletUSDCBalance as getWalletUSDC,
 } from '@/api/account';
 import AnimatedNumber from '../AnimatedNumber';
+import { Image } from 'expo-image';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -329,7 +329,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 marginBottom: 16,
               }}
             >
-              <ProtocolLogo protocol={selectedVault.protocol} size={48} />
+              <Image
+                source={selectedVault.icon}
+                style={{ width: 48, height: 48 }}
+                contentFit="contain"
+              />
               <View className="ml-3 flex-1" style={{ marginLeft: 12, flex: 1 }}>
                 <Text className="text-xl font-bold text-white">
                   {selectedVault.protocol.toUpperCase()}
