@@ -8,7 +8,7 @@ import { useNiceModal } from '@/hooks/useNiceModal';
 import ActionModal from './modals/ActionModal';
 import { ReceiveModal } from './modals/ReceiveModal';
 import NiceModal from '@ebay/nice-modal-react';
-import { TransferModal } from './modals/TransferModal';
+import { TransferModal } from './modals/TransferModal/TransferModal';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,

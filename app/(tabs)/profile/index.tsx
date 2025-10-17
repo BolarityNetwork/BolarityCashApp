@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   StatusBar,
 } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
@@ -31,63 +30,6 @@ import AddressIcon from '@/assets/icon/profile/address.svg';
 import NotificationIcon from '@/assets/icon/profile/notification.svg';
 import ShareIcon from '@/assets/icon/profile/share.svg';
 import ContactIcon from '@/assets/icon/profile/contact.svg';
-
-// Provider icon logos
-let ethereumProviderLogo: any, solanaProviderLogo: any;
-
-try {
-  ethereumProviderLogo = require('@/assets/logos/ethereum.png');
-} catch (e) {
-  console.warn('❌ Ethereum provider logo not found:', e);
-  ethereumProviderLogo = null;
-}
-
-try {
-  solanaProviderLogo = require('@/assets/logos/solana.png');
-} catch (e) {
-  console.warn('❌ Solana provider logo not found:', e);
-  solanaProviderLogo = null;
-}
-
-export function getProviderIcon(
-  type: string,
-  size: number = 18
-): React.ReactElement {
-  // For ethereum and solana, return PNG image components if available
-  if (type === 'ethereum' && ethereumProviderLogo) {
-    return (
-      <Image
-        source={ethereumProviderLogo}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        }}
-        onError={() => {
-          console.log('❌ Ethereum provider icon failed to load');
-        }}
-      />
-    );
-  }
-
-  if (type === 'solana' && solanaProviderLogo) {
-    return (
-      <Image
-        source={solanaProviderLogo}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        }}
-        onError={() => {
-          console.log('❌ Solana provider icon failed to load');
-        }}
-      />
-    );
-  }
-
-  return <Text style={{ fontSize: size * 0.9 }}>{icon}</Text>;
-}
 
 export default function ProfileScreen() {
   const { user: persistedUser, logout } = usePersistedPrivyUser();
