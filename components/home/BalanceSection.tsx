@@ -1,8 +1,9 @@
-// components/PerfectVaultSavingsPlatform/components/BalanceSection.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
 import { useUserBalances } from '@/api/account';
+import { useUserRewards, getDailyRewards } from '@/api/user';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
 interface BalanceSectionProps {
   address: string;
@@ -11,19 +12,31 @@ interface BalanceSectionProps {
   monthlyEarnings?: number;
 }
 
-const BalanceSection: React.FC<BalanceSectionProps> = ({
-  address,
-  todayEarnings: propTodayEarnings,
-  monthlyEarnings: propMonthlyEarnings,
-}) => {
+const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
   const {
     data: balancesData,
     isLoading,
     isError,
   } = useUserBalances(address, true);
+
+  const { activeWallet } = useMultiChainWallet();
+  const { data: rewardsData } = useUserRewards(
+    activeWallet?.address || '',
+    '7',
+    !!activeWallet?.address
+  );
+
   const totalBalance = balancesData?.totals.usd ?? 0;
-  const todayEarnings = propTodayEarnings ?? 0;
-  const monthlyEarnings = propMonthlyEarnings ?? 0;
+
+  const yesterdayEarnings = useMemo(() => {
+    if (!rewardsData) return 0;
+
+    const dailyRewards = getDailyRewards(rewardsData);
+    if (!dailyRewards || dailyRewards.length === 0) return 0;
+
+    const lastDataPoint = dailyRewards[dailyRewards.length - 1];
+    return lastDataPoint?.daily_reward || 0;
+  }, [rewardsData]);
   if (isLoading) {
     return (
       <View className="px-6 py-4">
@@ -86,7 +99,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
             <View className="flex-row gap-6">
               <View className="flex-row items-center gap-1.5">
                 <AnimatedNumber
-                  value={todayEarnings}
+                  value={yesterdayEarnings}
                   style={{
                     fontSize: 15,
                     color: '#059669',
@@ -99,24 +112,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
                     prefix: '+$',
                   }}
                 />
-                <Text className="text-sm text-gray-500">today</Text>
-              </View>
-              <View className="flex-row items-center gap-1.5">
-                <AnimatedNumber
-                  value={monthlyEarnings}
-                  style={{
-                    fontSize: 15,
-                    color: '#059669',
-                    fontWeight: '600',
-                  }}
-                  duration={1000}
-                  formatOptions={{
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                    prefix: '+$',
-                  }}
-                />
-                <Text className="text-sm text-gray-500">this month</Text>
+                <Text className="text-sm text-gray-500">yesterday</Text>
               </View>
             </View>
           </View>

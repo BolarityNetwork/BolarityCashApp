@@ -89,15 +89,22 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
                 style={{ width: 40, height: 40 }}
                 contentFit="contain"
               />
-              <View className="ml-3 flex-1">
+              <View className="ml-3 flex-1 mr-20 items-start">
                 <View className="flex-row items-center mb-1">
                   <Text className="text-base font-bold text-gray-900">
                     {vault.protocol.toUpperCase()}
                   </Text>
                 </View>
-                <Text className="text-sm text-gray-500">{vault.note}</Text>
+                <Text
+                  className="text-sm text-gray-500"
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {vault.note}
+                </Text>
               </View>
             </View>
+            {/* APY information placed in the top right corner */}
             <View className="absolute top-4 right-4 items-end">
               <Text className="text-lg font-bold text-green-600">
                 {vault.apy}

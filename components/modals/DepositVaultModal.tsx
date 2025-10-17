@@ -1,4 +1,3 @@
-// components/PerfectVaultSavingsPlatform/modals/DepositModal.tsx
 import React, { useState, useCallback } from 'react';
 import {
   Modal,
@@ -53,14 +52,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const { deposit: vaultDeposit, withdraw: vaultWithdraw } =
     useVaultOperations();
 
-  // 获取协议的存款金额
   const getProtocolDepositAmount = useCallback(() => {
     if (!selectedVault) return 0;
     const protocolName = selectedVault.protocol.toLowerCase();
     return getProtocolUSDCAmount(balancesData, protocolName);
   }, [balancesData, selectedVault]);
 
-  // 获取钱包的 USDC 余额
   const getWalletUSDCBalance = useCallback(() => {
     return getWalletUSDC(balancesData);
   }, [balancesData]);

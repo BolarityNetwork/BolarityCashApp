@@ -44,7 +44,6 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     '30',
     !!activeWallet?.address
   );
-  console.log(4447, todayRewardsData);
 
   // Calculate earnings from API data
   const todayEarnings = React.useMemo(() => {

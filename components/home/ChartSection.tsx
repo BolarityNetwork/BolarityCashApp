@@ -1,8 +1,6 @@
-// components/PerfectVaultSavingsPlatform/components/ChartSection.tsx
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-// Removed getBarHeight import - now defined locally
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
@@ -14,11 +12,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
   selectedPeriod = 'daily',
 }) => {
   const { activeWallet } = useMultiChainWallet();
-  const [currentPeriod, setCurrentPeriod] = useState<
-    'daily' | 'monthly' | 'yearly'
-  >('daily');
 
-  // Fetch user rewards data
   const {
     data: rewardsData,
     isLoading,
@@ -33,18 +27,16 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     !!activeWallet?.address
   );
 
-  // Get daily rewards and format chart data
   const chartData = useMemo(() => {
     const dailyRewards = getDailyRewards(rewardsData);
 
-    // Generate real dates for the last 5 days
     const generateRealDates = () => {
       const dates = [];
       const today = new Date();
 
       for (let i = 4; i >= 0; i--) {
         const date = new Date(today);
-        date.setDate(today.getDate() - i);
+        date.setDate(today.getDate() - i - 1);
 
         const dateStr = date.toLocaleDateString('en-US', {
           day: 'numeric',
@@ -56,7 +48,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
 
         dates.push({
           date: dateStr,
-          reward: 0, // Always 0 when no real data
+          reward: 0,
           isToday,
           isFuture,
         });
@@ -66,13 +58,13 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     };
 
     if (!dailyRewards || dailyRewards.length === 0) {
-      // Return real dates with 0 rewards if no real data
       return generateRealDates();
     }
 
     // Format real data for chart display
     return dailyRewards.slice(-5).map((reward, index) => {
       const date = new Date(reward.date * 1000);
+      date.setDate(date.getDate() - 1); // Subtract 1 day from each date
       const dateStr = date.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
@@ -89,7 +81,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     });
   }, [rewardsData]);
 
-  // Calculate Y-axis labels and max value based on data
+  // Calculate Y-axis labels and max value based on data with better adaptability
   const yAxisData = useMemo(() => {
     if (!chartData || chartData.length === 0) {
       return { maxValue: 100, labels: ['100', '75', '50', '25', '0'] };
@@ -97,38 +89,50 @@ const ChartSection: React.FC<ChartSectionProps> = ({
 
     const rewards = chartData.map(item => item.reward);
     const maxReward = Math.max(...rewards);
+    const nonZeroRewards = rewards.filter(r => r > 0);
+    const avgReward =
+      nonZeroRewards.length > 0
+        ? nonZeroRewards.reduce((sum, r) => sum + r, 0) / nonZeroRewards.length
+        : 0;
 
     // If all rewards are 0, use a default range
     if (maxReward === 0) {
       return { maxValue: 100, labels: ['100', '75', '50', '25', '0'] };
     }
 
-    // If there are actual rewards, calculate based on data
-    const maxValue = Math.ceil(maxReward * 1.2); // Add 20% padding
+    // Improved adaptive max value calculation
+    let maxValue;
+    if (avgReward > 0) {
+      // For more adaptive scaling
+      maxValue = Math.ceil(Math.max(maxReward * 1.1, avgReward * 2));
+    } else {
+      maxValue = Math.ceil(maxReward * 1.2); // Add 20% padding
+    }
 
-    // Generate Y-axis labels
+    // Generate Y-axis labels with better scaling
     const labels = [];
+    // Adjust step size based on maxValue to avoid too many digits
+    const stepSize = Math.ceil(maxValue / 4);
     for (let i = 4; i >= 0; i--) {
-      const value = Math.round((maxValue * i) / 4);
+      const value = i * stepSize;
       labels.push(value.toString());
     }
 
     return { maxValue, labels };
   }, [chartData]);
 
-  // Calculate bar heights based on actual data
+  // Calculate bar heights based on actual data with better visual scaling
   const getBarHeight = (dataPoint: any) => {
     const maxHeight = 160; // Maximum height in pixels
     const minHeight = 8; // Minimum height for 0 values
 
     if (dataPoint.reward === 0) return minHeight;
 
+    // Use a slightly logarithmic scaling for better visual representation
     const heightRatio = dataPoint.reward / yAxisData.maxValue;
-    return Math.max(heightRatio * maxHeight, minHeight);
-  };
-
-  const handlePeriodChange = (period: 'daily' | 'monthly' | 'yearly') => {
-    setCurrentPeriod(period);
+    // Ensure bars don't get too small compared to each other
+    const adjustedHeight = heightRatio * maxHeight;
+    return Math.max(adjustedHeight, minHeight);
   };
 
   // Show loading state
@@ -176,41 +180,53 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                   <LinearGradient
                     colors={
                       dataPoint.isToday
-                        ? ['#3b82f6', '#1e40af']
+                        ? ['#2563eb', '#1e40af'] // Darker and more vibrant blue for today
                         : dataPoint.isFuture
                           ? ['transparent', 'transparent']
-                          : ['#93c5fd', '#60a5fa']
+                          : ['#bfdbfe', '#93c5fd'] // Lighter and more subtle blue for other days
                     }
                     style={[
                       styles.bar,
                       {
                         height: getBarHeight(dataPoint),
+                        width: dataPoint.isToday ? 60 : 52, // Make today's bar wider
                         borderWidth: dataPoint.isFuture ? 2 : 0,
                         borderColor: dataPoint.isFuture
                           ? '#d1d5db'
                           : 'transparent',
                         borderStyle: dataPoint.isFuture ? 'dashed' : 'solid',
+                        opacity: dataPoint.isToday ? 1 : 0.6, // Make other days less prominent
                       },
                     ]}
                   />
-                  {dataPoint.isToday && dataPoint.reward > 0 && (
-                    <View style={styles.earningsTooltip}>
-                      <Text style={styles.tooltipText}>
-                        +${dataPoint.reward}
-                      </Text>
-                    </View>
-                  )}
+                  {/* Always show the value on top of each bar, including when reward is 0 */}
+                  <View style={styles.earningsTooltip}>
+                    <Text
+                      style={[
+                        styles.tooltipText,
+                        {
+                          opacity: dataPoint.isToday ? 1 : 0.8, // Make other days' tooltips less prominent
+                          fontWeight: dataPoint.isToday ? '600' : '500',
+                          fontSize: dataPoint.isToday ? 11 : 10, // Slightly larger font for today
+                        },
+                      ]}
+                    >
+                      +${dataPoint.reward}
+                    </Text>
+                  </View>
                 </View>
                 <Text
                   style={[
                     styles.barLabel,
                     {
                       color: dataPoint.isToday
-                        ? '#111827'
+                        ? '#0369a1' // More vibrant color for today's label
                         : dataPoint.isFuture
                           ? '#9ca3af'
-                          : '#6b7280',
-                      fontWeight: dataPoint.isToday ? '600' : '400',
+                          : '#94a3b8', // Lighter color for other day labels
+                      fontWeight: dataPoint.isToday ? '700' : '400',
+                      fontSize: dataPoint.isToday ? 13 : 12, // Slightly larger font for today
+                      opacity: dataPoint.isToday ? 1 : 0.7, // Make other day labels less prominent
                     },
                   ]}
                 >
@@ -219,63 +235,6 @@ const ChartSection: React.FC<ChartSectionProps> = ({
               </View>
             ))}
           </View>
-        </View>
-
-        <View style={styles.chartControls}>
-          <TouchableOpacity
-            style={
-              currentPeriod === 'daily'
-                ? styles.activeControl
-                : styles.inactiveControl
-            }
-            onPress={() => handlePeriodChange('daily')}
-          >
-            <Text
-              style={
-                currentPeriod === 'daily'
-                  ? styles.activeControlText
-                  : styles.inactiveControlText
-              }
-            >
-              Daily
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={
-              currentPeriod === 'monthly'
-                ? styles.activeControl
-                : styles.inactiveControl
-            }
-            onPress={() => handlePeriodChange('monthly')}
-          >
-            <Text
-              style={
-                currentPeriod === 'monthly'
-                  ? styles.activeControlText
-                  : styles.inactiveControlText
-              }
-            >
-              Monthly
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={
-              currentPeriod === 'yearly'
-                ? styles.activeControl
-                : styles.inactiveControl
-            }
-            onPress={() => handlePeriodChange('yearly')}
-          >
-            <Text
-              style={
-                currentPeriod === 'yearly'
-                  ? styles.activeControlText
-                  : styles.inactiveControlText
-              }
-            >
-              Yearly
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -300,7 +259,6 @@ const styles = StyleSheet.create({
   },
   chartHeader: {
     height: 200,
-    marginBottom: 28,
     position: 'relative',
   },
   chartYAxis: {
@@ -334,19 +292,19 @@ const styles = StyleSheet.create({
   },
   earningsTooltip: {
     position: 'absolute',
-    top: -36,
+    top: -28,
     left: 0,
     right: 0,
     alignItems: 'center',
   },
   tooltipText: {
-    backgroundColor: '#10b981',
+    backgroundColor: 'rgba(16, 185, 129, 0.8)', // More transparent
     color: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
-    fontSize: 12,
-    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontSize: 10,
+    fontWeight: '500',
   },
   barLabel: {
     fontSize: 12,

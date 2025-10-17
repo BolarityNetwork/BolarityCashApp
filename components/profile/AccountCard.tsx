@@ -31,7 +31,11 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   const walletTotal = balancesData?.totals.walletUsd || 0;
   const protocolsCount = balancesData?.protocols.length || 0;
 
-  // Protocol balances
+  const ethData = balancesData?.wallet?.assets?.find(
+    asset => asset.symbol === 'ETH'
+  ) || { amount: 0, usdValue: 0 };
+  const totalStablecoins = balancesData?.wallet?.totals?.stableUsd || 0;
+
   const aaveBalance = getProtocolTotalUSD(balancesData, 'aave');
   const compoundBalance = getProtocolTotalUSD(balancesData, 'compound');
   const pendleBalance = getProtocolTotalUSD(balancesData, 'pendle');
@@ -146,7 +150,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       {/* Protocol Breakdown */}
       <View className="mb-4">
         <Text className="text-sm font-medium text-slate-600 mb-3">
-          Protocol Breakdown
+          Protocol
         </Text>
         <View className="space-y-2">
           <View className="flex-row items-center justify-between">
@@ -196,6 +200,57 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             </View>
             <AnimatedNumber
               value={pendleBalance}
+              style={{
+                fontSize: 14,
+                fontWeight: 'bold',
+                color: '#1e293b',
+              }}
+              duration={800}
+              formatOptions={{
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                prefix: '$',
+              }}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Separator */}
+      <View className="h-px bg-slate-200 mb-4" />
+
+      {/* ETH and Stablecoin Balance */}
+      <View className="mb-4">
+        <Text className="text-sm font-medium text-slate-600 mb-3">Asset</Text>
+        <View className="space-y-2">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
+              <Text className="text-sm text-slate-700">ETH</Text>
+            </View>
+            <View className="flex items-end">
+              <AnimatedNumber
+                value={ethData.amount}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  color: '#1e293b',
+                }}
+                duration={800}
+                formatOptions={{
+                  minimumFractionDigits: 4,
+                  maximumFractionDigits: 6,
+                }}
+              />
+            </View>
+          </View>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-teal-500 mr-2" />
+              <Text className="text-sm text-slate-700">Stablecoins</Text>
+            </View>
+            <AnimatedNumber
+              value={totalStablecoins}
               style={{
                 fontSize: 14,
                 fontWeight: 'bold',
