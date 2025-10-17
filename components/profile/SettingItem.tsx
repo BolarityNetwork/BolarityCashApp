@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
 interface SettingItemProps {
-  icon?: string;
+  icon?: React.ReactNode;
   title: string;
   subtitle?: string;
   onPress?: () => void;
@@ -20,11 +20,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
 }) => {
   const ItemContent = (
     <View className="flex-row items-center py-4 px-5">
-      {icon && (
-        <View className="w-8 h-8 items-center justify-center mr-3">
-          <Text className="text-lg">{icon}</Text>
-        </View>
-      )}
+      {icon && <View className="items-center justify-center mr-3">{icon}</View>}
       <View className="flex-1">
         <Text className="text-base font-medium text-slate-800">{title}</Text>
         {subtitle && (

@@ -1,8 +1,9 @@
-// components/PerfectVaultSavingsPlatform/components/BalanceSection.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
-import { useMultiChainBalance } from '@/hooks/useBalanceData';
+import { useUserBalances } from '@/api/account';
+import { useUserRewards, getDailyRewards } from '@/api/user';
+import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 
 interface BalanceSectionProps {
   address: string;
@@ -11,38 +12,46 @@ interface BalanceSectionProps {
   monthlyEarnings?: number;
 }
 
-const BalanceSection: React.FC<BalanceSectionProps> = ({
-  address,
-  totalBalance: propTotalBalance,
-  todayEarnings: propTodayEarnings,
-  monthlyEarnings: propMonthlyEarnings,
-}) => {
+const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
   const {
-    data: balanceData,
+    data: balancesData,
     isLoading,
     isError,
-  } = useMultiChainBalance(address);
-  const totalBalance = balanceData?.totalBalance ?? propTotalBalance ?? 0;
-  const todayEarnings = balanceData?.todayEarnings ?? propTodayEarnings ?? 0;
-  const monthlyEarnings =
-    balanceData?.monthlyEarnings ?? propMonthlyEarnings ?? 0;
+  } = useUserBalances(address, true);
 
+  const { activeWallet } = useMultiChainWallet();
+  const { data: rewardsData } = useUserRewards(
+    activeWallet?.address || '',
+    '7',
+    !!activeWallet?.address
+  );
+
+  const totalBalance = balancesData?.totals.usd ?? 0;
+
+  const yesterdayEarnings = useMemo(() => {
+    if (!rewardsData) return 0;
+
+    const dailyRewards = getDailyRewards(rewardsData);
+    if (!dailyRewards || dailyRewards.length === 0) return 0;
+
+    const lastDataPoint = dailyRewards[dailyRewards.length - 1];
+    return lastDataPoint?.daily_reward || 0;
+  }, [rewardsData]);
   if (isLoading) {
     return (
-      <View className="px-5 pb-1.5">
-        <View className="mb-1">
-          <View className="flex-row items-center mb-2 gap-2">
-            <Text className="text-sm text-gray-500">Total Savings Balance</Text>
-          </View>
+      <View className="px-6 py-4">
+        <View className="mb-3">
+          <Text className="text-sm text-gray-500 mb-3">
+            Total Savings Balance
+          </Text>
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
-              <View className="h-8 bg-gray-200 rounded mb-2 w-3/5" />
-              <View className="flex-row gap-4">
-                <View className="h-5 bg-gray-200 rounded w-15" />
-                <View className="h-5 bg-gray-200 rounded w-15" />
+              <View className="h-8 bg-gray-200 rounded mb-3 w-3/5" />
+              <View className="flex-row gap-6">
+                <View className="h-5 bg-gray-200 rounded w-16" />
+                <View className="h-5 bg-gray-200 rounded w-20" />
               </View>
             </View>
-            <View className="bg-gray-200 px-3 py-1.5 rounded-2xl h-8 w-20 -mt-1" />
           </View>
         </View>
       </View>
@@ -51,12 +60,12 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
 
   if (isError) {
     return (
-      <View className="px-5 pb-1.5">
-        <View className="mb-1">
-          <View className="flex-row items-center mb-2 gap-2">
-            <Text className="text-sm text-gray-500">Total Savings Balance</Text>
-          </View>
-          <View className="items-center justify-center py-5">
+      <View className="px-6 py-4">
+        <View className="mb-3">
+          <Text className="text-sm text-gray-500 mb-3">
+            Total Savings Balance
+          </Text>
+          <View className="items-center justify-center py-8">
             <Text className="text-sm text-red-500">Failed to load balance</Text>
           </View>
         </View>
@@ -65,20 +74,20 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
   }
 
   return (
-    <View className="px-5 pb-1.5">
-      <View className="mb-1">
-        <View className="flex-row items-center mb-2 gap-2">
-          <Text className="text-sm text-gray-500">Total Savings Balance</Text>
-        </View>
+    <View className="px-6 py-4">
+      <View className="mb-3">
+        <Text className="text-sm text-gray-500 mb-3">
+          Total Savings Balance
+        </Text>
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
             <AnimatedNumber
               value={totalBalance}
               style={{
-                fontSize: 26,
+                fontSize: 28,
                 fontWeight: '300',
                 color: '#111827',
-                marginBottom: 0,
+                marginBottom: 8,
               }}
               duration={1200}
               formatOptions={{
@@ -87,48 +96,25 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({
                 prefix: '$',
               }}
             />
-            {(todayEarnings > 0 || monthlyEarnings > 0) && (
-              <View className="flex-row gap-4">
-                {todayEarnings > 0 && (
-                  <View className="flex-row items-center gap-1">
-                    <AnimatedNumber
-                      value={todayEarnings}
-                      style={{
-                        fontSize: 14,
-                        color: '#059669',
-                        fontWeight: '600',
-                      }}
-                      duration={800}
-                      formatOptions={{
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                        prefix: '+$',
-                      }}
-                    />
-                    <Text className="text-sm text-gray-500">today</Text>
-                  </View>
-                )}
-                {monthlyEarnings > 0 && (
-                  <View className="flex-row items-center gap-1">
-                    <AnimatedNumber
-                      value={monthlyEarnings}
-                      style={{
-                        fontSize: 14,
-                        color: '#059669',
-                        fontWeight: '600',
-                      }}
-                      duration={1000}
-                      formatOptions={{
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                        prefix: '+$',
-                      }}
-                    />
-                    <Text className="text-sm text-gray-500">this month</Text>
-                  </View>
-                )}
+            <View className="flex-row gap-6">
+              <View className="flex-row items-center gap-1.5">
+                <AnimatedNumber
+                  value={yesterdayEarnings}
+                  style={{
+                    fontSize: 15,
+                    color: '#059669',
+                    fontWeight: '600',
+                  }}
+                  duration={800}
+                  formatOptions={{
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                    prefix: '+$',
+                  }}
+                />
+                <Text className="text-sm text-gray-500">yesterday</Text>
               </View>
-            )}
+            </View>
           </View>
         </View>
       </View>

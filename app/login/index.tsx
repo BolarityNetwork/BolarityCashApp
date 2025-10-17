@@ -11,25 +11,32 @@ import { useAuth } from '@/hooks/useAuth';
 import { ErrorDisplay } from '@/components/login/ErrorDisplay';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 import { Redirect } from 'expo-router';
+import AppleIcon from '@/assets/icon/login/apple.svg';
+import GoogleIcon from '@/assets/icon/login/google.svg';
+import WalletIcon from '@/assets/icon/login/wallet.svg';
+import DiscordIcon from '@/assets/icon/login/discord.svg';
+import PasskeyIcon from '@/assets/icon/login/passkey.svg';
+import EmailIcon from '@/assets/icon/login/email.svg';
+import SmsIcon from '@/assets/icon/login/sms.svg';
 
 export const OAUTH_PROVIDERS = [
   {
     name: 'google',
     label: 'Google',
     colors: ['#4285F4', '#34A853'] as const,
-    icon: '🔍',
+    icon: <GoogleIcon />,
   },
   {
     name: 'apple',
     label: 'Continue with Apple',
     colors: ['#000', '#333'] as const,
-    icon: '🍎',
+    icon: <AppleIcon />,
   },
   {
     name: 'discord',
     label: 'Continue with Discord',
     colors: ['#5865F2', '#7289DA'] as const,
-    icon: '🎮',
+    icon: <DiscordIcon />,
   },
 ] as const;
 
@@ -123,12 +130,8 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         disabled={isLoading}
       >
         <View className="flex-row items-center flex-1">
-          <View className="w-5 h-5 mr-4 items-center justify-center">
-            <View className="w-4.5 h-3.5 border-2 border-gray-500 rounded bg-transparent relative items-center justify-center">
-              <View className="absolute top-0.5 w-0 h-0 border-l-1.5 border-r-1.5 border-t-1 border-l-transparent border-r-transparent border-t-gray-500" />
-            </View>
-          </View>
-          <Text className="text-base font-medium text-gray-900 flex-1">
+          <EmailIcon />
+          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
             your@email.com
           </Text>
         </View>
@@ -143,77 +146,13 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         disabled={isLoading}
       >
         <View className="flex-row items-center flex-1">
-          <View className="w-5 h-5 mr-4 items-center justify-center">
-            <View className="w-3 h-4.5 border-2 border-gray-500 rounded-sm bg-transparent items-center justify-between py-0.5">
-              <View className="w-1.75 h-2.5 bg-gray-100 rounded-sm" />
-              <View className="w-0.75 h-0.75 rounded-full border border-gray-500 bg-transparent" />
-            </View>
-          </View>
-          <Text className="text-base font-medium text-gray-900 flex-1">
+          <SmsIcon />
+          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
             Continue with SMS
           </Text>
         </View>
         <Text className="text-lg text-gray-400">›</Text>
       </TouchableOpacity>
-    </View>
-  );
-}
-
-// Logo Components
-function GoogleLogo() {
-  return (
-    <View className="w-5 h-5 mr-4 items-center justify-center">
-      <Image
-        source={require('@/assets/logos/google.png')}
-        style={{ width: 18, height: 18 }}
-        resizeMode="contain"
-      />
-    </View>
-  );
-}
-
-function AppleLogo() {
-  return (
-    <View className="w-5 h-5 mr-4 items-center justify-center">
-      <Image
-        source={require('@/assets/logos/apple.png')}
-        style={{ width: 18, height: 18 }}
-        resizeMode="contain"
-      />
-    </View>
-  );
-}
-
-function DiscordLogo() {
-  return (
-    <View className="w-5 h-5 mr-4 items-center justify-center">
-      <Image
-        source={require('@/assets/logos/discord.png')}
-        style={{ width: 18, height: 18 }}
-        resizeMode="contain"
-      />
-    </View>
-  );
-}
-
-function FingerprintIcon() {
-  return (
-    <View className="w-5 h-5 mr-4 items-center justify-center">
-      <View className="absolute w-4 h-4 rounded-full border-2 border-gray-500 border-dashed" />
-      <View className="absolute w-3 h-3 rounded-full border-2 border-gray-500" />
-      <View className="absolute w-2 h-2 rounded-full border-2 border-gray-500" />
-      <View className="absolute w-1 h-1 rounded-full bg-gray-500" />
-    </View>
-  );
-}
-
-function WalletIcon() {
-  return (
-    <View className="w-5 h-5 mr-4 items-center justify-center">
-      <View className="w-4 h-3 border-2 border-gray-500 rounded-sm bg-transparent relative">
-        <View className="absolute -top-0.5 left-0.5 right-0.5 h-0.75 bg-gray-50 border-t-2 border-l-2 border-r-2 border-gray-500 rounded-t-sm" />
-        <View className="absolute bottom-0.5 left-0.5 w-2 h-0.5 bg-gray-500 rounded-sm" />
-      </View>
     </View>
   );
 }
@@ -227,11 +166,11 @@ function OAuthSection({
   const renderProviderIcon = (providerName: string) => {
     switch (providerName) {
       case 'google':
-        return <GoogleLogo />;
+        return <GoogleIcon />;
       case 'apple':
-        return <AppleLogo />;
+        return <AppleIcon />;
       case 'discord':
-        return <DiscordLogo />;
+        return <DiscordIcon />;
       default:
         return (
           <Text className="text-xl mr-4">
@@ -252,7 +191,7 @@ function OAuthSection({
         >
           <View className="flex-row items-center">
             {renderProviderIcon(provider.name)}
-            <Text className="text-base font-medium text-gray-900">
+            <Text className="ml-3 text-base font-medium text-gray-900">
               {provider.label}
             </Text>
           </View>
@@ -271,8 +210,8 @@ function OAuthSection({
         disabled={isLoading}
       >
         <View className="flex-row items-center flex-1">
-          <FingerprintIcon />
-          <Text className="text-base font-medium text-gray-900 flex-1">
+          <PasskeyIcon />
+          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
             Continue with Passkey
           </Text>
         </View>
@@ -282,7 +221,7 @@ function OAuthSection({
       <TouchableOpacity className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white">
         <View className="flex-row items-center flex-1">
           <WalletIcon />
-          <Text className="text-base font-medium text-gray-900 flex-1">
+          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
             Continue with a wallet
           </Text>
         </View>

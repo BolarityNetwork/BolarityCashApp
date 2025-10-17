@@ -4,7 +4,8 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import IconComponent from '@/components/home/IconComponent';
 import bolarityLogo from '@/assets/images/icon.png';
 import { router } from 'expo-router';
-
+import PersonalIcon from '@/assets/icon/common/personal.svg';
+import NotificationIcon from '@/assets/icon/common/notification.svg';
 interface HeaderProps {
   user: any;
   currentWalletInfo: {
@@ -43,15 +44,14 @@ const Header: React.FC<HeaderProps> = ({
         </View>
         <View className="flex-row items-center gap-4">
           <View className="relative">
-            <IconComponent name="Notification" size={24} color="#f59e0b" />
+            <NotificationIcon />
           </View>
           <TouchableOpacity
-            className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
             onPress={() => {
               router.push('/profile');
             }}
           >
-            <Text className="text-lg text-gray-500">👤</Text>
+            <PersonalIcon />
           </TouchableOpacity>
         </View>
       </View>

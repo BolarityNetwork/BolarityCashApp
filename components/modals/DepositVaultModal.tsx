@@ -1,4 +1,3 @@
-// components/PerfectVaultSavingsPlatform/modals/DepositModal.tsx
 import React, { useState, useCallback } from 'react';
 import {
   Modal,
@@ -12,7 +11,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import ProtocolLogo from '@/components/home/ProtocolLogo';
 import { VaultItem } from '@/api/vault';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useVaultOperations } from '@/hooks/useVaultOperations';
@@ -25,6 +23,7 @@ import {
   getWalletUSDCBalance as getWalletUSDC,
 } from '@/api/account';
 import AnimatedNumber from '../AnimatedNumber';
+import { Image } from 'expo-image';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -53,14 +52,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const { deposit: vaultDeposit, withdraw: vaultWithdraw } =
     useVaultOperations();
 
-  // 获取协议的存款金额
   const getProtocolDepositAmount = useCallback(() => {
     if (!selectedVault) return 0;
     const protocolName = selectedVault.protocol.toLowerCase();
     return getProtocolUSDCAmount(balancesData, protocolName);
   }, [balancesData, selectedVault]);
 
-  // 获取钱包的 USDC 余额
   const getWalletUSDCBalance = useCallback(() => {
     return getWalletUSDC(balancesData);
   }, [balancesData]);
@@ -329,7 +326,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 marginBottom: 16,
               }}
             >
-              <ProtocolLogo protocol={selectedVault.protocol} size={48} />
+              <Image
+                source={selectedVault.icon}
+                style={{ width: 48, height: 48 }}
+                contentFit="contain"
+              />
               <View className="ml-3 flex-1" style={{ marginLeft: 12, flex: 1 }}>
                 <Text className="text-xl font-bold text-white">
                   {selectedVault.protocol.toUpperCase()}

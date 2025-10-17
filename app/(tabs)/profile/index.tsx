@@ -18,6 +18,19 @@ import { SettingSection } from '@/components/profile/SettingSection';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
+import KeyIcon from '@/assets/icon/profile/key.svg';
+import SettingIcon from '@/assets/icon/profile/setting.svg';
+import NetworkIcon from '@/assets/icon/profile/network.svg';
+import SignOutIcon from '@/assets/icon/profile/signout.svg';
+import EditIcon from '@/assets/icon/profile/edit.svg';
+import NftsIcon from '@/assets/icon/profile/nfts.svg';
+import SpendingIcon from '@/assets/icon/profile/spending.svg';
+import FollowingIcon from '@/assets/icon/profile/following.svg';
+import PrivyIcon from '@/assets/icon/profile/privy.svg';
+import AddressIcon from '@/assets/icon/profile/address.svg';
+import NotificationIcon from '@/assets/icon/profile/notification.svg';
+import ShareIcon from '@/assets/icon/profile/share.svg';
+import ContactIcon from '@/assets/icon/profile/contact.svg';
 
 // Provider icon logos
 let ethereumProviderLogo: any, solanaProviderLogo: any;
@@ -73,24 +86,6 @@ export function getProviderIcon(
     );
   }
 
-  // For other types or PNG loading failure, return emoji components
-  const icons: { [key: string]: string } = {
-    email: '📧',
-    phone: '📱',
-    wallet: '💼',
-    solana: '🌞', // fallback
-    ethereum: '🔷', // fallback
-    twitter_oauth: '🐦',
-    tiktok_oauth: '🎵',
-    google: '🔍',
-    github: '⚡',
-    discord: '🎮',
-    apple: '🍎',
-    custom_auth: '🔐',
-  };
-
-  const icon = icons[type] || '🔗';
-
   return <Text style={{ fontSize: size * 0.9 }}>{icon}</Text>;
 }
 
@@ -133,17 +128,17 @@ export default function ProfileScreen() {
 
         <SettingSection title="Security">
           <SettingItem
-            icon="🔑"
+            icon={<KeyIcon />}
             title="Keys & Recovery"
             onPress={() => router.push('/settings/keys-recovery')}
           />
           <SettingItem
-            icon="⏰"
+            icon={<SpendingIcon />}
             title="Spending Limits"
             onPress={() => router.push('/settings/spending-limits')}
           />
           <SettingItem
-            icon="🔐"
+            icon={<PrivyIcon />}
             title="Privy relative"
             onPress={() => router.push('/settings/privy-relative')}
           />
@@ -152,32 +147,32 @@ export default function ProfileScreen() {
         {/* General Section */}
         <SettingSection title="General">
           <SettingItem
-            icon="💼"
+            icon={<EditIcon />}
             title="Edit wallet"
             onPress={() => router.push('/settings/edit-wallet')}
           />
           <SettingItem
-            icon="🔔"
+            icon={<NotificationIcon />}
             title="Notifications"
             onPress={() => router.push('/settings/notifications')}
           />
           <SettingItem
-            icon="👥"
+            icon={<AddressIcon />}
             title="Address book"
             onPress={() => router.push('/settings/address-book')}
           />
           <SettingItem
-            icon="🏔️"
+            icon={<SettingIcon />}
             title="Setting"
             onPress={() => router.push('/settings')}
           />
           <SettingItem
-            icon="🖼️"
+            icon={<NftsIcon />}
             title="NFTs"
             onPress={() => router.push('/settings/nfts')}
           />
           <SettingItem
-            icon="🌐"
+            icon={<NetworkIcon />}
             title="Network"
             onPress={() => router.push('/settings/network')}
           />
@@ -186,17 +181,17 @@ export default function ProfileScreen() {
         {/* About Section */}
         <SettingSection title="About">
           <SettingItem
-            icon="💬"
+            icon={<ContactIcon />}
             title="Contact support"
             onPress={() => router.push('/settings/contact-support')}
           />
           <SettingItem
-            icon="⭐"
+            icon={<ShareIcon />}
             title="Share your feedback"
             onPress={() => router.push('/settings/share-feedback')}
           />
           <SettingItem
-            icon="🐦"
+            icon={<FollowingIcon />}
             title="Follow @bolaritywallet"
             onPress={() => router.push('/settings/follow-twitter')}
           />
@@ -208,8 +203,8 @@ export default function ProfileScreen() {
           onPress={logout}
         >
           <View className="flex-row items-center justify-center py-4">
-            <Text className="text-lg mr-2">🚪</Text>
-            <Text className="text-base font-semibold text-red-600">
+            <SignOutIcon />
+            <Text className="ml-2 text-base font-semibold text-red-600">
               Sign Out
             </Text>
           </View>

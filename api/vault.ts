@@ -1,82 +1,90 @@
-// Mock vault data API
+import { useQuery } from '@tanstack/react-query';
+import { axios } from './index';
+
 export interface VaultItem {
   id: string;
+  apy: string;
+  category: string;
+  chain: string;
+  icon: string;
+  market: string;
+  note: string;
   protocol: string;
   risk: string;
-  apy: string;
   tvl: string;
-  note: string;
 }
 
 export interface CategoryInfo {
   id: string;
   name: string;
   description: string;
-  icon?: string;
+  icon: string;
+  apy: string;
 }
 
-export interface VaultData {
-  [category: string]: VaultItem[];
-}
-
-// Mock category data
-export const mockCategoryData: CategoryInfo[] = [
-  {
-    id: 'flexi',
-    name: 'FlexiVault',
-    description: 'Flexible access anytime',
-    icon: 'https://assets.coingecko.com/coins/images/22540/small/USDC.png?1644979850',
-  },
-  {
-    id: 'time',
-    name: 'TimeVault Pro',
-    description: 'Higher returns, fixed term',
-    icon: 'https://assets.coingecko.com/coins/images/22540/small/USDC.png?1644979850',
-  },
-];
-
-// Mock vault data based on the image content
-export const mockVaultData: VaultData = {
-  flexi: [
-    {
-      id: 'cashapp-compound-usdc-base',
-      protocol: 'compound',
-      risk: 'low',
-      apy: '3.98%',
-      tvl: '$16,795,348.63',
-      note: 'Flexi vault pointing to Base USDC Compound market.',
-    },
-    {
-      id: 'cashapp-aave-usdc-base',
-      protocol: 'aave',
-      risk: 'low',
-      apy: '5.78%',
-      tvl: '$378,078,876.42',
-      note: 'Flexi vault pointing to Aave Base USDC reserve.',
-    },
-  ],
-  time: [
-    {
-      id: 'cashapp-pendle-usde-20251211',
-      protocol: 'pendle',
-      risk: 'medium',
-      apy: '9.56%',
-      tvl: '$76,555.9',
-      note: 'Time vault referencing Pendle PT USDe Dec 2025 market.',
-    },
-  ],
+// API functions for vault categories
+export const getVaultCategories = async (): Promise<CategoryInfo[]> => {
+  const { data } = await axios.get<CategoryInfo[]>(
+    '/router_api/v1/vault/category'
+  );
+  return data;
 };
 
-// Mock API functions
-export const getCategories = async (): Promise<CategoryInfo[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return mockCategoryData;
+// API function to get vault details
+export const getVaultDetails = async (
+  id?: string,
+  category?: string
+): Promise<VaultItem[]> => {
+  const params: { id?: string; category?: string } = {};
+  if (id) params.id = id;
+  if (category) params.category = category;
+
+  const { data } = await axios.get<VaultItem[]>('/router_api/v1/vault/detail', {
+    params,
+  });
+  return data;
 };
 
 export const getVaultsByCategoryId = async (
   categoryId: string
-): Promise<VaultItem[] | null> => {
-  await new Promise(resolve => setTimeout(resolve, 300));
-  return mockVaultData[categoryId] || null;
+): Promise<VaultItem[]> => {
+  const { data } = await axios.get<VaultItem[]>(`/router_api/v1/vault/detail`, {
+    params: { category: categoryId },
+  });
+  return data;
 };
+
+// React Query hooks for vault APIs
+export function useVaultCategories() {
+  return useQuery({
+    queryKey: ['vaultCategories'],
+    queryFn: getVaultCategories,
+    staleTime: 300000, // 5 minutes cache
+  });
+}
+
+export function useVaultDetails(id?: string, category?: string) {
+  return useQuery({
+    queryKey: ['vaultDetails', id, category],
+    queryFn: () => getVaultDetails(id, category),
+    staleTime: 300000, // 5 minutes cache
+  });
+}
+
+export function useVaultsByCategory(category: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['vaultsByCategory', category],
+    queryFn: () => getVaultDetails(undefined, category),
+    enabled: !!category && enabled,
+    staleTime: 300000, // 5 minutes cache
+  });
+}
+
+export function useVaultById(id: string) {
+  return useQuery({
+    queryKey: ['vaultById', id],
+    queryFn: () => getVaultDetails(id),
+    enabled: !!id,
+    staleTime: 300000, // 5 minutes cache
+  });
+}
