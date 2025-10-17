@@ -6,6 +6,7 @@ import { PrivyElements } from '@privy-io/expo/ui';
 import { MultiChainWalletProvider } from '@/components/MultiChainWalletProvider';
 import { ThemeProvider } from '@/components/theme/ThemeContext';
 import { QueryProvider } from '@/components/QueryProvider';
+import NiceModal from '@ebay/nice-modal-react';
 import * as SplashScreen from 'expo-splash-screen';
 import '@/i18n';
 import { useUpdateModal } from '@/hooks/useUpdateModal';
@@ -65,16 +66,18 @@ function AppContent({
   return (
     <MultiChainWalletProvider>
       <ThemeProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-        <UpdateModal
-          visible={isVisible}
-          updateInfo={updateInfo}
-          onClose={hideUpdateModal}
-          onUpdate={handleUpdate}
-        />
-        <PrivyElements />
+        <NiceModal.Provider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+          <UpdateModal
+            visible={isVisible}
+            updateInfo={updateInfo}
+            onClose={hideUpdateModal}
+            onUpdate={handleUpdate}
+          />
+          <PrivyElements />
+        </NiceModal.Provider>
       </ThemeProvider>
     </MultiChainWalletProvider>
   );

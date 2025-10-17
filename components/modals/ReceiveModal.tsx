@@ -4,16 +4,13 @@ import QRCode from 'react-native-qrcode-styled';
 import { BaseModal } from '@/components/common/BaseModal';
 import * as Clipboard from 'expo-clipboard';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
 
-interface ReceiveModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
+interface ReceiveModalProps {}
 
-export const ReceiveModal: React.FC<ReceiveModalProps> = ({
-  visible,
-  onClose,
-}) => {
+const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
+  const modal = useModal();
+  const onClose = () => modal.hide();
   const { activeWallet } = useMultiChainWallet();
   const [copied, setCopied] = useState(false);
 
@@ -21,7 +18,7 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({
 
   if (!walletAddress) {
     return (
-      <BaseModal visible={visible} onClose={onClose} title="Test Modal">
+      <BaseModal visible={modal.visible} onClose={onClose}>
         <View
           style={{
             alignItems: 'center',
@@ -84,7 +81,7 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({
   };
 
   return (
-    <BaseModal visible={visible} onClose={onClose} title="Receive">
+    <BaseModal visible={modal.visible} onClose={onClose} title="Receive">
       <View className="items-center px-4" style={{ zIndex: 1000 }}>
         {/* QR Code Section */}
         <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
@@ -171,3 +168,5 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({
     </BaseModal>
   );
 };
+
+export const ReceiveModal = NiceModal.create(ReceiveModalComponent);

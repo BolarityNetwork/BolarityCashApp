@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { BaseModal } from '@/components/common/BaseModal';
 import Icon from 'react-native-vector-icons/Ionicons';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
 
 // 定义代币类型
 interface Token {
@@ -29,15 +30,11 @@ interface Recipient {
   type: 'recent' | 'address_book';
 }
 
-interface TransferModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
+interface TransferModalProps {}
 
-export const TransferModal: React.FC<TransferModalProps> = ({
-  visible,
-  onClose,
-}) => {
+const TransferModalComponent: React.FC<TransferModalProps> = () => {
+  const modal = useModal();
+  const onClose = () => modal.hide();
   // 步骤定义
   enum Step {
     SELECT_TOKEN,
@@ -561,7 +558,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
 
   return (
     <BaseModal
-      visible={visible}
+      visible={modal.visible}
       onClose={handleBack}
       title={getCurrentStepTitle()}
     >
@@ -608,3 +605,5 @@ export const TransferModal: React.FC<TransferModalProps> = ({
     </BaseModal>
   );
 };
+
+export const TransferModal = NiceModal.create(TransferModalComponent);

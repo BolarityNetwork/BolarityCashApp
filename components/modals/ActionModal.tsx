@@ -1,72 +1,94 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react';
+import { NiceModalProps } from '@/hooks/useNiceModal';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 interface ActionModalProps {
-  visible: boolean;
-  onClose: () => void;
   onReceivePress?: () => void;
+  onTransferPress?: () => void;
 }
 
-const ActionModal: React.FC<ActionModalProps> = ({
-  visible,
-  onClose,
+const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
   onReceivePress,
+  onTransferPress,
 }) => {
-  const [isMounted, setIsMounted] = useState(visible);
+  const modal = useModal();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   const handleClose = useCallback(() => {
-    onClose();
-  }, [onClose]);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      modal.hide();
+    });
+  }, [modal, fadeAnim, scaleAnim]);
 
   const actions = [
     {
       id: 'deposit',
       title: 'Deposit',
-      icon: 'wallet',
+      icon: 'wallet' as const,
       color: 'bg-black',
-      onPress: () => {
-        handleClose();
-      },
+      onPress: handleClose,
     },
     {
       id: 'portfolio',
       title: 'Portfolio',
-      icon: 'trending-up',
+      icon: 'trending-up' as const,
       color: 'bg-black',
-      onPress: () => {
-        handleClose();
-      },
+      onPress: handleClose,
     },
     {
       id: 'actions',
       title: 'Actions',
-      icon: 'add-circle',
+      icon: 'add-circle' as const,
       color: 'bg-black',
-      onPress: () => {
-        handleClose();
-      },
+      onPress: handleClose,
     },
     {
       id: 'receive',
       title: 'Receive',
-      icon: 'arrow-down',
+      icon: 'arrow-down' as const,
       color: 'bg-black',
       onPress: () => {
         handleClose();
-        if (onReceivePress) {
-          onReceivePress();
-        }
+        setTimeout(() => {
+          if (onReceivePress) {
+            onReceivePress();
+          }
+        }, 250);
+      },
+    },
+    {
+      id: 'transfer',
+      title: 'Transfer',
+      icon: 'arrow-up' as const,
+      color: 'bg-black',
+      onPress: () => {
+        handleClose();
+        setTimeout(() => {
+          if (onTransferPress) {
+            onTransferPress();
+          }
+        }, 250);
       },
     },
   ];
 
   useEffect(() => {
-    if (visible) {
-      setIsMounted(true);
+    if (modal.visible) {
       fadeAnim.setValue(0);
       scaleAnim.setValue(0.8);
 
@@ -83,32 +105,19 @@ const ActionModal: React.FC<ActionModalProps> = ({
           useNativeDriver: true,
         }),
       ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 0.8,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setIsMounted(false);
-      });
     }
-  }, [visible]);
 
-  if (!isMounted) return null;
+    return () => {
+      fadeAnim.stopAnimation();
+      scaleAnim.stopAnimation();
+    };
+  }, [modal.visible, fadeAnim, scaleAnim]);
 
   return (
     <Modal
-      visible={isMounted}
+      visible={modal.visible}
       animationType="none"
       presentationStyle="overFullScreen"
-      onRequestClose={handleClose}
       transparent={true}
     >
       <Animated.View
@@ -229,6 +238,25 @@ const ActionModal: React.FC<ActionModalProps> = ({
                   Receive
                 </Text>
               </View>
+
+              <View className="items-center">
+                <TouchableOpacity
+                  className={`w-16 h-16 ${actions.find(a => a.id === 'transfer')?.color} rounded-full items-center justify-center`}
+                  onPress={actions.find(a => a.id === 'transfer')?.onPress}
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 4,
+                  }}
+                >
+                  <Icon name="arrow-up" size={22} color="white" />
+                </TouchableOpacity>
+                <Text className="text-xs text-gray-600 font-medium text-center">
+                  Transfer
+                </Text>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -237,4 +265,4 @@ const ActionModal: React.FC<ActionModalProps> = ({
   );
 };
 
-export default ActionModal;
+export default NiceModal.create<ActionModalProps>(ActionModal);

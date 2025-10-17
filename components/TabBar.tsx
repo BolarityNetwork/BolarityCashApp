@@ -1,10 +1,14 @@
-import React, { FC, useState, useCallback } from 'react';
+import React, { FC } from 'react';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { ModalManager } from './ModalManager';
+import { useNiceModal } from '@/hooks/useNiceModal';
+import ActionModal from './modals/ActionModal';
+import { ReceiveModal } from './modals/ReceiveModal';
+import NiceModal from '@ebay/nice-modal-react';
+import { TransferModal } from './modals/TransferModal';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,
@@ -13,60 +17,24 @@ export const TabBar: FC<BottomTabBarProps> = ({
 }) => {
   const { t: _t } = useTranslation();
   const routeNameArr = ['home', 'actions', 'profile'];
-  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-  const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const handleActionMenuClose = useCallback(() => {
-    setIsActionMenuOpen(false);
-  }, []);
+  const receiveModal = useNiceModal(ReceiveModal);
+  const transferModal = useNiceModal(TransferModal);
 
-  const handleActionMenuOpen = useCallback(() => {
-    setIsActionMenuOpen(true);
-  }, []);
-
-  const handleReceiveModalOpen = useCallback(() => {
-    setIsReceiveModalOpen(true);
-  }, []);
-
-  const handleReceiveModalClose = useCallback(() => {
-    setIsReceiveModalOpen(false);
-  }, []);
-
-  const handleTransferModalOpen = useCallback(() => {
-    setIsTransferModalOpen(true);
-  }, []);
-
-  const handleTransferModalClose = useCallback(() => {
-    setIsTransferModalOpen(false);
-  }, []);
+  const handleActionMenuOpen = () => {
+    NiceModal.show(ActionModal, {
+      onReceivePress: () => {
+        receiveModal.open();
+      },
+      onTransferPress: () => {
+        transferModal.open();
+      },
+    });
+  };
 
   return (
     <>
-      {/* Modal Manager */}
-      <ModalManager
-        isActionMenuOpen={isActionMenuOpen}
-        isReceiveModalOpen={isReceiveModalOpen}
-        isTransferModalOpen={isTransferModalOpen}
-        onActionMenuClose={handleActionMenuClose}
-        onReceiveModalClose={handleReceiveModalClose}
-        onTransferModalClose={handleTransferModalClose}
-        onReceivePress={handleReceiveModalOpen}
-      />
-
-      {/* Transfer Button - Direct Access */}
-      <Pressable
-        onPress={handleTransferModalOpen}
-        className="absolute right-4 top-20 bg-blue-600 rounded-full p-4 shadow-lg"
-        style={{
-          zIndex: 50,
-        }}
-      >
-        <Icon name="arrow-forward-circle" size={32} color="white" />
-      </Pressable>
-
-      {/* TabBar */}
       <View
         className="absolute left-0 right-0 bg-white rounded-3xl py-4 px-6 flex-row items-center justify-between shadow-lg border border-gray-200"
         style={{
