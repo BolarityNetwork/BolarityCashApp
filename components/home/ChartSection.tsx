@@ -179,23 +179,21 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                 <View style={styles.barWrapper}>
                   <LinearGradient
                     colors={
-                      dataPoint.isToday
-                        ? ['#2563eb', '#1e40af'] // Darker and more vibrant blue for today
-                        : dataPoint.isFuture
-                          ? ['transparent', 'transparent']
-                          : ['#bfdbfe', '#93c5fd'] // Lighter and more subtle blue for other days
+                      dataPoint.isFuture
+                        ? ['transparent', 'transparent']
+                        : ['#3b82f6', '#2563eb'] // Unified blue color for all bars
                     }
                     style={[
                       styles.bar,
                       {
                         height: getBarHeight(dataPoint),
-                        width: dataPoint.isToday ? 60 : 52, // Make today's bar wider
+                        width: dataPoint.isToday ? 40 : 36, // Make bars thinner
                         borderWidth: dataPoint.isFuture ? 2 : 0,
                         borderColor: dataPoint.isFuture
                           ? '#d1d5db'
                           : 'transparent',
                         borderStyle: dataPoint.isFuture ? 'dashed' : 'solid',
-                        opacity: dataPoint.isToday ? 1 : 0.6, // Make other days less prominent
+                        opacity: dataPoint.isToday ? 1 : 0.8, // Slightly less prominent for other days
                       },
                     ]}
                   />
@@ -207,11 +205,11 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                         {
                           opacity: dataPoint.isToday ? 1 : 0.8, // Make other days' tooltips less prominent
                           fontWeight: dataPoint.isToday ? '600' : '500',
-                          fontSize: dataPoint.isToday ? 11 : 10, // Slightly larger font for today
+                          fontSize: dataPoint.isToday ? 9 : 8, // Smaller font to prevent wrapping
                         },
                       ]}
                     >
-                      +${dataPoint.reward}
+                      ${dataPoint.reward.toFixed(2)}
                     </Text>
                   </View>
                 </View>
@@ -286,7 +284,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   bar: {
-    width: 52,
+    width: 36,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
   },
@@ -298,12 +296,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tooltipText: {
-    backgroundColor: 'rgba(16, 185, 129, 0.8)', // More transparent
+    backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue color matching the bars
     color: '#fff',
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: '500',
   },
   barLabel: {
