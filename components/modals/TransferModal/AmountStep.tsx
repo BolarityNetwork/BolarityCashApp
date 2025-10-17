@@ -17,7 +17,7 @@ const AmountStep: React.FC<AmountStepProps> = ({
   onAmountChange,
   onMaxAmount,
 }) => {
-  // 计算USD价值
+  // Calculate USD value
   const calculateUsdValue = () => {
     if (
       !selectedToken ||
@@ -59,7 +59,8 @@ const AmountStep: React.FC<AmountStepProps> = ({
         <Text className="text-gray-500">Available Balance</Text>
         <View className="flex-row items-center">
           <Text className="text-gray-800 font-medium mr-3">
-            {selectedToken?.balance} {selectedToken?.symbol}
+            {parseFloat(selectedToken?.balance || '0').toFixed(6)}{' '}
+            {selectedToken?.symbol}
           </Text>
           <TouchableOpacity
             className="bg-indigo-100 text-indigo-600 font-medium px-3 py-1 rounded"

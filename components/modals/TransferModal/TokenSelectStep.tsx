@@ -9,6 +9,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import Skeleton from '../../common/Skeleton';
 import { Token } from './types';
+import { Image } from 'expo-image';
 
 interface TokenSelectStepProps {
   isLoading: boolean;
@@ -25,11 +26,19 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   onTokenSelect,
   onRefetch,
 }) => {
-  // 加载状态
+  const iconUrl = (symbol: string) => {
+    switch (symbol) {
+      case 'ETH':
+        return 'https://static.oklink.com/cdn/explorer/oklinkmanage/picture/base_logo.jpeg?x-oss-process=image/resize,w_72,h_72,type_6/ignore-error,1';
+      case 'USDC':
+        return 'https://static.oklink.com/cdn/web3/currency/token/large/637-0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b-107/type=default_90_0?v=1756203256814&x-oss-process=image/resize,w_72,h_72,type_6/ignore-error,1';
+    }
+  };
+  // Loading state
   if (isLoading) {
     return (
       <View style={{ flex: 1 }}>
-        {/* 显示实际的搜索框 */}
+        {/* Show actual search box */}
         <View style={{ padding: 16 }}>
           <View
             style={{
@@ -43,14 +52,14 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
             <Icon name="search" size={20} color="#64748b" />
             <TextInput
               style={{ marginLeft: 8, flex: 1, color: '#1e293b' }}
-              placeholder="搜索代币..."
+              placeholder="Search for a token..."
               placeholderTextColor="#94a3b8"
               editable={false}
             />
           </View>
         </View>
 
-        {/* 代币列表骨架屏 */}
+        {/* Token list skeleton */}
         <ScrollView
           style={{ flex: 1, paddingHorizontal: 16 }}
           showsVerticalScrollIndicator={false}
@@ -66,8 +75,6 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
                   padding: 16,
                   backgroundColor: 'white',
                   borderRadius: 12,
-                  borderLeftWidth: 4,
-                  borderLeftColor: '#6366f1',
                 }}
               >
                 <Skeleton width={40} height={40} borderRadius={20} />
@@ -88,35 +95,35 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
     );
   }
 
-  // 错误状态
+  // Error state
   if (isError) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Icon name="alert-circle-outline" size={48} color="#ef4444" />
         <Text className="mt-4 text-gray-600 text-center">
-          加载代币失败，请重试
+          Failed to load tokens, please try again
         </Text>
         <TouchableOpacity
           className="mt-4 bg-indigo-600 rounded-lg p-3"
           onPress={onRefetch}
         >
-          <Text className="text-white font-medium">重新加载</Text>
+          <Text className="text-white font-medium">Retry</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // 无代币状态
+  // No tokens state
   if (tokens.length === 0) {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Icon name="wallet-outline" size={48} color="#94a3b8" />
-        <Text className="mt-4 text-gray-600">暂无可用代币</Text>
+        <Text className="mt-4 text-gray-600">No tokens available</Text>
       </View>
     );
   }
 
-  // 按余额降序排序代币
+  // Sort tokens by balance in descending order
   const sortedTokens = [...tokens].sort((a, b) => {
     const balanceA = parseFloat(a.balance) || 0;
     const balanceB = parseFloat(b.balance) || 0;
@@ -125,46 +132,57 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
 
   return (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      {/* 搜索框 */}
-      <View className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-6">
+      {/* Search box */}
+      <View className="flex-row items-center bg-gray-100 rounded-lg p-4 mb-6">
         <Icon name="search" size={20} color="#64748b" />
         <TextInput
-          className="ml-2 flex-1 text-gray-800"
-          placeholder="搜索代币..."
+          className="ml-3 flex-1 text-gray-800 text-base"
+          placeholder="Search for a token..."
           placeholderTextColor="#94a3b8"
+          style={{ height: 24 }}
         />
       </View>
 
-      {/* 代币列表 */}
+      {/* Token list */}
       {sortedTokens.map(token => {
         const hasBalance = parseFloat(token.balance) > 0;
         return (
           <TouchableOpacity
             key={token.id}
-            className={`flex-row items-center justify-between bg-white rounded-xl p-4 mb-3 border-l-4 ${hasBalance ? 'border-indigo-500' : 'border-gray-200'}`}
+            className={`bg-white rounded-2xl p-4 mb-3 border ${
+              hasBalance
+                ? 'border-indigo-100 active:bg-indigo-50'
+                : 'border-gray-100 opacity-60'
+            }`}
             onPress={() => onTokenSelect(token)}
             disabled={!hasBalance}
+            activeOpacity={hasBalance ? 0.7 : 1}
           >
-            <View className="flex-row items-center">
+            <View className="flex-row items-center justify-between">
+              {/* Left: Token icon */}
+              <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-4">
+                <Image
+                  source={{ uri: iconUrl(token.symbol) }}
+                  style={{ width: 48, height: 48, borderRadius: 24 }}
+                />
+              </View>
+              {/* Right: Token info */}
               <View className="flex-1">
-                <Text className="font-bold text-gray-800">{token.name}</Text>
-                <View className="flex-row justify-between">
-                  <Text className="text-sm text-gray-500">
-                    {parseFloat(token.balance).toFixed(6)} {token.symbol}
-                  </Text>
-                  {token.usdValue && (
-                    <Text className="text-sm font-medium text-gray-700">
-                      ${token.usdValue.toFixed(2)}
-                    </Text>
-                  )}
-                </View>
+                {/* Token name */}
+                <Text className="text-base font-semibold text-gray-900 mb-1">
+                  {token.name}
+                </Text>
+
+                {/* Token amount + symbol */}
+                <Text
+                  className={`text-sm ${
+                    hasBalance ? 'text-gray-600' : 'text-gray-400'
+                  }`}
+                >
+                  {parseFloat(token.balance).toFixed(6)} {token.symbol}
+                </Text>
               </View>
             </View>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={hasBalance ? '#6366f1' : '#cbd5e1'}
-            />
           </TouchableOpacity>
         );
       })}

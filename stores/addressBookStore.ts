@@ -12,8 +12,16 @@ export interface AddressBookItem {
   updatedAt: string;
 }
 
+// 最近使用地址类型
+export interface RecentAddress {
+  address: string;
+  lastUsed: string;
+  name?: string;
+}
+
 interface AddressBookState {
   addresses: AddressBookItem[];
+  recentAddresses: RecentAddress[];
   isLoading: boolean;
   error: string | null;
   editingItem: AddressBookItem | null;
@@ -22,6 +30,7 @@ interface AddressBookState {
   addAddress: (name: string, address: string) => void;
   deleteAddress: (id: string) => void;
   updateAddress: (id: string, name: string, address: string) => void;
+  addRecentAddress: (address: string, name?: string) => void;
   clearError: () => void;
   setEditingItem: (item: AddressBookItem | null) => void;
 }
@@ -32,6 +41,7 @@ export const useAddressBookStore = create<AddressBookState>()(
   persist(
     set => ({
       addresses: [],
+      recentAddresses: [],
       isLoading: false,
       error: null,
       editingItem: null,
@@ -100,6 +110,43 @@ export const useAddressBookStore = create<AddressBookState>()(
                 : item
             ),
             error: null,
+          };
+        }),
+
+      addRecentAddress: (address, name) =>
+        set(state => {
+          // 检查地址是否已存在
+          const existingIndex = state.recentAddresses.findIndex(
+            item => item.address.toLowerCase() === address.toLowerCase()
+          );
+
+          const newRecentAddress: RecentAddress = {
+            address,
+            lastUsed: new Date().toISOString(),
+            name,
+          };
+
+          let updatedRecentAddresses;
+          if (existingIndex >= 0) {
+            // 如果已存在，更新时间并移到最前面
+            updatedRecentAddresses = [
+              newRecentAddress,
+              ...state.recentAddresses.filter(
+                (_, index) => index !== existingIndex
+              ),
+            ];
+          } else {
+            // 如果不存在，添加到最前面
+            updatedRecentAddresses = [
+              newRecentAddress,
+              ...state.recentAddresses,
+            ];
+          }
+
+          // 限制最近地址数量为10个
+          return {
+            ...state,
+            recentAddresses: updatedRecentAddresses.slice(0, 10),
           };
         }),
 

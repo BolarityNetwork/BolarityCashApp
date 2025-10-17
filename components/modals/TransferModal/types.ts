@@ -1,4 +1,4 @@
-// 定义代币类型
+// Define token type
 export interface Token {
   id: string;
   name: string;
@@ -11,7 +11,7 @@ export interface Token {
   usdValue?: number;
 }
 
-// 定义接收地址类型
+// Define recipient address type
 export interface Recipient {
   id: string;
   name?: string;
@@ -20,7 +20,7 @@ export interface Recipient {
   type: 'recent' | 'address_book';
 }
 
-// 定义步骤枚举
+// Define step enum
 export enum Step {
   SELECT_TOKEN,
   ENTER_RECIPIENT,

@@ -1,10 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { BaseModal } from '@/components/common/BaseModal';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { useUserBalances } from '@/api/account';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useTransferToken } from '@/hooks/transactions/useTransferToken';
+import {
+  useAddressBookStore,
+  AddressBookItem,
+} from '@/stores/addressBookStore';
 import { Token, Recipient, Step } from './types';
 import TokenSelectStep from './TokenSelectStep';
 import RecipientStep from './RecipientStep';
@@ -21,7 +26,11 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
   const walletAddress = activeWallet?.address || '';
   const { transferToken } = useTransferToken();
 
-  // 获取用户余额数据
+  // Address book state management
+  const { addresses, recentAddresses, addAddress, addRecentAddress } =
+    useAddressBookStore();
+
+  // Get user balance data
   const {
     data: balancesData,
     isLoading,
@@ -29,7 +38,7 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     refetch,
   } = useUserBalances(walletAddress, !!walletAddress);
 
-  // 状态管理
+  // State management
   const [currentStep, setCurrentStep] = useState<Step>(Step.SELECT_TOKEN);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [recipientAddress, setRecipientAddress] = useState<string>('');
@@ -38,148 +47,166 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [transactionHash, setTransactionHash] = useState<string>('');
+  const [showAddToAddressBook, setShowAddToAddressBook] =
+    useState<boolean>(false);
 
-  // 从余额数据中提取真实代币列表
+  // Extract real token list from balance data
   const tokens: Token[] = React.useMemo(() => {
     if (!balancesData?.wallet) return [];
 
-    // 合并 assets 和 stable 代币
+    // Merge assets and stable tokens
     const assets = balancesData.wallet.assets || [];
     const stablecoins = balancesData.wallet.stable || [];
     const allTokens = [...assets, ...stablecoins];
     console.log('allTokens', allTokens);
 
-    // 转换为 Token 格式
+    // Convert to Token format
     return allTokens.map(token => ({
       id: token.address || token.symbol,
       name: token.symbol,
       symbol: token.symbol,
       icon: token.isStable ? 'logo-usd' : 'logo-ethereum',
       balance: token.amount.toString(),
-      chain: 'ethereum', // 假设都是以太坊链上的代币
+      chain: 'ethereum', // Assume all tokens are on Ethereum chain
       address: token.address,
       decimals: token.decimals,
       usdValue: token.usdValue,
     }));
   }, [balancesData]);
 
-  // 模拟最近使用的地址
-  const recentRecipients: Recipient[] = [
-    {
-      id: '1',
-      address: '0x15fc368f7f8bff752119cda045fce815dc8f053a',
-      lastUsed: '5mo ago',
-      type: 'recent',
-    },
-  ];
+  // Convert address book data to Recipient format
+  const addressBookRecipients: Recipient[] = useMemo(() => {
+    return addresses.map((item: AddressBookItem) => ({
+      id: item.id,
+      name: item.name,
+      address: item.address,
+      type: 'address_book' as const,
+    }));
+  }, [addresses]);
 
-  // 模拟地址簿
-  const addressBookRecipients: Recipient[] = [
-    {
-      id: '2',
-      name: 'Account 2',
-      address: '7Btb...LQfr',
-      type: 'address_book',
-    },
-  ];
+  // Convert recent addresses to Recipient format
+  const recentRecipients: Recipient[] = useMemo(() => {
+    return recentAddresses.map((item, index) => ({
+      id: `recent-${index}`,
+      name: item.name,
+      address: item.address,
+      lastUsed: item.lastUsed,
+      type: 'recent' as const,
+    }));
+  }, [recentAddresses]);
 
-  // 处理代币选择
+  // Handle token selection
   const handleTokenSelect = useCallback((token: Token) => {
     if (!token.balance || parseFloat(token.balance) <= 0) {
-      Alert.alert('余额不足', '请选择余额大于0的代币');
+      Alert.alert(
+        'Insufficient Balance',
+        'Please select a token with balance greater than 0'
+      );
       return;
     }
     setSelectedToken(token);
     setCurrentStep(Step.ENTER_RECIPIENT);
   }, []);
 
-  // 处理接收者选择
+  // Handle recipient selection
   const handleRecipientSelect = useCallback((recipient: Recipient) => {
     setRecipientAddress(recipient.address);
     setRecipientName(recipient.name || '');
     setCurrentStep(Step.ENTER_AMOUNT);
   }, []);
 
-  // 处理地址输入完成
+  // Handle address input completion
   const handleAddressInputComplete = useCallback(() => {
     if (!recipientAddress.trim()) {
-      Alert.alert('错误', '请输入接收地址');
+      Alert.alert('Error', 'Please enter recipient address');
       return;
     }
     setCurrentStep(Step.ENTER_AMOUNT);
   }, [recipientAddress]);
 
-  // 处理金额输入
+  // Handle amount input
   const handleAmountChange = useCallback((value: string) => {
-    // 只允许数字和小数点
+    // Only allow numbers and decimal points
     if (/^\d*\.?\d*$/.test(value)) {
       setAmount(value);
     }
   }, []);
 
-  // 处理最大金额
+  // Handle max amount
   const handleMaxAmount = useCallback(() => {
     if (selectedToken) {
-      // 减去少量作为手续费缓冲
+      // Subtract small amount as fee buffer
       const maxAmount = (parseFloat(selectedToken.balance) * 0.99).toFixed(6);
       setAmount(maxAmount);
     }
   }, [selectedToken]);
 
-  // 处理金额输入完成
+  // Handle amount input completion
   const handleAmountInputComplete = useCallback(() => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('错误', '请输入有效的金额');
+      Alert.alert('Error', 'Please enter a valid amount');
       return;
     }
     setCurrentStep(Step.CONFIRM);
   }, [amount]);
 
-  // 处理交易确认
+  // Handle transaction confirmation
   const handleConfirm = useCallback(async () => {
     setIsProcessing(true);
 
     try {
-      // 检查金额是否有效
+      // Check if amount is valid
       if (!selectedToken || !recipientAddress || !amount) {
-        throw new Error('交易参数不完整');
+        throw new Error('Incomplete transaction parameters');
       }
 
       const amountFloat = parseFloat(amount);
       const balanceFloat = parseFloat(selectedToken.balance);
 
       if (amountFloat > balanceFloat) {
-        throw new Error('余额不足');
+        throw new Error('Insufficient Balance');
       }
 
-      // 验证代币地址
-      if (!selectedToken.address) {
-        throw new Error('未找到代币合约地址');
-      }
-
-      // 验证接收地址格式
+      // Validate recipient address format
       const addressRegex = /^0x[a-fA-F0-9]{40}$/;
       if (!addressRegex.test(recipientAddress)) {
-        throw new Error('请输入有效的以太坊地址（以0x开头的42位字符）');
+        throw new Error(
+          'Please enter a valid Ethereum address (42 characters starting with 0x)'
+        );
       }
 
-      // 执行真实转账
+      // Execute real transfer
       const txHash = await transferToken({
         tokenAddress: selectedToken.address,
         recipient: recipientAddress as `0x${string}`,
         amount: amountFloat,
-        decimals: selectedToken.decimals || 18, // 默认使用18位精度，USDC等会使用6位
+        decimals: selectedToken.decimals || 18, // Default 18 decimals, USDC uses 6
       });
 
-      // 设置交易哈希和成功状态
+      // Set transaction hash and success state
       setTransactionHash(txHash);
       setIsSuccess(true);
+
+      // Add to recent addresses
+      addRecentAddress(recipientAddress, recipientName);
+
+      // Check if recipient address is already in address book
+      const isInAddressBook = addresses.some(
+        item => item.address.toLowerCase() === recipientAddress.toLowerCase()
+      );
+
+      // If not in address book and user manually entered address, prompt to add to address book
+      if (!isInAddressBook && !recipientName) {
+        setShowAddToAddressBook(true);
+      }
+
       setCurrentStep(Step.RESULT);
     } catch (error: any) {
-      console.error('转账失败:', error);
+      console.error('Transfer Failed:', error);
       Alert.alert(
-        '转账失败',
-        error?.message || '请检查您的网络连接和权限设置后重试'
+        'Transfer Failed',
+        error?.message ||
+          'Please check your network connection and permissions, then try again'
       );
       setIsSuccess(false);
       setCurrentStep(Step.RESULT);
@@ -188,7 +215,7 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     }
   }, [selectedToken, recipientAddress, amount, transferToken]);
 
-  // 处理返回上一步
+  // Handle going back
   const handleBack = useCallback(() => {
     if (currentStep > Step.SELECT_TOKEN) {
       setCurrentStep(currentStep - 1);
@@ -197,9 +224,38 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     }
   }, [currentStep, onClose]);
 
-  // 处理完成并关闭
+  // Handle adding to address book
+  const handleAddToAddressBook = useCallback(
+    (name: string) => {
+      if (name.trim() && recipientAddress) {
+        try {
+          addAddress(name.trim(), recipientAddress);
+          setShowAddToAddressBook(false);
+          Alert.alert('Success', 'Address has been added to address book');
+        } catch (_error) {
+          Alert.alert('Error', 'Failed to add address, please try again');
+        }
+      }
+    },
+    [recipientAddress, addAddress]
+  );
+
+  // Handle skipping adding to address book
+  const handleSkipAddToAddressBook = useCallback(() => {
+    setShowAddToAddressBook(false);
+  }, []);
+
+  // Handle managing address book
+  const handleManageAddressBook = useCallback(() => {
+    // Close transfer modal
+    onClose();
+    // Navigate to address book management page
+    router.push('/settings/address-book');
+  }, [onClose]);
+
+  // Handle completion and close
   const handleComplete = useCallback(() => {
-    // 重置状态
+    // Reset state
     setCurrentStep(Step.SELECT_TOKEN);
     setSelectedToken(null);
     setRecipientAddress('');
@@ -207,17 +263,18 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     setAmount('');
     setIsSuccess(null);
     setTransactionHash('');
+    setShowAddToAddressBook(false);
     onClose();
   }, [onClose]);
 
-  // 按余额降序排序代币
+  // Sort tokens by balance in descending order
   const sortedTokens = [...tokens].sort((a, b) => {
     const balanceA = parseFloat(a.balance) || 0;
     const balanceB = parseFloat(b.balance) || 0;
     return balanceB - balanceA;
   });
 
-  // 渲染当前步骤内容
+  // Render current step content
   const renderStepContent = () => {
     switch (currentStep) {
       case Step.SELECT_TOKEN:
@@ -239,6 +296,7 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
             onRecipientSelect={handleRecipientSelect}
             onAddressChange={setRecipientAddress}
             onAddressInputComplete={handleAddressInputComplete}
+            onManageAddressBook={handleManageAddressBook}
           />
         );
       case Step.ENTER_AMOUNT:
@@ -269,6 +327,9 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
             recipientAddress={recipientAddress}
             recipientName={recipientName}
             transactionHash={transactionHash}
+            showAddToAddressBook={showAddToAddressBook}
+            onAddToAddressBook={handleAddToAddressBook}
+            onSkipAddToAddressBook={handleSkipAddToAddressBook}
           />
         );
       default:
@@ -276,7 +337,7 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     }
   };
 
-  // 获取当前步骤标题
+  // Get current step title
   const getCurrentStepTitle = () => {
     switch (currentStep) {
       case Step.SELECT_TOKEN:
@@ -294,11 +355,12 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     }
   };
 
-  // 是否显示下一步按钮
-  const showNextButton = currentStep < Step.CONFIRM;
-  // 是否显示确认按钮
+  // Whether to show next button (not needed for token selection step)
+  const showNextButton =
+    currentStep > Step.SELECT_TOKEN && currentStep < Step.CONFIRM;
+  // Whether to show confirm button
   const showConfirmButton = currentStep === Step.CONFIRM;
-  // 是否显示关闭按钮
+  // Whether to show close button
   const showCloseButton = currentStep === Step.RESULT;
 
   return (
@@ -309,7 +371,7 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
     >
       {renderStepContent()}
 
-      {/* 底部操作按钮 */}
+      {/* Bottom action buttons */}
       {(showNextButton || showConfirmButton || showCloseButton) && (
         <View className="mt-8">
           {showNextButton && (

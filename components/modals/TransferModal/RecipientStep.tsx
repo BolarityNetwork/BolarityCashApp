@@ -10,6 +10,7 @@ interface RecipientStepProps {
   onRecipientSelect: (recipient: Recipient) => void;
   onAddressChange: (address: string) => void;
   onAddressInputComplete: () => void;
+  onManageAddressBook?: () => void;
 }
 
 const RecipientStep: React.FC<RecipientStepProps> = ({
@@ -19,6 +20,7 @@ const RecipientStep: React.FC<RecipientStepProps> = ({
   onRecipientSelect,
   onAddressChange,
   onAddressInputComplete,
+  onManageAddressBook,
 }) => {
   return (
     <View>
@@ -43,7 +45,7 @@ const RecipientStep: React.FC<RecipientStepProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* 最近使用 */}
+      {/* Recent usage */}
       {recentRecipients.length > 0 && (
         <View className="mb-6">
           <View className="flex-row items-center mb-3">
@@ -64,7 +66,9 @@ const RecipientStep: React.FC<RecipientStepProps> = ({
                 </View>
                 <View>
                   <Text className="font-medium text-gray-800">
-                    {recipient.address}
+                    {recipient.address.slice(0, 6) +
+                      '...' +
+                      recipient.address.slice(-4)}
                   </Text>
                   <Text className="text-xs text-gray-500">
                     {recipient.lastUsed}
@@ -76,16 +80,17 @@ const RecipientStep: React.FC<RecipientStepProps> = ({
         </View>
       )}
 
-      {/* 地址簿 */}
-      {addressBookRecipients.length > 0 && (
-        <View>
-          <View className="flex-row items-center mb-3">
-            <Icon name="book-outline" size={16} color="#64748b" />
-            <Text className="ml-1 text-sm font-medium text-gray-500">
-              Address Book
-            </Text>
-          </View>
-          {addressBookRecipients.map(recipient => (
+      {/* Address book */}
+      <View>
+        <View className="flex-row items-center mb-3">
+          <Icon name="book-outline" size={16} color="#64748b" />
+          <Text className="ml-1 text-sm font-medium text-gray-500">
+            Address Book
+          </Text>
+        </View>
+
+        {addressBookRecipients.length > 0 ? (
+          addressBookRecipients.map(recipient => (
             <TouchableOpacity
               key={recipient.id}
               className="flex-row items-center justify-between bg-white rounded-xl p-4 mb-3"
@@ -102,14 +107,28 @@ const RecipientStep: React.FC<RecipientStepProps> = ({
                     {recipient.name || 'Unknown'}
                   </Text>
                   <Text className="text-xs font-mono text-gray-500">
-                    {recipient.address}
+                    {recipient.address.slice(0, 6) +
+                      '...' +
+                      recipient.address.slice(-4)}
                   </Text>
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
-        </View>
-      )}
+          ))
+        ) : (
+          <TouchableOpacity
+            className="flex-row items-center justify-center bg-gray-50 rounded-xl p-4 mb-3 border border-gray-100"
+            onPress={onManageAddressBook}
+          >
+            <View className="flex-row items-center">
+              <Icon name="add-circle-outline" size={16} color="#94a3b8" />
+              <Text className="ml-2 text-sm text-gray-500">
+                Add contacts to your address book
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };

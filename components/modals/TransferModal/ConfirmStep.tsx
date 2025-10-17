@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Token } from './types';
+import { useNetworkFee } from '@/hooks/useNetworkFee';
 
 interface ConfirmStepProps {
   selectedToken: Token | null;
@@ -16,12 +17,32 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({
   amount,
   isProcessing,
 }) => {
-  // 计算USD价值
+  // Get network fee
+  const {
+    estimatedFee,
+    estimatedFeeUSD,
+    isLoading: isFeeLoading,
+    error: feeError,
+  } = useNetworkFee(selectedToken?.address, recipientAddress, amount);
+
+  // Calculate USD value
   const calculateUsdValue = () => {
     if (!selectedToken || !selectedToken.usdValue || !amount) return 0;
     const tokenBalance = parseFloat(selectedToken.balance) || 0;
     const tokenValue = parseFloat(amount) || 0;
     return tokenValue * (selectedToken.usdValue / tokenBalance);
+  };
+
+  // Format network fee display
+  const formatNetworkFee = () => {
+    if (isFeeLoading) return 'Calculating...';
+    if (feeError) return 'Unable to calculate';
+
+    const fee = parseFloat(estimatedFee);
+    if (fee < 0.001) {
+      return `${(fee * 1000).toFixed(3)} mETH (~$${estimatedFeeUSD})`;
+    }
+    return `${fee.toFixed(6)} ETH (~$${estimatedFeeUSD})`;
   };
 
   return (
@@ -93,12 +114,30 @@ const ConfirmStep: React.FC<ConfirmStepProps> = ({
         <View
           style={{ backgroundColor: 'white', borderRadius: 12, padding: 20 }}
         >
-          <Text style={{ fontSize: 14, color: '#64748b', marginBottom: 4 }}>
-            Network Fee
-          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 4,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: '#64748b' }}>Network Fee</Text>
+            {isFeeLoading && (
+              <ActivityIndicator
+                size="small"
+                color="#6366f1"
+                style={{ marginLeft: 8 }}
+              />
+            )}
+          </View>
           <Text style={{ fontWeight: '500', color: '#1e293b' }}>
-            ~0.0001 {selectedToken?.symbol}
+            {formatNetworkFee()}
           </Text>
+          {feeError && (
+            <Text style={{ fontSize: 12, color: '#ef4444', marginTop: 2 }}>
+              {feeError}
+            </Text>
+          )}
         </View>
       </View>
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Token } from './types';
 
@@ -10,6 +10,9 @@ interface ResultStepProps {
   recipientAddress: string;
   recipientName: string;
   transactionHash: string;
+  showAddToAddressBook?: boolean;
+  onAddToAddressBook?: (name: string) => void;
+  onSkipAddToAddressBook?: () => void;
 }
 
 const ResultStep: React.FC<ResultStepProps> = ({
@@ -19,7 +22,23 @@ const ResultStep: React.FC<ResultStepProps> = ({
   recipientAddress,
   recipientName,
   transactionHash,
+  showAddToAddressBook = false,
+  onAddToAddressBook,
+  onSkipAddToAddressBook,
 }) => {
+  const [addressBookName, setAddressBookName] = useState('');
+
+  const handleAddToAddressBook = () => {
+    if (!addressBookName.trim()) {
+      Alert.alert('Error', 'Please enter contact name');
+      return;
+    }
+    onAddToAddressBook?.(addressBookName);
+  };
+
+  const handleSkipAddToAddressBook = () => {
+    onSkipAddToAddressBook?.();
+  };
   return (
     <View className="flex-1 items-center justify-center p-4">
       <View
@@ -53,6 +72,42 @@ const ResultStep: React.FC<ResultStepProps> = ({
         <TouchableOpacity className="text-indigo-600 font-medium mb-12">
           <Text>View transaction</Text>
         </TouchableOpacity>
+      )}
+
+      {/* Add to address book functionality */}
+      {isSuccess && showAddToAddressBook && (
+        <View className="w-full bg-gray-50 rounded-xl p-4 mb-4">
+          <Text className="text-lg font-semibold text-gray-800 mb-2 text-center">
+            Add to Address Book
+          </Text>
+          <Text className="text-sm text-gray-600 mb-4 text-center">
+            Add a name for this address to make future transfers easier
+          </Text>
+
+          <TextInput
+            className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-4 text-gray-800"
+            placeholder="Enter contact name"
+            value={addressBookName}
+            onChangeText={setAddressBookName}
+            autoCapitalize="words"
+          />
+
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className="flex-1 bg-gray-200 rounded-lg py-3 items-center"
+              onPress={handleSkipAddToAddressBook}
+            >
+              <Text className="text-gray-700 font-medium">Skip</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1 bg-indigo-600 rounded-lg py-3 items-center"
+              onPress={handleAddToAddressBook}
+            >
+              <Text className="text-white font-medium">Add</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </View>
   );
