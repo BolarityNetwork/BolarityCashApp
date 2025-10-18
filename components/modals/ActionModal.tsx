@@ -203,7 +203,25 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
             <View className="flex-row justify-center items-center gap-x-16">
               <View className="items-center">
                 <TouchableOpacity
-                  className="w-16 h-16 bg-black rounded-full items-center justify-center"
+                  className={`w-16 h-16 ${actions.find(a => a.id === 'transfer')?.color} rounded-full items-center justify-center mb-2`}
+                  onPress={actions.find(a => a.id === 'transfer')?.onPress}
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 4,
+                  }}
+                >
+                  <Icon name="arrow-up" size={22} color="white" />
+                </TouchableOpacity>
+                <Text className="text-xs text-gray-600 font-medium text-center">
+                  Transfer
+                </Text>
+              </View>
+              <View className="items-center">
+                <TouchableOpacity
+                  className="w-16 h-16 bg-black rounded-full items-center justify-center mb-2"
                   onPress={actions.find(a => a.id === 'actions')?.onPress}
                   style={{
                     shadowColor: '#000',
@@ -222,7 +240,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
 
               <View className="items-center">
                 <TouchableOpacity
-                  className={`w-16 h-16 ${actions.find(a => a.id === 'receive')?.color} rounded-full items-center justify-center`}
+                  className={`w-16 h-16 ${actions.find(a => a.id === 'receive')?.color} rounded-full items-center justify-center mb-2`}
                   onPress={actions.find(a => a.id === 'receive')?.onPress}
                   style={{
                     shadowColor: '#000',
@@ -236,25 +254,6 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
                   Receive
-                </Text>
-              </View>
-
-              <View className="items-center">
-                <TouchableOpacity
-                  className={`w-16 h-16 ${actions.find(a => a.id === 'transfer')?.color} rounded-full items-center justify-center`}
-                  onPress={actions.find(a => a.id === 'transfer')?.onPress}
-                  style={{
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 4,
-                    elevation: 4,
-                  }}
-                >
-                  <Icon name="arrow-up" size={22} color="white" />
-                </TouchableOpacity>
-                <Text className="text-xs text-gray-600 font-medium text-center">
-                  Transfer
                 </Text>
               </View>
             </View>
