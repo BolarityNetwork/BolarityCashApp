@@ -15,6 +15,9 @@ import { useCheckForUpdates } from '@/hooks/useCheckForUpdates';
 import { useAppReady } from '@/hooks/useAppReady';
 import { usePrivyReady } from '@/hooks/usePrivyReady';
 import { PRIVY_CONFIG, SUPPORTED_CHAINS } from '@/constants/privyConfig';
+import Toast from 'react-native-toast-message';
+import { TakoToast } from '@/components/common/TakoToast';
+import { toastConfig } from '@/components/common/ToastConfig';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -76,6 +79,8 @@ function AppContent({
             onClose={hideUpdateModal}
             onUpdate={handleUpdate}
           />
+          <Toast config={toastConfig} />
+          <TakoToast.Component />
           <PrivyElements />
         </NiceModal.Provider>
       </ThemeProvider>
