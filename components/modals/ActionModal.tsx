@@ -3,6 +3,7 @@ import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import React, { useCallback, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { TakoToast } from '@/components/common/TakoToast';
 
 interface ActionModalProps {
   onReceivePress?: () => void;
@@ -35,20 +36,32 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
     });
   }, [modal, fadeAnim, scaleAnim]);
 
+  const handleComingSoon = useCallback(
+    (feature: string) => {
+      TakoToast.show({
+        type: 'normal',
+        status: 'info',
+        message: `${feature} coming soon!`,
+      });
+      handleClose();
+    },
+    [handleClose]
+  );
+
   const actions = [
     {
       id: 'deposit',
       title: 'Deposit',
       icon: 'wallet' as const,
       color: 'bg-black',
-      onPress: handleClose,
+      onPress: () => handleComingSoon('Deposit'),
     },
     {
       id: 'portfolio',
       title: 'Portfolio',
       icon: 'trending-up' as const,
       color: 'bg-black',
-      onPress: handleClose,
+      onPress: () => handleComingSoon('Portfolio'),
     },
     {
       id: 'actions',
