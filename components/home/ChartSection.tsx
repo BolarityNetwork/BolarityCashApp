@@ -61,24 +61,40 @@ const ChartSection: React.FC<ChartSectionProps> = ({
       return generateRealDates();
     }
 
-    // Format real data for chart display
-    return dailyRewards.slice(-5).map((reward, index) => {
-      const date = new Date(reward.date * 1000);
-      date.setDate(date.getDate() - 1); // Subtract 1 day from each date
-      const dateStr = date.toLocaleDateString('en-US', {
+    // Sort rewards by date (oldest first, newest last)
+    const sortedRewards = [...dailyRewards].sort((a, b) => a.date - b.date);
+
+    // If we have less than 5 days of data, fill with 0 values
+    const result = [];
+    const today = new Date();
+
+    for (let i = 4; i >= 0; i--) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() - i - 1);
+
+      // Find matching reward data for this date
+      const matchingReward = sortedRewards.find(reward => {
+        const rewardDate = new Date(reward.date * 1000);
+        return rewardDate.toDateString() === targetDate.toDateString();
+      });
+
+      const dateStr = targetDate.toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
       });
-      const isToday = index === dailyRewards.length - 1;
-      const isFuture = false;
 
-      return {
+      const isToday = i === 0;
+      const isFuture = i < 0;
+
+      result.push({
         date: dateStr,
-        reward: reward.daily_reward,
+        reward: matchingReward ? matchingReward.daily_reward : 0,
         isToday,
         isFuture,
-      };
-    });
+      });
+    }
+
+    return result;
   }, [rewardsData]);
 
   // Calculate Y-axis labels and max value based on data with better adaptability
