@@ -26,9 +26,11 @@ export const AccountCard: React.FC<AccountCardProps> = ({
     refetch,
   } = useUserBalances(address, true);
 
-  const totalBalance = balancesData?.totals.usd || 0;
-  const depositsTotal = balancesData?.totals.depositsUsd || 0;
-  const walletTotal = balancesData?.totals.walletUsd || 0;
+  const totalBalance =
+    (balancesData?.totals?.depositsUsd || 0) +
+    (balancesData?.totals?.stableUsd || 0);
+  const depositsTotal = balancesData?.totals?.depositsUsd || 0;
+  const cashTotal = balancesData?.totals?.stableUsd || 0;
   const protocolsCount = balancesData?.protocols.length || 0;
 
   const ethData = balancesData?.wallet?.assets?.find(
@@ -46,7 +48,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-1">
           <Text className="text-lg font-bold text-slate-800">
-            Account Balances
+            Portfolio Balances
           </Text>
           <TouchableOpacity
             onPress={() => setShowWalletSwitchModal(true)}
@@ -103,7 +105,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       {/* Balance Breakdown */}
       <View className="flex-row justify-between mb-4">
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">Deposits</Text>
+          <Text className="text-sm text-slate-500 mb-1">Saving</Text>
           <AnimatedNumber
             value={depositsTotal}
             style={{
@@ -120,9 +122,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           />
         </View>
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">Wallet</Text>
+          <Text className="text-sm text-slate-500 mb-1">Cash</Text>
           <AnimatedNumber
-            value={walletTotal}
+            value={cashTotal}
             style={{
               fontSize: 16,
               fontWeight: 'bold',

@@ -26,15 +26,16 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
     !!activeWallet?.address
   );
 
-  const totalBalance = balancesData?.totals.usd ?? 0;
+  const totalBalance =
+    (balancesData?.totals?.depositsUsd || 0) +
+    (balancesData?.totals?.stableUsd || 0);
 
   const yesterdayEarnings = useMemo(() => {
     if (!rewardsData) return 0;
 
     const dailyRewards = getDailyRewards(rewardsData);
     if (!dailyRewards || dailyRewards.length === 0) return 0;
-
-    const lastDataPoint = dailyRewards[dailyRewards.length - 1];
+    const lastDataPoint = dailyRewards[dailyRewards.length];
     return lastDataPoint?.daily_reward || 0;
   }, [rewardsData]);
   if (isLoading) {

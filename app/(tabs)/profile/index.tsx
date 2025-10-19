@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  Linking,
 } from 'react-native';
 import { Redirect, useRouter } from 'expo-router';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
@@ -135,7 +136,7 @@ export default function ProfileScreen() {
           <SettingItem
             icon={<FollowingIcon />}
             title="Follow @bolaritywallet"
-            onPress={() => router.push('/settings/follow-twitter')}
+            onPress={() => Linking.openURL('https://x.com/Bolarityxyz')}
           />
         </SettingSection>
 
