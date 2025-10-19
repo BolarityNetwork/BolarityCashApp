@@ -28,7 +28,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
 
   const totalBalance =
     (balancesData?.totals?.depositsUsd || 0) +
-    (balancesData?.totals?.stableUsd || 0);
+    (balancesData?.wallet?.totals?.stableUsd || 0);
 
   const yesterdayEarnings = useMemo(() => {
     if (!rewardsData) return 0;

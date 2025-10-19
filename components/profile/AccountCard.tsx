@@ -28,9 +28,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 
   const totalBalance =
     (balancesData?.totals?.depositsUsd || 0) +
-    (balancesData?.totals?.stableUsd || 0);
+    (balancesData?.wallet?.totals?.stableUsd || 0);
   const depositsTotal = balancesData?.totals?.depositsUsd || 0;
-  const cashTotal = balancesData?.totals?.stableUsd || 0;
+  const cashTotal = balancesData?.wallet?.totals?.stableUsd || 0;
   const protocolsCount = balancesData?.protocols.length || 0;
 
   const ethData = balancesData?.wallet?.assets?.find(

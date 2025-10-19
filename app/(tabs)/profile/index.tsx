@@ -135,7 +135,7 @@ export default function ProfileScreen() {
           />
           <SettingItem
             icon={<FollowingIcon />}
-            title="Follow @bolaritywallet"
+            title="Follow @Bolarityxyz"
             onPress={() => Linking.openURL('https://x.com/Bolarityxyz')}
           />
         </SettingSection>
