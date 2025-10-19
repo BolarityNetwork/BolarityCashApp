@@ -43,7 +43,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
       <View className="px-6 py-4">
         <View className="mb-3">
           <Text className="text-sm text-gray-500 mb-3">
-            Total Savings Balance
+            Total Portfolio Balance
           </Text>
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
@@ -78,7 +78,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
     <View className="px-6 py-4">
       <View className="mb-3">
         <Text className="text-sm text-gray-500 mb-3">
-          Total Savings Balance
+          Total Portfolio Balance
         </Text>
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
