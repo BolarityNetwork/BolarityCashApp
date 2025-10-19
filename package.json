@@ -14,9 +14,14 @@
     "lint:fix": "eslint . --fix",
     "prepare": "husky install",
     "quick-update": "EXPO_USE_CHUNKED_REQUESTS=1 EAS_BUILD_GRAPHQL_TIMEOUT=300000 node scripts/quick-update.js",
-    "eas-build-android": "eas build --platform android --local --profile production",
-    "eas-build-ios": "eas build --platform ios --local --profile production",
-    "build-ios": "react-native bundle --entry-file='entrypoint.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
+    "eas-build": "node scripts/eas-build.js",
+    "eas-build-android": "node scripts/eas-build.js android production",
+    "eas-build-ios": "node scripts/eas-build.js ios production",
+    "eas-build-ios-dev": "node scripts/eas-build.js ios development",
+    "eas-build-ios-preview": "node scripts/eas-build.js ios preview",
+    "build": "node scripts/build.js",
+    "build-ios": "node scripts/build.js ios",
+    "build-android": "node scripts/build.js android"
   },
   "husky": {
     "hooks": {
