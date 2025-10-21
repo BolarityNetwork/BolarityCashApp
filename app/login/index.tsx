@@ -18,6 +18,8 @@ import DiscordIcon from '@/assets/icon/login/discord.svg';
 import PasskeyIcon from '@/assets/icon/login/passkey.svg';
 import EmailIcon from '@/assets/icon/login/email.svg';
 import SmsIcon from '@/assets/icon/login/sms.svg';
+import { usePrivy } from '@privy-io/expo';
+import { useFullScreenLoading } from '@/hooks/useFullScreenLoading';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -43,6 +45,17 @@ export const OAUTH_PROVIDERS = [
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]['name'];
 
 export default function LoginScreen() {
+  const { isReady, error: privyError } = usePrivy();
+  const { startLoading, endLoading } = useFullScreenLoading({});
+
+  React.useEffect(() => {
+    if (!isReady) {
+      startLoading({ cancelable: false });
+    } else {
+      endLoading();
+    }
+  }, [isReady, startLoading, endLoading]);
+
   const {
     isLoading,
     error,
@@ -94,7 +107,9 @@ export default function LoginScreen() {
             />
           </View>
 
-          <ErrorDisplay error={error} />
+          <ErrorDisplay
+            error={error || (privyError ? privyError.message : '')}
+          />
         </ScrollView>
       </View>
     </>
@@ -195,11 +210,6 @@ function OAuthSection({
               {provider.label}
             </Text>
           </View>
-          {/* {provider.name === 'google' && (
-            <View className="bg-gray-100 rounded-xl px-3 py-1 mr-2">
-              <Text className="text-xs text-gray-500 font-medium">Recent</Text>
-            </View>
-          )} */}
           <Text className="text-lg text-gray-400">›</Text>
         </TouchableOpacity>
       ))}
