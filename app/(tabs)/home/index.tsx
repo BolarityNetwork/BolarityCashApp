@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StatusBar, Animated } from 'react-native';
 import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
+import { useUserRegistration } from '@/hooks/useUserRegistration';
 
 // Import Components
 import Header from '@/components/home/Headers';
@@ -32,7 +33,8 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const { activeWallet } = useMultiChainWallet();
 
-  // Fetch user rewards data for earnings calculation
+  useUserRegistration(activeWallet?.address || '');
+
   const { data: todayRewardsData } = useUserRewards(
     activeWallet?.address || '',
     '1',

@@ -65,6 +65,18 @@ export const getUserRewards = async (
   return data;
 };
 
+export const createUserAccount = async (
+  address: string
+): Promise<UserRegistrationResponse> => {
+  const { data } = await axios.post<UserRegistrationResponse>(
+    '/router_api/v1/user',
+    {
+      address,
+    }
+  );
+  return data;
+};
+
 // React Query hooks
 export function useUserRegistration(address: string, enabled: boolean = true) {
   const queryEnabled = enabled && !!address;
@@ -96,13 +108,13 @@ export function useRegisterUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: registerUser,
+    mutationFn: createUserAccount,
     onSuccess: (data, variables) => {
-      // Invalidate and refetch user registration status
       queryClient.invalidateQueries({
         queryKey: ['userRegistration', variables],
       });
     },
+    mutationKey: ['registerUser'],
   });
 }
 
