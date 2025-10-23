@@ -112,7 +112,7 @@ const ActivityList: React.FC<ActivityListProps> = () => {
                   <View style={styles.activityInfo}>
                     <Text style={styles.activityType}>{transaction.type}</Text>
                     <Text style={styles.activityDetails}>
-                      {transaction.vault} • {transaction.date}
+                      {transaction.vault}
                     </Text>
                     {transaction.hash && (
                       <Text style={styles.activityHash}>

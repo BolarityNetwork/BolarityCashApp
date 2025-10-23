@@ -89,8 +89,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
               duration={1200}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />
@@ -115,8 +115,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             }}
             duration={800}
             formatOptions={{
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 3,
               prefix: '$',
             }}
           />
@@ -132,8 +132,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             }}
             duration={800}
             formatOptions={{
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 3,
               prefix: '$',
             }}
           />
@@ -169,8 +169,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
               duration={800}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />
@@ -189,8 +189,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
               duration={800}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />
@@ -209,8 +209,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
               duration={800}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />
@@ -260,8 +260,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
               duration={800}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />

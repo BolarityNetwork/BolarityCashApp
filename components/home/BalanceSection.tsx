@@ -92,8 +92,8 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
               }}
               duration={1200}
               formatOptions={{
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
                 prefix: '$',
               }}
             />
@@ -109,11 +109,31 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
                   duration={800}
                   formatOptions={{
                     minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
+                    maximumFractionDigits: 3,
                     prefix: '+$',
                   }}
                 />
                 <Text className="text-sm text-gray-500">yesterday</Text>
+              </View>
+              {/* Cumulative earning */}
+              <View className="flex-row items-center gap-1.5">
+                <AnimatedNumber
+                  value={rewardsData?.data?.cumulative_reward || 0}
+                  duration={800}
+                  style={{
+                    fontSize: 15,
+                    color: '#059669',
+                    fontWeight: '600',
+                  }}
+                  formatOptions={{
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 3,
+                    prefix: '+$',
+                  }}
+                />
+                <Text className="text-sm text-gray-500">
+                  cumulative earnings
+                </Text>
               </View>
             </View>
           </View>
