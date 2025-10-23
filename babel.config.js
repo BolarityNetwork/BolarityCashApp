@@ -8,6 +8,14 @@ module.exports = function (api) {
     plugins: [
       // Reanimated plugin has to be listed last.
       'react-native-reanimated/plugin',
+      [
+        'module-resolver',
+        {
+          alias: {
+            '@': './',
+          },
+        },
+      ],
     ],
   };
 };
