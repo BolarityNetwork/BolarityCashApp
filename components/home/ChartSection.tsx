@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import useAppRefresh from '@/hooks/useAppRefresh';
 
 interface ChartSectionProps {
   selectedPeriod?: 'daily' | 'monthly' | 'yearly';
@@ -13,11 +14,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
 }) => {
   const { activeWallet } = useMultiChainWallet();
 
-  const {
-    data: rewardsData,
-    isLoading,
-    isError,
-  } = useUserRewards(
+  const { data: rewardsData, refetch: _refetchRewards } = useUserRewards(
     activeWallet?.address || '',
     selectedPeriod === 'daily'
       ? '7'
@@ -26,6 +23,11 @@ const ChartSection: React.FC<ChartSectionProps> = ({
         : '365',
     !!activeWallet?.address
   );
+  useAppRefresh(() => {
+    if (activeWallet?.address && _refetchRewards) {
+      _refetchRewards();
+    }
+  });
 
   const chartData = useMemo(() => {
     const dailyRewards = getDailyRewards(rewardsData);
@@ -150,32 +152,6 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     const adjustedHeight = heightRatio * maxHeight;
     return Math.max(adjustedHeight, minHeight);
   };
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <View style={styles.chartSection}>
-        <View style={styles.chartContainer}>
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading rewards data...</Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  // Show error state
-  if (isError) {
-    return (
-      <View style={styles.chartSection}>
-        <View style={styles.chartContainer}>
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Failed to load rewards data</Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.chartSection}>

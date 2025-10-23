@@ -4,6 +4,7 @@ import AnimatedNumber from '../AnimatedNumber';
 import { useUserBalances } from '@/api/account';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import useAppRefresh from '@/hooks/useAppRefresh';
 
 interface BalanceSectionProps {
   address: string;
@@ -17,15 +18,20 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
     data: balancesData,
     isLoading,
     isError,
+    refetch: _refetchBalances,
   } = useUserBalances(address, true);
 
   const { activeWallet } = useMultiChainWallet();
-  const { data: rewardsData } = useUserRewards(
+  const { data: rewardsData, refetch: _refetchRewards } = useUserRewards(
     activeWallet?.address || '',
     '7',
     !!activeWallet?.address
   );
-
+  useAppRefresh(() => {
+    if (activeWallet?.address && _refetchBalances) {
+      _refetchBalances();
+    }
+  });
   const totalBalance =
     (balancesData?.totals?.depositsUsd || 0) +
     (balancesData?.wallet?.totals?.stableUsd || 0);
