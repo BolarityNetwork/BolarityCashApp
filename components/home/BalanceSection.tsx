@@ -35,7 +35,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
 
     const dailyRewards = getDailyRewards(rewardsData);
     if (!dailyRewards || dailyRewards.length === 0) return 0;
-    const lastDataPoint = dailyRewards[dailyRewards.length];
+    const lastDataPoint = dailyRewards[1];
     return lastDataPoint?.daily_reward || 0;
   }, [rewardsData]);
   if (isLoading) {
