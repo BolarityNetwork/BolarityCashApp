@@ -10,6 +10,7 @@ interface UpdateInfo {
 export const useUpdateModal = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo>({});
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const showUpdateModal = useCallback((info?: UpdateInfo) => {
     setUpdateInfo(info || {});
@@ -23,32 +24,30 @@ export const useUpdateModal = () => {
   const handleUpdate = useCallback(async () => {
     try {
       hideUpdateModal();
-      const update = await Updates.checkForUpdateAsync();
-
-      if (update.isAvailable) {
-        await Updates.reloadAsync();
-      } else {
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          await Updates.fetchUpdateAsync();
-          await Updates.reloadAsync();
-        }
-      }
+      await Updates.reloadAsync();
     } catch (error) {
-      console.error('Update failed:', error);
+      console.error('Failed to reload app:', error);
     }
   }, [hideUpdateModal]);
 
   const checkForUpdates = useCallback(async () => {
     try {
       if (__DEV__) return false;
+
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
+        console.log('Update available, downloading...');
+        setIsDownloading(true);
+
+        await Updates.fetchUpdateAsync();
+
+        setIsDownloading(false);
+
         const info: UpdateInfo = {
           version: 'New',
           description:
-            'A new version is available with improvements and bug fixes.',
+            'A new version has been downloaded. Restart to apply it.',
           isMandatory: false,
         };
 
@@ -59,6 +58,7 @@ export const useUpdateModal = () => {
       return false;
     } catch (error) {
       console.error('Failed to check for updates:', error);
+      setIsDownloading(false);
       return false;
     }
   }, [showUpdateModal]);
@@ -66,6 +66,7 @@ export const useUpdateModal = () => {
   return {
     isVisible,
     updateInfo,
+    isDownloading,
     showUpdateModal,
     hideUpdateModal,
     handleUpdate,
