@@ -9,6 +9,8 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VaultItem } from '@/api/vault';
@@ -280,200 +282,215 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
-          <Text className="text-xl font-bold text-gray-900">
-            {`Open ${selectedVault.protocol.toUpperCase()} Vault`}
-          </Text>
-          <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
-            onPress={onClose}
-          >
-            <Text className="text-xl text-gray-500">×</Text>
-          </TouchableOpacity>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        className="flex-1 bg-gray-50"
+      >
+        <SafeAreaView className="flex-1">
+          <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
+            <Text className="text-xl font-bold text-gray-900">
+              {`Open ${selectedVault.protocol.toUpperCase()} Vault`}
+            </Text>
+            <TouchableOpacity
+              className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+              onPress={onClose}
+            >
+              <Text className="text-xl text-gray-500">×</Text>
+            </TouchableOpacity>
+          </View>
 
-        <ScrollView className="flex-1 p-5">
-          {/* Error Display */}
-          {error && (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-              <Text className="text-red-700 text-sm font-medium mb-1">
-                Transaction Error
-              </Text>
-              <Text className="text-red-600 text-xs">{error}</Text>
-              <TouchableOpacity
-                onPress={() => setError(null)}
-                className="mt-2 self-start"
-              >
-                <Text className="text-red-600 text-xs font-semibold">
-                  Dismiss
+          <ScrollView
+            className="flex-1 p-5"
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 40 }}
+          >
+            {/* Error Display */}
+            {error && (
+              <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <Text className="text-red-700 text-sm font-medium mb-1">
+                  Transaction Error
                 </Text>
+                <Text className="text-red-600 text-xs">{error}</Text>
+                <TouchableOpacity
+                  onPress={() => setError(null)}
+                  className="mt-2 self-start"
+                >
+                  <Text className="text-red-600 text-xs font-semibold">
+                    Dismiss
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Vault Header */}
+            <LinearGradient
+              colors={['#10b981', '#06b6d4']}
+              className="rounded-2xl p-6 mb-6"
+              style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
+            >
+              <View
+                className="flex-row items-center mb-4"
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 16,
+                }}
+              >
+                <Image
+                  source={selectedVault.icon}
+                  style={{ width: 48, height: 48 }}
+                  contentFit="contain"
+                />
+                <View
+                  className="ml-3 flex-1"
+                  style={{ marginLeft: 12, flex: 1 }}
+                >
+                  <Text className="text-xl font-bold text-white">
+                    {selectedVault.protocol.toUpperCase()}
+                  </Text>
+                  <Text className="text-sm text-white/80">
+                    {selectedVault.note}
+                  </Text>
+                </View>
+              </View>
+              <View
+                className="flex-row gap-4"
+                style={{ flexDirection: 'row', gap: 16 }}
+              >
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {selectedVault.apy}
+                  </Text>
+                </View>
+                <View className="flex-1" style={{ flex: 1 }}>
+                  <Text className="text-sm text-white/80">TVL</Text>
+                  <Text className="text-lg font-bold text-white">
+                    {selectedVault.tvl}
+                  </Text>
+                </View>
+              </View>
+              <View className="mt-3" style={{ marginTop: 12 }}>
+                <Text className="text-sm text-white/80">Risk Level</Text>
+                <Text className="text-lg font-bold text-white">
+                  {selectedVault.risk}
+                </Text>
+              </View>
+            </LinearGradient>
+
+            {/* Features */}
+            <View className="mb-6">
+              <Text className="text-base font-bold text-gray-900 mb-4">
+                Protocol Features:
+              </Text>
+              {[
+                'Flexible access anytime',
+                'Auto-compounding rewards',
+                'Audited smart contracts',
+                '24/7 yield optimization',
+              ].map((feature, index) => (
+                <View key={index} className="flex-row items-center mb-2">
+                  <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
+                  <Text className="text-sm text-gray-700">{feature}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Balance and input area */}
+            <View className="bg-gray-50 rounded-2xl p-4 mb-6">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-sm text-gray-700">
+                  Wallet USDC Balance
+                </Text>
+                <View className="items-end">
+                  {isLoadingBalance ? (
+                    <Skeleton width={80} height={20} />
+                  ) : (
+                    <Text className="text-base font-semibold text-gray-900">
+                      <AnimatedNumber
+                        value={getWalletUSDCBalance()}
+                        style={{
+                          fontSize: 14,
+                        }}
+                        duration={1200}
+                        formatOptions={{
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                          suffix: ' $',
+                        }}
+                      />
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-sm text-gray-700">
+                  {`${selectedVault.protocol.toUpperCase()} Deposited`}
+                </Text>
+                <View className="items-end">
+                  {isLoadingBalance ? (
+                    <Skeleton width={60} height={20} />
+                  ) : (
+                    <Text className="text-base font-semibold text-gray-900">
+                      {getProtocolDepositAmount().toFixed(2)} $
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </View>
+
+            {/* Input field */}
+            <View className="mb-4">
+              <TextInput
+                className="bg-white rounded-xl p-4 text-base border border-gray-200 text-gray-900"
+                value={depositAmount}
+                onChangeText={setDepositAmount}
+                placeholder="Enter USDC amount"
+                keyboardType="decimal-pad"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
+                  isWithdrawing || isDepositing || isLoadingBalance
+                    ? 'opacity-60'
+                    : ''
+                }`}
+                onPress={handleWithdraw}
+                disabled={isWithdrawing || isDepositing || isLoadingBalance}
+              >
+                {isWithdrawing ? (
+                  <ActivityIndicator size="small" color="#374151" />
+                ) : (
+                  <Text className="text-base font-semibold text-gray-700">
+                    Withdraw
+                  </Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
+                  isDepositing || isWithdrawing || isLoadingBalance
+                    ? 'opacity-60'
+                    : ''
+                }`}
+                onPress={handleDeposit}
+                disabled={isDepositing || isWithdrawing || isLoadingBalance}
+              >
+                {isDepositing ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-base font-semibold text-white">
+                    Start Saving
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
-          )}
-
-          {/* Vault Header */}
-          <LinearGradient
-            colors={['#10b981', '#06b6d4']}
-            className="rounded-2xl p-6 mb-6"
-            style={{ borderRadius: 16, padding: 24, marginBottom: 24 }}
-          >
-            <View
-              className="flex-row items-center mb-4"
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
-            >
-              <Image
-                source={selectedVault.icon}
-                style={{ width: 48, height: 48 }}
-                contentFit="contain"
-              />
-              <View className="ml-3 flex-1" style={{ marginLeft: 12, flex: 1 }}>
-                <Text className="text-xl font-bold text-white">
-                  {selectedVault.protocol.toUpperCase()}
-                </Text>
-                <Text className="text-sm text-white/80">
-                  {selectedVault.note}
-                </Text>
-              </View>
-            </View>
-            <View
-              className="flex-row gap-4"
-              style={{ flexDirection: 'row', gap: 16 }}
-            >
-              <View className="flex-1" style={{ flex: 1 }}>
-                <Text className="text-sm text-white/80">APY Rate</Text>
-                <Text className="text-lg font-bold text-white">
-                  {selectedVault.apy}
-                </Text>
-              </View>
-              <View className="flex-1" style={{ flex: 1 }}>
-                <Text className="text-sm text-white/80">TVL</Text>
-                <Text className="text-lg font-bold text-white">
-                  {selectedVault.tvl}
-                </Text>
-              </View>
-            </View>
-            <View className="mt-3" style={{ marginTop: 12 }}>
-              <Text className="text-sm text-white/80">Risk Level</Text>
-              <Text className="text-lg font-bold text-white">
-                {selectedVault.risk}
-              </Text>
-            </View>
-          </LinearGradient>
-
-          {/* Features */}
-          <View className="mb-6">
-            <Text className="text-base font-bold text-gray-900 mb-4">
-              Protocol Features:
-            </Text>
-            {[
-              'Flexible access anytime',
-              'Auto-compounding rewards',
-              'Audited smart contracts',
-              '24/7 yield optimization',
-            ].map((feature, index) => (
-              <View key={index} className="flex-row items-center mb-2">
-                <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
-                <Text className="text-sm text-gray-700">{feature}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Balance and input area */}
-          <View className="bg-gray-50 rounded-2xl p-4 mb-6">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-700">Wallet USDC Balance</Text>
-              <View className="items-end">
-                {isLoadingBalance ? (
-                  <Skeleton width={80} height={20} />
-                ) : (
-                  <Text className="text-base font-semibold text-gray-900">
-                    <AnimatedNumber
-                      value={getWalletUSDCBalance()}
-                      style={{
-                        fontSize: 14,
-                      }}
-                      duration={1200}
-                      formatOptions={{
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                        suffix: ' $',
-                      }}
-                    />
-                  </Text>
-                )}
-              </View>
-            </View>
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-sm text-gray-700">
-                {`${selectedVault.protocol.toUpperCase()} Deposited`}
-              </Text>
-              <View className="items-end">
-                {isLoadingBalance ? (
-                  <Skeleton width={60} height={20} />
-                ) : (
-                  <Text className="text-base font-semibold text-gray-900">
-                    {getProtocolDepositAmount().toFixed(2)} $
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-
-          {/* Input field */}
-          <View className="mb-4">
-            <TextInput
-              className="bg-white rounded-xl p-4 text-base border border-gray-200 text-gray-900"
-              value={depositAmount}
-              onChangeText={setDepositAmount}
-              placeholder="Enter USDC amount"
-              keyboardType="decimal-pad"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
-
-          <View className="flex-row gap-3">
-            <TouchableOpacity
-              className={`flex-1 bg-gray-100 rounded-2xl py-4 items-center ${
-                isWithdrawing || isDepositing || isLoadingBalance
-                  ? 'opacity-60'
-                  : ''
-              }`}
-              onPress={handleWithdraw}
-              disabled={isWithdrawing || isDepositing || isLoadingBalance}
-            >
-              {isWithdrawing ? (
-                <ActivityIndicator size="small" color="#374151" />
-              ) : (
-                <Text className="text-base font-semibold text-gray-700">
-                  Withdraw
-                </Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`flex-1 bg-gray-900 rounded-2xl py-4 items-center ${
-                isDepositing || isWithdrawing || isLoadingBalance
-                  ? 'opacity-60'
-                  : ''
-              }`}
-              onPress={handleDeposit}
-              disabled={isDepositing || isWithdrawing || isLoadingBalance}
-            >
-              {isDepositing ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text className="text-base font-semibold text-white">
-                  Start Saving
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
