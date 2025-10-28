@@ -147,6 +147,7 @@
     "dark": "Dark",
     "system": "System",
     "language": "Language",
+    "languageDescription": "Change the app language",
     "currency": "Currency",
     "timezone": "Timezone",
     "notifications": "Notifications",
@@ -159,7 +160,10 @@
     "help": "Help & Support",
     "contactUs": "Contact Us",
     "feedback": "Send Feedback",
-    "rateApp": "Rate App"
+    "rateApp": "Rate App",
+    "account": "Account",
+    "preferences": "Preferences",
+    "support": "Support"
   },
   "errors": {
     "networkError": "Network error. Please check your connection.",

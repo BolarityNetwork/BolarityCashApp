@@ -147,6 +147,7 @@
     "dark": "深色",
     "system": "系统",
     "language": "语言",
+    "languageDescription": "更改应用语言",
     "currency": "货币",
     "timezone": "时区",
     "notifications": "通知",
@@ -159,7 +160,10 @@
     "help": "帮助与支持",
     "contactUs": "联系我们",
     "feedback": "发送反馈",
-    "rateApp": "评价应用"
+    "rateApp": "评价应用",
+    "account": "账户",
+    "preferences": "偏好设置",
+    "support": "支持"
   },
   "errors": {
     "networkError": "网络错误，请检查您的连接。",

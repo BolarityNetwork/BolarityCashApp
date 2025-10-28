@@ -1,13 +1,24 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supportedLanguages, defaultLanguage } from '@/i18n';
+import { supportedLanguages } from '@/i18n';
 
 export const useLanguage = () => {
   const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
 
-  // 初始化时从 AsyncStorage 获取保存的语言
+  useEffect(() => {
+    const handleLanguageChanged = (lng: string) => {
+      setCurrentLanguage(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChanged);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n]);
+
   useEffect(() => {
     const loadSavedLanguage = async () => {
       try {
@@ -16,7 +27,6 @@ export const useLanguage = () => {
           savedLanguage &&
           supportedLanguages.some(lang => lang.code === savedLanguage)
         ) {
-          setCurrentLanguage(savedLanguage);
           i18n.changeLanguage(savedLanguage);
         }
       } catch (error) {
@@ -27,22 +37,15 @@ export const useLanguage = () => {
     loadSavedLanguage();
   }, [i18n]);
 
-  // 切换语言
   const changeLanguage = async (languageCode: string) => {
     try {
-      // 检查语言是否支持
       if (!supportedLanguages.some(lang => lang.code === languageCode)) {
         throw new Error(`Unsupported language: ${languageCode}`);
       }
 
-      // 保存到 AsyncStorage
       await AsyncStorage.setItem('user-language', languageCode);
 
-      // 更新 i18n 语言
       await i18n.changeLanguage(languageCode);
-
-      // 更新本地状态
-      setCurrentLanguage(languageCode);
 
       return true;
     } catch (error) {
@@ -51,7 +54,6 @@ export const useLanguage = () => {
     }
   };
 
-  // 获取当前语言信息
   const getCurrentLanguageInfo = () => {
     return (
       supportedLanguages.find(lang => lang.code === currentLanguage) ||
@@ -59,7 +61,6 @@ export const useLanguage = () => {
     );
   };
 
-  // 获取所有支持的语言
   const getSupportedLanguages = () => supportedLanguages;
 
   return {

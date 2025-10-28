@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import BackBlack from '@/assets/icon/nav/back-black.svg';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { currentLanguageInfo } = useLanguage();
 
   const SettingItem = ({
     title,
@@ -50,7 +54,9 @@ export default function SettingsScreen() {
         >
           <BackBlack />
         </TouchableOpacity>
-        <Text className="text-[17px] font-medium text-gray-900">Settings</Text>
+        <Text className="text-[17px] font-medium text-gray-900">
+          {t('settings.title')}
+        </Text>
         <View className="w-10" />
       </View>
 
@@ -61,7 +67,7 @@ export default function SettingsScreen() {
         {/* Account Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            Account
+            {t('settings.account')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
@@ -91,7 +97,7 @@ export default function SettingsScreen() {
         {/* Preferences Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            Preferences
+            {t('settings.preferences')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
@@ -102,10 +108,10 @@ export default function SettingsScreen() {
               }}
             />
             <SettingItem
-              title="Language"
-              subtitle="English"
+              title={t('settings.language')}
+              subtitle={currentLanguageInfo.name}
               onPress={() => {
-                // Navigate to language selection
+                router.push('/settings/language');
               }}
             />
             <SettingItem
@@ -163,7 +169,7 @@ export default function SettingsScreen() {
         {/* Support Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            Support
+            {t('settings.support')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
