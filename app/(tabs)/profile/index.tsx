@@ -31,10 +31,12 @@ import AddressIcon from '@/assets/icon/profile/address.svg';
 import NotificationIcon from '@/assets/icon/profile/notification.svg';
 import ShareIcon from '@/assets/icon/profile/share.svg';
 import ContactIcon from '@/assets/icon/profile/contact.svg';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfileScreen() {
   const { user: persistedUser, logout } = usePersistedPrivyUser();
   const router = useRouter();
+  const { t } = useTranslation();
   const {
     activeWallet,
     getAvailableNetworks,
@@ -69,73 +71,73 @@ export default function ProfileScreen() {
           profileState={profileState}
         />
 
-        <SettingSection title="Security">
+        <SettingSection title={t('appProfile.security')}>
           <SettingItem
             icon={<KeyIcon />}
-            title="Keys & Recovery"
+            title={t('appProfile.keysAndRecovery')}
             onPress={() => router.push('/settings/keys-recovery')}
           />
           <SettingItem
             icon={<SpendingIcon />}
-            title="Spending Limits"
+            title={t('appProfile.spendingLimits')}
             onPress={() => router.push('/settings/spending-limits')}
           />
           <SettingItem
             icon={<PrivyIcon />}
-            title="Privy relative"
+            title={t('appProfile.privyRelative')}
             onPress={() => router.push('/settings/privy-relative')}
           />
         </SettingSection>
 
         {/* General Section */}
-        <SettingSection title="General">
+        <SettingSection title={t('appProfile.general')}>
           <SettingItem
             icon={<EditIcon />}
-            title="Edit wallet"
+            title={t('appProfile.editWallet')}
             onPress={() => router.push('/settings/edit-wallet')}
           />
           <SettingItem
             icon={<NotificationIcon />}
-            title="Notifications"
+            title={t('appProfile.notifications')}
             onPress={() => router.push('/settings/notifications')}
           />
           <SettingItem
             icon={<AddressIcon />}
-            title="Address book"
+            title={t('appProfile.addressBook')}
             onPress={() => router.push('/settings/address-book')}
           />
           <SettingItem
             icon={<SettingIcon />}
-            title="Setting"
+            title={t('appProfile.setting')}
             onPress={() => router.push('/settings')}
           />
           <SettingItem
             icon={<NftsIcon />}
-            title="NFTs"
+            title={t('appProfile.nfts')}
             onPress={() => router.push('/settings/nfts')}
           />
           <SettingItem
             icon={<NetworkIcon />}
-            title="Network"
+            title={t('appProfile.network')}
             onPress={() => router.push('/settings/network')}
           />
         </SettingSection>
 
         {/* About Section */}
-        <SettingSection title="About">
+        <SettingSection title={t('appProfile.about')}>
           <SettingItem
             icon={<ContactIcon />}
-            title="Contact support"
+            title={t('appProfile.contactSupport')}
             onPress={() => router.push('/settings/contact-support')}
           />
           <SettingItem
             icon={<ShareIcon />}
-            title="Share your feedback"
+            title={t('appProfile.shareFeedback')}
             onPress={() => router.push('/settings/share-feedback')}
           />
           <SettingItem
             icon={<FollowingIcon />}
-            title="Follow @Bolarityxyz"
+            title={t('appProfile.followBolarity')}
             onPress={() => Linking.openURL('https://x.com/Bolarityxyz')}
           />
         </SettingSection>
@@ -148,7 +150,7 @@ export default function ProfileScreen() {
           <View className="flex-row items-center justify-center py-4">
             <SignOutIcon />
             <Text className="ml-2 text-base font-semibold text-red-600">
-              Sign Out
+              {t('appProfile.signOut')}
             </Text>
           </View>
         </TouchableOpacity>

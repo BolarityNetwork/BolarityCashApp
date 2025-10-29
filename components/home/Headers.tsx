@@ -6,6 +6,7 @@ import bolarityLogo from '@/assets/images/icon.png';
 import { router } from 'expo-router';
 import PersonalIcon from '@/assets/icon/common/personal.svg';
 import NotificationIcon from '@/assets/icon/common/notification.svg';
+import { useTranslation } from 'react-i18next';
 interface HeaderProps {
   user: any;
   currentWalletInfo: {
@@ -22,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   currentWalletInfo,
   formatAddress,
 }) => {
+  const { t } = useTranslation();
   return (
     <View className="px-5 pt-3 pb-1.5">
       <View className="flex-row justify-between items-center mb-2">
@@ -38,8 +40,12 @@ const Header: React.FC<HeaderProps> = ({
             )}
           </View>
           <View>
-            <Text className="text-xl font-bold text-gray-900">Bolarity</Text>
-            <Text className="text-sm text-gray-500">DeFi Yield Platform</Text>
+            <Text className="text-xl font-bold text-gray-900">
+              {t('home.appName')}
+            </Text>
+            <Text className="text-sm text-gray-500">
+              {t('home.appSubtitle')}
+            </Text>
           </View>
         </View>
         <View className="flex-row items-center gap-4">
@@ -59,7 +65,9 @@ const Header: React.FC<HeaderProps> = ({
       {/* User Info - 简化版本 */}
       {user && currentWalletInfo.address && (
         <View className="mb-2 px-1">
-          <Text className="text-xs text-gray-500 mb-0.5">Connected as</Text>
+          <Text className="text-xs text-gray-500 mb-0.5">
+            {t('home.connectedAs')}
+          </Text>
           <Text className="text-sm text-gray-900 font-mono font-medium">
             {formatAddress(currentWalletInfo.address)}
           </Text>

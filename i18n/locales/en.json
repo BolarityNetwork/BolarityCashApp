@@ -54,7 +54,16 @@
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "signupSuccess": "Account created successfully",
-    "signupFailed": "Failed to create account"
+    "signupFailed": "Failed to create account",
+    "pageTitle": "Log in or sign up",
+    "continueWithEmail": "your@email.com",
+    "continueWithSMS": "Continue with SMS",
+    "continueWithPasskey": "Continue with Passkey",
+    "continueWithWallet": "Continue with a wallet",
+    "otherOptions": "Other options",
+    "google": "Google",
+    "apple": "Apple",
+    "discord": "Discord"
   },
   "wallet": {
     "balance": "Balance",
@@ -138,6 +147,26 @@
     "analytics": "Analytics",
     "marketing": "Marketing Communications"
   },
+  "appProfile": {
+    "title": "Profile",
+    "security": "Security",
+    "keysAndRecovery": "Keys & Recovery",
+    "spendingLimits": "Spending Limits",
+    "privyRelative": "Privy relative",
+    "general": "General",
+    "editWallet": "Edit wallet",
+    "notifications": "Notifications",
+    "addressBook": "Address book",
+    "setting": "Setting",
+    "nfts": "NFTs",
+    "network": "Network",
+    "about": "About",
+    "contactSupport": "Contact support",
+    "shareFeedback": "Share your feedback",
+    "followBolarity": "Follow @Bolarityxyz",
+    "signOut": "Sign Out",
+    "notConnected": "Not Connected"
+  },
   "settings": {
     "title": "Settings",
     "general": "General",
@@ -191,5 +220,30 @@
     "settingsSaved": "Settings saved successfully",
     "profileUpdated": "Profile updated successfully",
     "passwordChanged": "Password changed successfully"
+  },
+  "home": {
+    "appName": "Bolarity",
+    "appSubtitle": "DeFi Yield Platform",
+    "connectedAs": "Connected as",
+    "notConnected": "Not Connected",
+    "totalPortfolioBalance": "Total Portfolio Balance",
+    "failedToLoadBalance": "Failed to load balance",
+    "yesterday": "yesterday",
+    "cumulativeEarnings": "cumulative earnings",
+    "savingsVaults": "Savings Vaults",
+    "deposit": "Deposit",
+    "currentSavings": "Current Savings",
+    "fixedTermSavings": "Fixed Term Savings",
+    "retry": "Retry",
+    "failedToLoadVaults": "Failed to load vault categories",
+    "noVaultCategoriesAvailable": "No vault categories available",
+    "recentActivity": "Recent Activity",
+    "loadingTransactions": "Loading transactions...",
+    "refresh": "Refresh",
+    "connectWalletToView": "Connect wallet to view transactions",
+    "noTransactionsFound": "No transactions found",
+    "startUsingDefi": "Start using DeFi protocols to see your activity here",
+    "tryAgain": "Try Again",
+    "loadMore": "Load More"
   }
 }

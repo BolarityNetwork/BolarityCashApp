@@ -5,10 +5,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import VaultLogo from './VaultLogo';
 import { CategoryInfo, useVaultCategories } from '@/api/vault';
 import Skeleton from '../common/Skeleton';
+import { useTranslation } from 'react-i18next';
 
 const VaultList: React.FC<{
   handleVaultPress: (category: CategoryInfo) => void;
 }> = ({ handleVaultPress }) => {
+  const { t } = useTranslation();
   // Fetch vault categories from API
   const {
     data: categories,
@@ -33,7 +35,7 @@ const VaultList: React.FC<{
     return (
       <View className="px-6 mb-8 mt-4">
         <Text className="text-xl font-bold text-gray-900 mb-4">
-          Savings Vaults
+          {t('home.savingsVaults')}
         </Text>
         <View className="gap-4">
           {/* Render 2 skeleton cards */}
@@ -86,18 +88,20 @@ const VaultList: React.FC<{
       <View className="px-6 mb-8 mt-4">
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-xl font-bold text-gray-900">
-            Savings Vaults
+            {t('home.savingsVaults')}
           </Text>
           <TouchableOpacity
             onPress={() => refetch()}
             className="bg-red-500 px-3 py-1.5 rounded-2xl"
           >
-            <Text className="text-xs text-white font-semibold">Retry</Text>
+            <Text className="text-xs text-white font-semibold">
+              {t('home.retry')}
+            </Text>
           </TouchableOpacity>
         </View>
         <View className="items-center justify-center py-10">
           <Text className="text-sm text-red-500">
-            Failed to load vault categories
+            {t('home.failedToLoadVaults')}
           </Text>
         </View>
       </View>
@@ -108,11 +112,11 @@ const VaultList: React.FC<{
     return (
       <View className="px-6 mb-8 mt-4">
         <Text className="text-xl font-bold text-gray-900 mb-4">
-          Savings Vaults
+          {t('home.savingsVaults')}
         </Text>
         <View className="items-center justify-center py-10">
           <Text className="text-sm text-gray-500">
-            No vault categories available
+            {t('home.noVaultCategoriesAvailable')}
           </Text>
         </View>
       </View>
@@ -133,7 +137,7 @@ const VaultList: React.FC<{
   return (
     <View className="px-6 mb-8 mt-4">
       <Text className="text-xl font-bold text-gray-900 mb-4">
-        Savings Vaults
+        {t('home.savingsVaults')}
       </Text>
       <View className="gap-4">
         {categories.map(category => (
@@ -186,14 +190,14 @@ const VaultList: React.FC<{
                     <Text className="text-xs text-gray-500">Type</Text>
                     <Text className="text-sm font-semibold text-gray-900">
                       {category.id === 'flexi'
-                        ? 'Current Savings'
-                        : 'Fixed Term Savings'}
+                        ? t('home.currentSavings')
+                        : t('home.fixedTermSavings')}
                     </Text>
                   </View>
                 </View>
                 <View className="bg-gray-900 px-6 py-2 rounded-2xl">
                   <Text className="text-sm font-semibold text-white">
-                    Deposit
+                    {t('home.deposit')}
                   </Text>
                 </View>
               </View>

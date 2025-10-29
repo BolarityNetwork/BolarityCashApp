@@ -20,6 +20,7 @@ import EmailIcon from '@/assets/icon/login/email.svg';
 import SmsIcon from '@/assets/icon/login/sms.svg';
 import { usePrivy } from '@privy-io/expo';
 import { useFullScreenLoading } from '@/hooks/useFullScreenLoading';
+import { useTranslation } from 'react-i18next';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -47,6 +48,7 @@ export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]['name'];
 export default function LoginScreen() {
   const { isReady, error: privyError } = usePrivy();
   const { startLoading, endLoading } = useFullScreenLoading({});
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     if (!isReady) {
@@ -94,7 +96,7 @@ export default function LoginScreen() {
 
           <View className="py-6 px-6 bg-gray-50">
             <Text className="text-sm text-gray-500 font-medium text-center">
-              Other options
+              {t('auth.otherOptions')}
             </Text>
           </View>
 
@@ -117,6 +119,7 @@ export default function LoginScreen() {
 }
 
 function Header() {
+  const { t } = useTranslation();
   return (
     <View className="items-center mb-16">
       <View className="flex-row items-center mb-6">
@@ -130,13 +133,14 @@ function Header() {
         </Text>
       </View>
       <Text className="text-xl font-medium text-gray-600 text-center tracking-wide">
-        Log in or sign up
+        {t('auth.pageTitle')}
       </Text>
     </View>
   );
 }
 
 function PrimaryActions({ isLoading, onEmailLogin }: any) {
+  const { t } = useTranslation();
   return (
     <View className="p-0">
       <TouchableOpacity
@@ -147,10 +151,10 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         <View className="flex-row items-center flex-1">
           <EmailIcon />
           <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            your@email.com
+            {t('auth.continueWithEmail')}
           </Text>
         </View>
-        <Text className="text-lg text-gray-400">Submit</Text>
+        <Text className="text-lg text-gray-400">{t('common.submit')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -163,7 +167,7 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         <View className="flex-row items-center flex-1">
           <SmsIcon />
           <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            Continue with SMS
+            {t('auth.continueWithSMS')}
           </Text>
         </View>
         <Text className="text-lg text-gray-400">›</Text>
@@ -178,6 +182,7 @@ function OAuthSection({
   onProviderSelect,
   onPasskeyLogin,
 }: any) {
+  const { t } = useTranslation();
   const renderProviderIcon = (providerName: string) => {
     switch (providerName) {
       case 'google':
@@ -195,6 +200,13 @@ function OAuthSection({
     }
   };
 
+  const getProviderLabel = (providerName: string) => {
+    if (providerName === 'google') return t('auth.google');
+    if (providerName === 'apple') return t('auth.apple');
+    if (providerName === 'discord') return t('auth.discord');
+    return providerName;
+  };
+
   return (
     <View className="bg-white">
       {providers.map((provider: any) => (
@@ -207,7 +219,7 @@ function OAuthSection({
           <View className="flex-row items-center">
             {renderProviderIcon(provider.name)}
             <Text className="ml-3 text-base font-medium text-gray-900">
-              {provider.label}
+              {getProviderLabel(provider.name)}
             </Text>
           </View>
           <Text className="text-lg text-gray-400">›</Text>
@@ -222,7 +234,7 @@ function OAuthSection({
         <View className="flex-row items-center flex-1">
           <PasskeyIcon />
           <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            Continue with Passkey
+            {t('auth.continueWithPasskey')}
           </Text>
         </View>
         <Text className="text-lg text-gray-400">›</Text>
@@ -232,7 +244,7 @@ function OAuthSection({
         <View className="flex-row items-center flex-1">
           <WalletIcon />
           <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            Continue with a wallet
+            {t('auth.continueWithWallet')}
           </Text>
         </View>
         <Text className="text-lg text-gray-400">›</Text>

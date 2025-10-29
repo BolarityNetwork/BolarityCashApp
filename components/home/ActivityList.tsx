@@ -12,10 +12,12 @@ import {
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
 import SentIcon from '@/assets/icon/transaction/sent.png';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 
 interface ActivityListProps {}
 
 const ActivityList: React.FC<ActivityListProps> = () => {
+  const { t } = useTranslation();
   const {
     formattedTransactions,
     isLoading,
@@ -31,11 +33,11 @@ const ActivityList: React.FC<ActivityListProps> = () => {
     return (
       <View style={styles.activitySection}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={styles.sectionTitle}>{t('home.recentActivity')}</Text>
         </View>
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateText}>
-            Connect wallet to view transactions
+            {t('home.connectWalletToView')}
           </Text>
         </View>
       </View>
@@ -47,9 +49,9 @@ const ActivityList: React.FC<ActivityListProps> = () => {
     return (
       <View style={styles.activitySection}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={styles.sectionTitle}>{t('home.recentActivity')}</Text>
           <TouchableOpacity onPress={refreshTransactions}>
-            <Text style={styles.sectionAction}>Retry</Text>
+            <Text style={styles.sectionAction}>{t('home.retry')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.errorState}>
@@ -58,7 +60,7 @@ const ActivityList: React.FC<ActivityListProps> = () => {
             style={styles.retryButton}
             onPress={refreshTransactions}
           >
-            <Text style={styles.retryButtonText}>Try Again</Text>
+            <Text style={styles.retryButtonText}>{t('home.tryAgain')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -67,10 +69,10 @@ const ActivityList: React.FC<ActivityListProps> = () => {
   return (
     <View style={styles.activitySection}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
+        <Text style={styles.sectionTitle}>{t('home.recentActivity')}</Text>
         <TouchableOpacity onPress={refreshTransactions}>
           <Text style={styles.sectionAction}>
-            {isLoading ? 'Loading...' : 'Refresh'}
+            {isLoading ? t('home.loadingTransactions') : t('home.refresh')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -79,13 +81,17 @@ const ActivityList: React.FC<ActivityListProps> = () => {
       {isLoading && formattedTransactions.length === 0 ? (
         <View style={styles.loadingState}>
           <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>Loading transactions...</Text>
+          <Text style={styles.loadingText}>
+            {t('home.loadingTransactions')}
+          </Text>
         </View>
       ) : formattedTransactions.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>No transactions found</Text>
+          <Text style={styles.emptyStateText}>
+            {t('home.noTransactionsFound')}
+          </Text>
           <Text style={styles.emptyStateSubtext}>
-            Start using DeFi protocols to see your activity here
+            {t('home.startUsingDefi')}
           </Text>
         </View>
       ) : (
@@ -153,7 +159,7 @@ const ActivityList: React.FC<ActivityListProps> = () => {
               {isLoading ? (
                 <ActivityIndicator size="small" color="#059669" />
               ) : (
-                <Text style={styles.loadMoreText}>Load More</Text>
+                <Text style={styles.loadMoreText}>{t('home.loadMore')}</Text>
               )}
             </TouchableOpacity>
           )}

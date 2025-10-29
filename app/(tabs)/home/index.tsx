@@ -4,6 +4,7 @@ import { View, ScrollView, StatusBar, Animated } from 'react-native';
 import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
 import { useUserRegistration } from '@/hooks/useUserRegistration';
+import { useTranslation } from 'react-i18next';
 
 // Import Components
 import Header from '@/components/home/Headers';
@@ -107,8 +108,10 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     setShowDepositModal(true);
   };
 
+  const { t } = useTranslation();
+
   const formatAddress = (address: string) => {
-    if (!address) return 'Not Connected';
+    if (!address) return t('home.notConnected');
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -123,7 +126,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
     }
     return {
       address: null,
-      type: 'Not Connected',
+      type: t('home.notConnected'),
       icon: '💼',
       network: 'N/A',
     };

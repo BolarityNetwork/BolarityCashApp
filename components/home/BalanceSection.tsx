@@ -5,6 +5,7 @@ import { useUserBalances } from '@/api/account';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import useAppRefresh from '@/hooks/useAppRefresh';
+import { useTranslation } from 'react-i18next';
 
 interface BalanceSectionProps {
   address: string;
@@ -14,6 +15,7 @@ interface BalanceSectionProps {
 }
 
 const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
+  const { t } = useTranslation();
   const {
     data: balancesData,
     isLoading,
@@ -49,7 +51,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
       <View className="px-6 py-4">
         <View className="mb-3">
           <Text className="text-sm text-gray-500 mb-3">
-            Total Portfolio Balance
+            {t('home.totalPortfolioBalance')}
           </Text>
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
@@ -70,10 +72,12 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
       <View className="px-6 py-4">
         <View className="mb-3">
           <Text className="text-sm text-gray-500 mb-3">
-            Total Portfolio Balance
+            {t('home.totalPortfolioBalance')}
           </Text>
           <View className="items-center justify-center py-8">
-            <Text className="text-sm text-red-500">Failed to load balance</Text>
+            <Text className="text-sm text-red-500">
+              {t('home.failedToLoadBalance')}
+            </Text>
           </View>
         </View>
       </View>
@@ -84,7 +88,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
     <View className="px-6 py-4">
       <View className="mb-3">
         <Text className="text-sm text-gray-500 mb-3">
-          Total Portfolio Balance
+          {t('home.totalPortfolioBalance')}
         </Text>
         <View className="flex-row justify-between items-start">
           <View className="flex-1">
@@ -119,7 +123,9 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
                     prefix: '+$',
                   }}
                 />
-                <Text className="text-sm text-gray-500">yesterday</Text>
+                <Text className="text-sm text-gray-500">
+                  {t('home.yesterday')}
+                </Text>
               </View>
               {/* Cumulative earning */}
               <View className="flex-row items-center gap-1.5">
@@ -138,7 +144,7 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
                   }}
                 />
                 <Text className="text-sm text-gray-500">
-                  cumulative earnings
+                  {t('home.cumulativeEarnings')}
                 </Text>
               </View>
             </View>

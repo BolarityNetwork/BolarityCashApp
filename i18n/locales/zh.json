@@ -54,7 +54,16 @@
     "loginSuccess": "登录成功",
     "loginFailed": "登录失败",
     "signupSuccess": "账户创建成功",
-    "signupFailed": "账户创建失败"
+    "signupFailed": "账户创建失败",
+    "pageTitle": "登录或注册",
+    "continueWithEmail": "your@email.com",
+    "continueWithSMS": "通过短信继续",
+    "continueWithPasskey": "通过 Passkey 继续",
+    "continueWithWallet": "通过钱包继续",
+    "otherOptions": "其他选项",
+    "google": "Google",
+    "apple": "Apple",
+    "discord": "Discord"
   },
   "wallet": {
     "balance": "余额",
@@ -138,6 +147,26 @@
     "analytics": "分析",
     "marketing": "营销通讯"
   },
+  "appProfile": {
+    "title": "个人资料",
+    "security": "安全",
+    "keysAndRecovery": "密钥与恢复",
+    "spendingLimits": "消费限额",
+    "privyRelative": "Privy 相关",
+    "general": "常规",
+    "editWallet": "编辑钱包",
+    "notifications": "通知",
+    "addressBook": "通讯录",
+    "setting": "设置",
+    "nfts": "NFTs",
+    "network": "网络",
+    "about": "关于",
+    "contactSupport": "联系支持",
+    "shareFeedback": "分享反馈",
+    "followBolarity": "关注 @Bolarityxyz",
+    "signOut": "退出登录",
+    "notConnected": "未连接"
+  },
   "settings": {
     "title": "设置",
     "general": "通用",
@@ -191,5 +220,30 @@
     "settingsSaved": "设置保存成功",
     "profileUpdated": "个人资料更新成功",
     "passwordChanged": "密码修改成功"
+  },
+  "home": {
+    "appName": "Bolarity",
+    "appSubtitle": "DeFi Yield Platform",
+    "connectedAs": "已连接",
+    "notConnected": "未连接",
+    "totalPortfolioBalance": "投资组合总余额",
+    "failedToLoadBalance": "加载余额失败",
+    "yesterday": "昨日",
+    "cumulativeEarnings": "累计收益",
+    "savingsVaults": "储蓄金库",
+    "deposit": "存入",
+    "currentSavings": "活期储蓄",
+    "fixedTermSavings": "定期储蓄",
+    "retry": "重试",
+    "failedToLoadVaults": "加载金库失败",
+    "noVaultCategoriesAvailable": "暂无可用金库类别",
+    "recentActivity": "最近活动",
+    "loadingTransactions": "加载交易中...",
+    "refresh": "刷新",
+    "connectWalletToView": "连接钱包以查看交易",
+    "noTransactionsFound": "未找到交易",
+    "startUsingDefi": "开始使用 DeFi 协议以在此处查看您的活动",
+    "tryAgain": "重试",
+    "loadMore": "加载更多"
   }
 }
