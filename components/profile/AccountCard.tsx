@@ -8,6 +8,7 @@ import { formatAddress } from '@/utils/profile';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import RefreshIcon from '@/assets/icon/common/refresh.svg';
 import Skeleton from '../common/Skeleton';
+import { useTranslation } from 'react-i18next';
 interface AccountCardProps {
   address: string;
   profileState?: any;
@@ -17,6 +18,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   address,
   profileState: _profileState,
 }) => {
+  const { t } = useTranslation();
   const [showWalletSwitchModal, setShowWalletSwitchModal] = useState(false);
   const { activeWallet } = useMultiChainWallet();
   const {
@@ -48,7 +50,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-1">
           <Text className="text-lg font-bold text-slate-800">
-            Portfolio Balances
+            {t('appProfile.portfolioBalances')}
           </Text>
           <TouchableOpacity
             onPress={() => setShowWalletSwitchModal(true)}
@@ -78,7 +80,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           {isLoading ? (
             <Skeleton width={100} height={24} borderRadius={12} />
           ) : isError ? (
-            <Text className="text-2xl font-bold text-red-500">Error</Text>
+            <Text className="text-2xl font-bold text-red-500">
+              {t('appProfile.error')}
+            </Text>
           ) : (
             <AnimatedNumber
               value={totalBalance}
@@ -95,7 +99,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
             />
           )}
-          <Text className="text-sm text-slate-500">Total Balance</Text>
+          <Text className="text-sm text-slate-500">
+            {t('appProfile.totalBalance')}
+          </Text>
         </View>
       </View>
 
@@ -105,7 +111,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       {/* Balance Breakdown */}
       <View className="flex-row justify-between mb-4">
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">Saving</Text>
+          <Text className="text-sm text-slate-500 mb-1">
+            {t('appProfile.saving')}
+          </Text>
           <AnimatedNumber
             value={depositsTotal}
             style={{
@@ -122,7 +130,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           />
         </View>
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">Cash</Text>
+          <Text className="text-sm text-slate-500 mb-1">
+            {t('appProfile.cash')}
+          </Text>
           <AnimatedNumber
             value={cashTotal}
             style={{
@@ -139,7 +149,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           />
         </View>
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">Protocols</Text>
+          <Text className="text-sm text-slate-500 mb-1">
+            {t('appProfile.protocols')}
+          </Text>
           <Text className="text-lg font-bold text-slate-800">
             {protocolsCount}
           </Text>
@@ -152,13 +164,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       {/* Protocol Breakdown */}
       <View className="mb-4">
         <Text className="text-sm font-medium text-slate-600 mb-3">
-          Protocol
+          {t('appProfile.protocol')}
         </Text>
         <View className="space-y-2">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
-              <Text className="text-sm text-slate-700">Aave</Text>
+              <Text className="text-sm text-slate-700">
+                {t('appProfile.aave')}
+              </Text>
             </View>
             <AnimatedNumber
               value={aaveBalance}
@@ -178,7 +192,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-              <Text className="text-sm text-slate-700">Compound</Text>
+              <Text className="text-sm text-slate-700">
+                {t('appProfile.compound')}
+              </Text>
             </View>
             <AnimatedNumber
               value={compoundBalance}
@@ -198,7 +214,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-purple-500 mr-2" />
-              <Text className="text-sm text-slate-700">Pendle</Text>
+              <Text className="text-sm text-slate-700">
+                {t('appProfile.pendle')}
+              </Text>
             </View>
             <AnimatedNumber
               value={pendleBalance}
@@ -223,12 +241,16 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 
       {/* ETH and Stablecoin Balance */}
       <View className="mb-4">
-        <Text className="text-sm font-medium text-slate-600 mb-3">Asset</Text>
+        <Text className="text-sm font-medium text-slate-600 mb-3">
+          {t('appProfile.asset')}
+        </Text>
         <View className="space-y-2">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
-              <Text className="text-sm text-slate-700">ETH</Text>
+              <Text className="text-sm text-slate-700">
+                {t('appProfile.eth')}
+              </Text>
             </View>
             <View className="flex items-end">
               <AnimatedNumber
@@ -249,7 +271,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-teal-500 mr-2" />
-              <Text className="text-sm text-slate-700">Stablecoins</Text>
+              <Text className="text-sm text-slate-700">
+                {t('appProfile.stablecoins')}
+              </Text>
             </View>
             <AnimatedNumber
               value={totalStablecoins}

@@ -4,6 +4,7 @@ import React, { useCallback, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TakoToast } from '@/components/common/TakoToast';
+import { useTranslation } from 'react-i18next';
 
 interface ActionModalProps {
   onReceivePress?: () => void;
@@ -14,6 +15,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
   onReceivePress,
   onTransferPress,
 }) => {
+  const { t } = useTranslation();
   const modal = useModal();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -41,38 +43,38 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
       TakoToast.show({
         type: 'normal',
         status: 'info',
-        message: `${feature} coming soon!`,
+        message: `${feature} ${t('actions.comingSoon')}`,
       });
       handleClose();
     },
-    [handleClose]
+    [handleClose, t]
   );
 
   const actions = [
     {
       id: 'deposit',
-      title: 'Deposit',
+      title: t('actions.deposit'),
       icon: 'wallet' as const,
       color: 'bg-black',
-      onPress: () => handleComingSoon('Deposit'),
+      onPress: () => handleComingSoon(t('actions.deposit')),
     },
     {
       id: 'portfolio',
-      title: 'Portfolio',
+      title: t('actions.portfolio'),
       icon: 'trending-up' as const,
       color: 'bg-black',
-      onPress: () => handleComingSoon('Portfolio'),
+      onPress: () => handleComingSoon(t('actions.portfolio')),
     },
     {
       id: 'actions',
-      title: 'Actions',
+      title: t('actions.actions'),
       icon: 'add-circle' as const,
       color: 'bg-black',
       onPress: handleClose,
     },
     {
       id: 'receive',
-      title: 'Receive',
+      title: t('actions.receive'),
       icon: 'arrow-down' as const,
       color: 'bg-black',
       onPress: () => {
@@ -86,7 +88,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
     },
     {
       id: 'transfer',
-      title: 'Transfer',
+      title: t('actions.transfer'),
       icon: 'arrow-up' as const,
       color: 'bg-black',
       onPress: () => {
@@ -189,7 +191,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                   <Icon name="trending-up" size={22} color="white" />
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
-                  Portfolio
+                  {actions.find(a => a.id === 'portfolio')?.title}
                 </Text>
               </View>
 
@@ -208,7 +210,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                   <Icon name="wallet" size={22} color="white" />
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
-                  Deposit
+                  {actions.find(a => a.id === 'deposit')?.title}
                 </Text>
               </View>
             </View>
@@ -229,7 +231,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                   <Icon name="arrow-up" size={22} color="white" />
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
-                  Transfer
+                  {actions.find(a => a.id === 'transfer')?.title}
                 </Text>
               </View>
               <View className="items-center">
@@ -247,7 +249,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                   <Icon name="add" size={22} color="white" />
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
-                  Actions
+                  {actions.find(a => a.id === 'actions')?.title}
                 </Text>
               </View>
 
@@ -266,7 +268,7 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
                   <Icon name="arrow-down" size={22} color="white" />
                 </TouchableOpacity>
                 <Text className="text-xs text-gray-600 font-medium text-center">
-                  Receive
+                  {actions.find(a => a.id === 'receive')?.title}
                 </Text>
               </View>
             </View>

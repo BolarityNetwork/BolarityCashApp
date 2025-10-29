@@ -31,7 +31,8 @@
     "wallet": "钱包",
     "vaults": "金库",
     "activity": "活动",
-    "portfolio": "投资组合"
+    "portfolio": "投资组合",
+    "actions": "操作"
   },
   "auth": {
     "login": "登录",
@@ -165,7 +166,20 @@
     "shareFeedback": "分享反馈",
     "followBolarity": "关注 @Bolarityxyz",
     "signOut": "退出登录",
-    "notConnected": "未连接"
+    "notConnected": "未连接",
+    "portfolioBalances": "投资组合余额",
+    "totalBalance": "总余额",
+    "saving": "储蓄",
+    "cash": "现金",
+    "protocols": "协议",
+    "protocol": "协议",
+    "asset": "资产",
+    "eth": "ETH",
+    "stablecoins": "稳定币",
+    "aave": "Aave",
+    "compound": "Compound",
+    "pendle": "Pendle",
+    "error": "错误"
   },
   "settings": {
     "title": "设置",
@@ -192,7 +206,22 @@
     "rateApp": "评价应用",
     "account": "账户",
     "preferences": "偏好设置",
-    "support": "支持"
+    "support": "支持",
+    "profileInformation": "个人资料信息",
+    "managePersonalDetails": "管理您的个人资料",
+    "passwordAndSecurity": "密码、双重认证和安全设置",
+    "walletSettings": "钱包设置",
+    "manageConnectedWallets": "管理已连接的钱包",
+    "pushNotificationsAndAlerts": "推送通知和提醒",
+    "privacyAndSecurity": "隐私和安全",
+    "darkMode": "深色模式",
+    "appVersion": "应用版本",
+    "helpCenter": "帮助中心",
+    "contactSupport": "联系支持",
+    "reportBug": "报告问题",
+    "openSourceLicenses": "开源许可",
+    "dataExport": "数据导出",
+    "downloadYourData": "下载您的数据"
   },
   "errors": {
     "networkError": "网络错误，请检查您的连接。",
@@ -245,5 +274,13 @@
     "startUsingDefi": "开始使用 DeFi 协议以在此处查看您的活动",
     "tryAgain": "重试",
     "loadMore": "加载更多"
+  },
+  "actions": {
+    "deposit": "存入",
+    "portfolio": "投资组合",
+    "actions": "操作",
+    "receive": "接收",
+    "transfer": "转账",
+    "comingSoon": "即将推出"
   }
 }

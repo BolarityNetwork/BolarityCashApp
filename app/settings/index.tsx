@@ -71,22 +71,22 @@ export default function SettingsScreen() {
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title="Profile Information"
-              subtitle="Manage your personal details"
+              title={t('settings.profileInformation')}
+              subtitle={t('settings.managePersonalDetails')}
               onPress={() => {
                 // Navigate to profile edit
               }}
             />
             <SettingItem
-              title="Security"
-              subtitle="Password, 2FA, and security settings"
+              title={t('settings.security')}
+              subtitle={t('settings.passwordAndSecurity')}
               onPress={() => {
                 // Navigate to security settings
               }}
             />
             <SettingItem
-              title="Wallet Settings"
-              subtitle="Manage connected wallets"
+              title={t('settings.walletSettings')}
+              subtitle={t('settings.manageConnectedWallets')}
               onPress={() => {
                 // Navigate to wallet settings
               }}
@@ -101,8 +101,8 @@ export default function SettingsScreen() {
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title="Notifications"
-              subtitle="Push notifications and alerts"
+              title={t('settings.notifications')}
+              subtitle={t('settings.pushNotificationsAndAlerts')}
               onPress={() => {
                 // Navigate to notification settings
               }}
@@ -115,14 +115,14 @@ export default function SettingsScreen() {
               }}
             />
             <SettingItem
-              title="Theme"
-              subtitle="Light mode"
+              title={t('settings.theme')}
+              subtitle={t('settings.light')}
               onPress={() => {
                 // Navigate to theme selection
               }}
             />
             <SettingItem
-              title="Dark Mode"
+              title={t('settings.darkMode')}
               rightComponent={
                 <Switch
                   value={false}
@@ -141,24 +141,24 @@ export default function SettingsScreen() {
         {/* Privacy & Security Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            Privacy & Security
+            {t('settings.privacyAndSecurity')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title="Privacy Policy"
+              title={t('settings.privacyPolicy')}
               onPress={() => {
                 // Open privacy policy
               }}
             />
             <SettingItem
-              title="Terms of Service"
+              title={t('settings.termsOfService')}
               onPress={() => {
                 // Open terms of service
               }}
             />
             <SettingItem
-              title="Data Export"
-              subtitle="Download your data"
+              title={t('settings.dataExport')}
+              subtitle={t('settings.downloadYourData')}
               onPress={() => {
                 // Handle data export
               }}
@@ -173,19 +173,19 @@ export default function SettingsScreen() {
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title="Help Center"
+              title={t('settings.helpCenter')}
               onPress={() => {
                 // Open help center
               }}
             />
             <SettingItem
-              title="Contact Support"
+              title={t('settings.contactSupport')}
               onPress={() => {
                 // Open contact support
               }}
             />
             <SettingItem
-              title="Report a Bug"
+              title={t('settings.reportBug')}
               onPress={() => {
                 // Open bug report
               }}
@@ -196,16 +196,16 @@ export default function SettingsScreen() {
         {/* About Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            About
+            {t('settings.about')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title="App Version"
+              title={t('settings.appVersion')}
               subtitle="1.0.0"
               showArrow={false}
             />
             <SettingItem
-              title="Open Source Licenses"
+              title={t('settings.openSourceLicenses')}
               onPress={() => {
                 // Open licenses
               }}

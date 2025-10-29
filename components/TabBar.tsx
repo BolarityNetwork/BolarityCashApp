@@ -15,7 +15,7 @@ export const TabBar: FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
-  const { t: _t } = useTranslation();
+  const { t } = useTranslation();
   const routeNameArr = ['home', 'actions', 'profile'];
   const insets = useSafeAreaInsets();
 
@@ -78,7 +78,7 @@ export const TabBar: FC<BottomTabBarProps> = ({
                   <Icon name="add" size={16} color="white" />
                 </View>
                 <Text className="text-xs mt-1 text-black font-semibold">
-                  Actions
+                  {t('navigation.actions')}
                 </Text>
               </Pressable>
             );
@@ -105,7 +105,9 @@ export const TabBar: FC<BottomTabBarProps> = ({
                     isFocused ? 'text-black font-semibold' : 'text-gray-400'
                   }`}
                 >
-                  {route.name === 'home' ? 'Home' : 'Profile'}
+                  {route.name === 'home'
+                    ? t('navigation.home')
+                    : t('navigation.profile')}
                 </Text>
               </View>
             </Pressable>

@@ -31,7 +31,8 @@
     "wallet": "Wallet",
     "vaults": "Vaults",
     "activity": "Activity",
-    "portfolio": "Portfolio"
+    "portfolio": "Portfolio",
+    "actions": "Actions"
   },
   "auth": {
     "login": "Login",
@@ -165,7 +166,20 @@
     "shareFeedback": "Share your feedback",
     "followBolarity": "Follow @Bolarityxyz",
     "signOut": "Sign Out",
-    "notConnected": "Not Connected"
+    "notConnected": "Not Connected",
+    "portfolioBalances": "Portfolio Balances",
+    "totalBalance": "Total Balance",
+    "saving": "Saving",
+    "cash": "Cash",
+    "protocols": "Protocols",
+    "protocol": "Protocol",
+    "asset": "Asset",
+    "eth": "ETH",
+    "stablecoins": "Stablecoins",
+    "aave": "Aave",
+    "compound": "Compound",
+    "pendle": "Pendle",
+    "error": "Error"
   },
   "settings": {
     "title": "Settings",
@@ -192,7 +206,22 @@
     "rateApp": "Rate App",
     "account": "Account",
     "preferences": "Preferences",
-    "support": "Support"
+    "support": "Support",
+    "profileInformation": "Profile Information",
+    "managePersonalDetails": "Manage your personal details",
+    "passwordAndSecurity": "Password, 2FA, and security settings",
+    "walletSettings": "Wallet Settings",
+    "manageConnectedWallets": "Manage connected wallets",
+    "pushNotificationsAndAlerts": "Push notifications and alerts",
+    "privacyAndSecurity": "Privacy & Security",
+    "darkMode": "Dark Mode",
+    "appVersion": "App Version",
+    "helpCenter": "Help Center",
+    "contactSupport": "Contact Support",
+    "reportBug": "Report a Bug",
+    "openSourceLicenses": "Open Source Licenses",
+    "dataExport": "Data Export",
+    "downloadYourData": "Download your data"
   },
   "errors": {
     "networkError": "Network error. Please check your connection.",
@@ -245,5 +274,13 @@
     "startUsingDefi": "Start using DeFi protocols to see your activity here",
     "tryAgain": "Try Again",
     "loadMore": "Load More"
+  },
+  "actions": {
+    "deposit": "Deposit",
+    "portfolio": "Portfolio",
+    "actions": "Actions",
+    "receive": "Receive",
+    "transfer": "Transfer",
+    "comingSoon": "Coming soon!"
   }
 }

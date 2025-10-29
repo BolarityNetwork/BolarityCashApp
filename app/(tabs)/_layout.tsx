@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import { TabBar } from '@/components/TabBar';
+import { useTranslation } from 'react-i18next';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{ tabBarActiveTintColor: 'blue', headerShown: false }}
@@ -10,7 +13,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: t('navigation.home'),
           tabBarStyle: {
             backgroundColor: 'transparent',
           },
@@ -19,7 +22,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="actions"
         options={{
-          title: 'Actions',
+          title: t('navigation.actions'),
           tabBarStyle: {
             backgroundColor: 'transparent',
           },
@@ -28,7 +31,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('navigation.profile'),
           tabBarStyle: {
             backgroundColor: 'transparent',
           },
