@@ -1,14 +1,14 @@
-// hooks/useAppReady.ts
 import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { getLocales } from 'expo-localization';
 import {
   Inter_400Regular,
   Inter_500Medium,
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supportedLanguages, defaultLanguage } from '@/i18n';
+import { supportedLanguages, defaultLanguage, Language } from '@/i18n';
 import i18n from '@/i18n';
 
 export function useAppReady() {
@@ -23,16 +23,25 @@ export function useAppReady() {
     const loadLanguage = async () => {
       try {
         const savedLanguage = await AsyncStorage.getItem('user-language');
+        const deviceLocales = getLocales();
         if (
           savedLanguage &&
           supportedLanguages.some(lang => lang.code === savedLanguage)
         ) {
           await i18n.changeLanguage(savedLanguage);
+          setLanguageLoaded(true);
+          return;
+        }
+
+        const deviceLanguageCode = deviceLocales?.[0]?.languageCode;
+
+        if (deviceLanguageCode?.toLowerCase().startsWith('zh')) {
+          await i18n.changeLanguage(Language.CN);
         } else {
           await i18n.changeLanguage(defaultLanguage);
         }
       } catch (error) {
-        console.warn('Failed to load saved language:', error);
+        console.warn('Failed to load language:', error);
         await i18n.changeLanguage(defaultLanguage);
       } finally {
         setLanguageLoaded(true);
