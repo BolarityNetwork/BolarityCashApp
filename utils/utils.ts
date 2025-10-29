@@ -230,6 +230,68 @@ export function truncateText(text: string, maxLength: number): string {
   return text.slice(0, maxLength) + '…';
 }
 
+/**
+ * Formats a number to a compact string representation (max ~3-4 characters)
+ * Examples: 0.00, 12.0, 123, 1.0k, 1.0m, etc.
+ *
+ * @param value - The number to format
+ * @returns Formatted string representation
+ */
+export function formatCompactNumber(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+
+  // Handle zero
+  if (abs === 0) {
+    return '0.00';
+  }
+
+  // Less than 1: show 2 decimal places (e.g., 0.00, 0.12)
+  if (abs < 1) {
+    return `${sign}${abs.toFixed(2)}`;
+  }
+
+  // 1-10: show 1 decimal place (e.g., 1.0, 9.5)
+  if (abs < 10) {
+    return `${sign}${abs.toFixed(2)}`;
+  }
+
+  // 10-100: show 1 decimal place (e.g., 12.0, 99.5)
+  if (abs < 100) {
+    return `${sign}${abs.toFixed(1)}`;
+  }
+
+  // 100-999: show integer (e.g., 123)
+  if (abs < 1000) {
+    return `${sign}${Math.round(abs)}`;
+  }
+
+  // 1000+: use suffix notation (k, m, b, t)
+  const SUFFIXES = ['k', 'm', 'b', 't'];
+  let unitIndex = -1;
+  let scaled = abs;
+
+  while (scaled >= 1000 && unitIndex < SUFFIXES.length - 1) {
+    scaled /= 1000;
+    unitIndex += 1;
+  }
+
+  // Format the scaled number
+  let rounded: string;
+  if (scaled >= 100) {
+    // >= 100: show as integer (e.g., 100k, 999k)
+    rounded = Math.round(scaled).toString();
+  } else if (scaled >= 10) {
+    // 10-99.9: show 1 decimal place (e.g., 12.5k)
+    rounded = scaled.toFixed(1);
+  } else {
+    // 1-9.9: show 1 decimal place (e.g., 1.5k)
+    rounded = scaled.toFixed(1);
+  }
+
+  return `${sign}${rounded}${SUFFIXES[unitIndex]}`;
+}
+
 export const fetchDeviceUniqueId = async () => {
   try {
     const storedUUID = await AsyncStorage.getItem(LocalStorageEnum.DeviceUUID);

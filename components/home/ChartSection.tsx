@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import useAppRefresh from '@/hooks/useAppRefresh';
+import { formatCompactNumber } from '@/utils/utils';
 
 interface ChartSectionProps {
   selectedPeriod?: 'daily' | 'monthly' | 'yearly';
@@ -201,7 +202,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                         },
                       ]}
                     >
-                      ${dataPoint.reward.toFixed(2)}
+                      ${formatCompactNumber(Number(dataPoint.reward))}
                     </Text>
                   </View>
                 </View>
