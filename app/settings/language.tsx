@@ -58,7 +58,6 @@ export default function LanguageScreen() {
                   activeOpacity={0.7}
                 >
                   <View className="flex-row items-center flex-1">
-                    <Text className="text-2xl mr-3">{lang.flag}</Text>
                     <View className="flex-1">
                       <Text className="text-base font-medium text-gray-900">
                         {lang.name}
