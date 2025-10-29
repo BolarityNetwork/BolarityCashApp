@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 
 interface UpdateModalProps {
   visible: boolean;
@@ -28,6 +29,7 @@ export default function UpdateModal({
   onClose,
   updateInfo,
 }: UpdateModalProps) {
+  const { t } = useTranslation();
   if (!visible) return null;
 
   const handleUpdate = () => {
@@ -49,23 +51,26 @@ export default function UpdateModal({
           style={styles.headerGradient}
         >
           <Text style={styles.updateIcon}>🔄</Text>
-          <Text style={styles.updateTitle}>Update Available</Text>
+          <Text style={styles.updateTitle}>{t('modals.updateAvailable')}</Text>
         </LinearGradient>
 
         {/* Content */}
         <View style={styles.content}>
           {updateInfo?.version && (
-            <Text style={styles.versionText}>Version {updateInfo.version}</Text>
+            <Text style={styles.versionText}>
+              {t('modals.newVersion')} {updateInfo.version}
+            </Text>
           )}
 
           <Text style={styles.desc}>
-            {updateInfo?.description ||
-              'A new version is available with the latest features and improvements!'}
+            {updateInfo?.description || t('modals.newVersionDescription')}
           </Text>
 
           {updateInfo?.isMandatory && (
             <View style={styles.mandatoryBadge}>
-              <Text style={styles.mandatoryText}>Required Update</Text>
+              <Text style={styles.mandatoryText}>
+                {t('modals.requiredUpdate')}
+              </Text>
             </View>
           )}
         </View>
@@ -81,7 +86,9 @@ export default function UpdateModal({
               colors={['#667eea', '#764ba2']}
               style={styles.gradientButton}
             >
-              <Text style={styles.updateButtonText}>Update Now</Text>
+              <Text style={styles.updateButtonText}>
+                {t('modals.updateNow')}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -91,7 +98,7 @@ export default function UpdateModal({
               onPress={handleClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.laterButtonText}>Later</Text>
+              <Text style={styles.laterButtonText}>{t('modals.later')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -100,8 +107,8 @@ export default function UpdateModal({
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             {updateInfo?.isMandatory
-              ? 'This update is required to continue using the app'
-              : 'You can update later from the app settings'}
+              ? t('modals.requiredToContinue')
+              : t('modals.canUpdateLater')}
           </Text>
         </View>
       </View>

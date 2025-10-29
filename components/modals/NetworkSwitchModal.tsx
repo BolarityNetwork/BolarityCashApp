@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BaseModal } from '@/components/common/BaseModal';
+import { useTranslation } from 'react-i18next';
 
 interface NetworkSwitchModalProps {
   visible: boolean;
@@ -19,6 +20,7 @@ export const NetworkSwitchModal: React.FC<NetworkSwitchModalProps> = ({
   activeEthereumNetwork,
   isSwitchingNetwork,
 }) => {
+  const { t } = useTranslation();
   const networkConfigMap = {
     mainnet: { name: 'Ethereum Mainnet' },
     sepolia: { name: 'Ethereum Sepolia' },
@@ -39,9 +41,13 @@ export const NetworkSwitchModal: React.FC<NetworkSwitchModalProps> = ({
   };
 
   return (
-    <BaseModal visible={visible} onClose={onClose} title="Switch Network">
+    <BaseModal
+      visible={visible}
+      onClose={onClose}
+      title={t('modals.switchNetwork')}
+    >
       <Text className="text-base text-slate-500 mb-6 text-center">
-        Choose which Ethereum network to connect to
+        {t('modals.chooseEthereumNetwork')}
       </Text>
 
       {getAvailableNetworks().map(network => {
@@ -91,7 +97,7 @@ export const NetworkSwitchModal: React.FC<NetworkSwitchModalProps> = ({
         <View className="items-center py-5">
           <ActivityIndicator color="#667eea" size="large" />
           <Text className="text-base text-indigo-500 mt-3 font-medium">
-            Switching network...
+            {t('modals.switchingNetwork')}
           </Text>
         </View>
       )}

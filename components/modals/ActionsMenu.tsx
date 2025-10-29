@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import IconComponent from '../home/IconComponent';
+import { useTranslation } from 'react-i18next';
 
 interface ActionsMenuProps {
   visible: boolean;
@@ -22,6 +23,7 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
   opacity,
   scale,
 }) => {
+  const { t } = useTranslation();
   if (!visible) return null;
 
   return (
@@ -48,7 +50,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 <View style={styles.actionButtonIcon}>
                   <IconComponent name="PiggyBank" size={24} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Save</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.save')}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -61,7 +65,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 <View style={styles.actionButtonIcon}>
                   <IconComponent name="TrendingUp" size={24} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Invest</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.invest')}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -82,7 +88,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 >
                   <IconComponent name="Plus" size={32} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Deposit</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.deposit')}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -99,7 +107,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 <View style={styles.actionButtonIcon}>
                   <IconComponent name="Grid3X3" size={24} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Actions</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.actions')}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -112,7 +122,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 <View style={styles.actionButtonIcon}>
                   <IconComponent name="DollarSign" size={24} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Transfer</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.transfer')}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -125,7 +137,9 @@ const ActionsMenu: React.FC<ActionsMenuProps> = ({
                 <View style={styles.actionButtonIcon}>
                   <IconComponent name="Gift" size={24} color="#fff" />
                 </View>
-                <Text style={styles.actionButtonLabel}>Refer a Friend</Text>
+                <Text style={styles.actionButtonLabel}>
+                  {t('actions.referAFriend')}
+                </Text>
               </View>
             </TouchableOpacity>
 

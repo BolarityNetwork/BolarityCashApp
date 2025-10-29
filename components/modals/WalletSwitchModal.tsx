@@ -4,6 +4,7 @@ import { BaseModal } from '@/components/common/BaseModal';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { formatAddress } from '@/utils/profile';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
+import { useTranslation } from 'react-i18next';
 
 interface WalletSwitchModalProps {
   visible: boolean;
@@ -14,6 +15,7 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
   visible,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const {
     activeWallet,
     switchWalletType,
@@ -32,10 +34,7 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
   };
 
   const handleCreateEthereumWallet = () => {
-    Alert.alert(
-      'Info',
-      'Ethereum wallet creation is handled automatically by Privy when you sign up. If you need a new Ethereum wallet, please contact support.'
-    );
+    Alert.alert('Info', t('modals.ethereumWalletInfo'));
     onClose();
   };
 
@@ -45,9 +44,13 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
   };
 
   return (
-    <BaseModal visible={visible} onClose={onClose} title="Switch Wallet">
+    <BaseModal
+      visible={visible}
+      onClose={onClose}
+      title={t('modals.switchWallet')}
+    >
       <Text className="text-base text-slate-500 mb-6 text-center">
-        Choose which wallet to use as your primary wallet
+        {t('modals.choosePrimaryWallet')}
       </Text>
 
       {/* Ethereum Wallet Option */}
@@ -64,13 +67,13 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
             <WalletLogo type="ethereum" size={32} style={{ marginRight: 12 }} />
             <View className="flex-1">
               <Text className="text-base font-bold text-slate-800">
-                Ethereum Wallet
+                {t('modals.ethereumWallet')}
               </Text>
               <Text className="text-sm text-slate-500 font-mono mt-0.5">
                 {formatAddress(ethereumAddress)}
               </Text>
               <Text className="text-xs text-slate-400 mt-0.5">
-                Ethereum Mainnet
+                {t('modals.ethereumMainnet')}
               </Text>
             </View>
             {activeWalletType === 'ethereum' && (
@@ -94,13 +97,13 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
             <WalletLogo type="solana" size={32} style={{ marginRight: 12 }} />
             <View className="flex-1">
               <Text className="text-base font-bold text-slate-800">
-                Solana Wallet
+                {t('modals.solanaWallet')}
               </Text>
               <Text className="text-sm text-slate-500 font-mono mt-0.5">
                 {formatAddress(solanaAddress)}
               </Text>
               <Text className="text-xs text-slate-400 mt-0.5">
-                mainnet-beta
+                {t('modals.mainnetBeta')}
               </Text>
             </View>
             {activeWalletType === 'solana' && (
@@ -113,7 +116,7 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
       {/* Create New Wallet Section */}
       <View className="mt-5 pt-5 border-t border-slate-100">
         <Text className="text-base font-bold text-slate-800 mb-4">
-          Create New Wallet
+          {t('modals.createNewWallet')}
         </Text>
 
         {!ethereumAddress && (
@@ -123,7 +126,7 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
           >
             <WalletLogo type="ethereum" size={24} style={{ marginRight: 12 }} />
             <Text className="text-base font-semibold text-slate-800">
-              Create Ethereum Wallet
+              {t('modals.createEthereumWallet')}
             </Text>
           </TouchableOpacity>
         )}
@@ -136,7 +139,9 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
           >
             <WalletLogo type="solana" size={24} style={{ marginRight: 12 }} />
             <Text className="text-base font-semibold text-slate-800">
-              {isCreatingSolanaWallet ? 'Creating...' : 'Create Solana Wallet'}
+              {isCreatingSolanaWallet
+                ? t('modals.creating')
+                : t('modals.createSolanaWallet')}
             </Text>
           </TouchableOpacity>
         )}

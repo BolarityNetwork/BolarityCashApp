@@ -13,6 +13,7 @@ import ProtocolLogo from '@/components/home/ProtocolLogo';
 import { useVaultData } from '@/hooks/useVaultData';
 import { VaultItem } from '@/api/vault';
 import VaultSkeleton from '../common/VaultSkeleton';
+import { useTranslation } from 'react-i18next';
 
 interface TimeVaultModalProps {
   visible: boolean;
@@ -25,6 +26,7 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
   onClose,
   onSelect,
 }) => {
+  const { t } = useTranslation();
   const { vaults, isLoading, loadVaultsByCategory } = useVaultData();
 
   useEffect(() => {
@@ -87,7 +89,9 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
     >
       <SafeAreaView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>TimeVault Pro Options</Text>
+          <Text style={styles.modalTitle}>
+            {t('modals.timeVaultProOptions')}
+          </Text>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>×</Text>
           </TouchableOpacity>
@@ -95,7 +99,7 @@ const TimeVaultModal: React.FC<TimeVaultModalProps> = ({
 
         <ScrollView style={styles.modalContent}>
           <Text style={styles.modalDescription}>
-            Select a fixed-term vault with guaranteed returns
+            {t('modals.selectFixedTermVault')}
           </Text>
 
           {renderVaultList()}

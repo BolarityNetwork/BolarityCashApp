@@ -12,8 +12,10 @@ import {
 import { BaseModal } from '../common/BaseModal';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { useAddressBookStore } from '@/stores/addressBookStore';
+import { useTranslation } from 'react-i18next';
 
 const AddAddressModalComponent: React.FC = () => {
+  const { t } = useTranslation();
   // Get editing item from global state
   const editItem = useAddressBookStore(state => state.editingItem);
   const modal = useModal();
@@ -35,16 +37,16 @@ const AddAddressModalComponent: React.FC = () => {
   // Handle error display
   useEffect(() => {
     if (error) {
-      Alert.alert('错误', error);
+      Alert.alert(t('modals.error'), error);
       clearError();
     }
-  }, [error, clearError]);
+  }, [error, clearError, t]);
 
   // Validate Ethereum address
   const validateAddress = (addr: string): boolean => {
     const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
     if (!ethAddressRegex.test(addr)) {
-      setAddressError('Please enter a valid Ethereum address');
+      setAddressError(t('modals.enterValidEthereumAddress'));
       return false;
     }
     setAddressError('');
@@ -54,12 +56,12 @@ const AddAddressModalComponent: React.FC = () => {
   const handleSubmit = async () => {
     // 验证输入
     if (!name.trim()) {
-      Alert.alert('Notice', 'Please enter address name');
+      Alert.alert('Notice', t('modals.enterAddressName'));
       return;
     }
 
     if (!address.trim()) {
-      Alert.alert('Notice', 'Please enter address');
+      Alert.alert('Notice', t('modals.enterAddress'));
       return;
     }
 
@@ -78,7 +80,7 @@ const AddAddressModalComponent: React.FC = () => {
       modal.hide();
     } catch (err) {
       console.error('Error adding/updating address:', err);
-      Alert.alert('Error', 'Operation failed, please try again');
+      Alert.alert(t('modals.error'), t('modals.operationFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -88,7 +90,7 @@ const AddAddressModalComponent: React.FC = () => {
     <BaseModal
       visible={modal.visible}
       onClose={() => modal.hide()}
-      title={editItem ? 'Edit Address' : 'Add Address'}
+      title={editItem ? t('modals.editAddress') : t('modals.addAddress')}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -99,7 +101,7 @@ const AddAddressModalComponent: React.FC = () => {
             {/* 名称输入 */}
             <View style={{ marginBottom: 16 }}>
               <Text style={{ fontSize: 14, color: '#64748b', marginBottom: 8 }}>
-                Name
+                {t('modals.addressName')}
               </Text>
               <TextInput
                 style={{
@@ -109,7 +111,7 @@ const AddAddressModalComponent: React.FC = () => {
                   fontSize: 16,
                   color: '#1e293b',
                 }}
-                placeholder="Enter address name"
+                placeholder={t('modals.enterAddressName')}
                 placeholderTextColor="#94a3b8"
                 value={name}
                 onChangeText={setName}
@@ -165,7 +167,7 @@ const AddAddressModalComponent: React.FC = () => {
               disabled={isSubmitting}
             >
               <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
-                {editItem ? 'Save' : 'Add'}
+                {editItem ? t('common.save') : t('common.add')}
               </Text>
             </TouchableOpacity>
           </View>

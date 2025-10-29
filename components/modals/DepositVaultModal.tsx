@@ -26,6 +26,7 @@ import {
 } from '@/api/account';
 import AnimatedNumber from '../AnimatedNumber';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -38,6 +39,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   selectedVault,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isDepositing, setIsDepositing] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -67,12 +69,12 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   // Handle deposit
   const handleDeposit = useCallback(async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid deposit amount');
+      Alert.alert(t('modals.error'), t('modals.pleaseEnterValidDepositAmount'));
       return;
     }
 
     if (!selectedVault) {
-      Alert.alert('Error', 'No vault selected');
+      Alert.alert(t('modals.error'), t('modals.noVaultSelected'));
       return;
     }
 
@@ -81,7 +83,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       selectedVault.protocol.toLowerCase() === 'pendle' &&
       parseFloat(depositAmount) < 0.01
     ) {
-      Alert.alert('Error', 'Pendle requires minimum deposit of $0.01 USD');
+      Alert.alert(t('modals.error'), t('modals.pendleMinimumDepositInfo'));
       return;
     }
 
@@ -135,11 +137,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
       if (result.success) {
         Alert.alert(
-          'Deposit Successful',
-          `Successfully deposited ${depositAmount} USDC to ${selectedVault.protocol}\nTransaction: ${result.txHash?.slice(0, 10)}...`,
+          t('modals.depositSuccessful'),
+          `${t('modals.depositSuccessfulDetails')} ${depositAmount} USDC ${t('modals.toProtocol')} ${selectedVault.protocol}\n${t('modals.transaction')} ${result.txHash?.slice(0, 10)}...`,
           [
             {
-              text: 'OK',
+              text: t('modals.ok'),
               onPress: () => {
                 setDepositAmount('');
                 refetchBalance();
@@ -148,13 +150,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           ]
         );
       } else {
-        throw new Error(result.error || 'Deposit failed');
+        throw new Error(result.error || t('modals.depositFailed'));
       }
     } catch (err) {
       console.error('❌ Deposit error:', err);
       const errorMsg = getErrorMessage(err);
       setError(errorMsg);
-      Alert.alert('Deposit Failed', errorMsg);
+      Alert.alert(t('modals.depositFailed'), errorMsg);
     } finally {
       setIsDepositing(false);
     }
@@ -164,27 +166,31 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     vaultDeposit,
     activeWallet?.address,
     refetchBalance,
+    t,
   ]);
 
   // Handle withdraw
   const handleWithdraw = useCallback(async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid withdrawal amount');
+      Alert.alert(
+        t('modals.error'),
+        t('modals.pleaseEnterValidWithdrawAmount')
+      );
       return;
     }
 
     if (!selectedVault) {
-      Alert.alert('Error', 'No vault selected');
+      Alert.alert(t('modals.error'), t('modals.noVaultSelected'));
       return;
     }
 
     Alert.alert(
-      'Confirm Withdrawal',
-      `Are you sure you want to withdraw ${depositAmount} USDC from ${selectedVault.protocol}?`,
+      t('modals.confirmWithdrawal'),
+      `${t('modals.areYouSureWithdraw')} ${depositAmount} ${t('modals.withdrawUSDCCapital')} ${selectedVault.protocol}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('modals.cancel'), style: 'cancel' },
         {
-          text: 'Confirm',
+          text: t('modals.confirm'),
           onPress: async () => {
             setIsWithdrawing(true);
             setError(null);
@@ -236,11 +242,11 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
               if (result.success) {
                 Alert.alert(
-                  'Withdrawal Successful',
-                  `Successfully withdrew ${depositAmount} USDC from ${selectedVault.protocol}\nTransaction: ${result.txHash?.slice(0, 10)}...`,
+                  t('modals.withdrawalSuccessful'),
+                  `${t('modals.withdrawalSuccessfulDetails')} ${depositAmount} ${t('modals.withdrew')} ${selectedVault.protocol}\n${t('modals.transaction')} ${result.txHash?.slice(0, 10)}...`,
                   [
                     {
-                      text: 'OK',
+                      text: t('modals.ok'),
                       onPress: () => {
                         setDepositAmount('');
                         refetchBalance();
@@ -249,13 +255,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   ]
                 );
               } else {
-                throw new Error(result.error || 'Withdrawal failed');
+                throw new Error(result.error || t('modals.withdrawalFailed'));
               }
             } catch (err) {
               console.error('❌ Withdrawal error:', err);
               const errorMsg = getErrorMessage(err);
               setError(errorMsg);
-              Alert.alert('Withdrawal Failed', errorMsg);
+              Alert.alert(t('modals.withdrawalFailed'), errorMsg);
             } finally {
               setIsWithdrawing(false);
             }
@@ -269,6 +275,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
     vaultWithdraw,
     activeWallet?.address,
     refetchBalance,
+    t,
   ]);
 
   if (!visible || !selectedVault) {
@@ -290,7 +297,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         <SafeAreaView className="flex-1">
           <View className="flex-row justify-between items-center p-5 bg-white border-b border-gray-200">
             <Text className="text-xl font-bold text-gray-900">
-              {`Open ${selectedVault.protocol.toUpperCase()} Vault`}
+              {`${t('modals.openVault')} ${selectedVault.protocol.toUpperCase()} ${t('modals.vaultPlaceholder')}`}
             </Text>
             <TouchableOpacity
               className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
@@ -309,7 +316,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             {error && (
               <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                 <Text className="text-red-700 text-sm font-medium mb-1">
-                  Transaction Error
+                  {t('modals.transactionError')}
                 </Text>
                 <Text className="text-red-600 text-xs">{error}</Text>
                 <TouchableOpacity
@@ -317,7 +324,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   className="mt-2 self-start"
                 >
                   <Text className="text-red-600 text-xs font-semibold">
-                    Dismiss
+                    {t('modals.dismiss')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -359,20 +366,26 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 style={{ flexDirection: 'row', gap: 16 }}
               >
                 <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">APY Rate</Text>
+                  <Text className="text-sm text-white/80">
+                    {t('modals.apyRate')}
+                  </Text>
                   <Text className="text-lg font-bold text-white">
                     {selectedVault.apy}
                   </Text>
                 </View>
                 <View className="flex-1" style={{ flex: 1 }}>
-                  <Text className="text-sm text-white/80">TVL</Text>
+                  <Text className="text-sm text-white/80">
+                    {t('modals.tvl')}
+                  </Text>
                   <Text className="text-lg font-bold text-white">
                     {selectedVault.tvl}
                   </Text>
                 </View>
               </View>
               <View className="mt-3" style={{ marginTop: 12 }}>
-                <Text className="text-sm text-white/80">Risk Level</Text>
+                <Text className="text-sm text-white/80">
+                  {t('modals.riskLevel')}
+                </Text>
                 <Text className="text-lg font-bold text-white">
                   {selectedVault.risk}
                 </Text>
@@ -382,13 +395,13 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             {/* Features */}
             <View className="mb-6">
               <Text className="text-base font-bold text-gray-900 mb-4">
-                Protocol Features:
+                {t('modals.protocolFeatures')}
               </Text>
               {[
-                'Flexible access anytime',
-                'Auto-compounding rewards',
-                'Audited smart contracts',
-                '24/7 yield optimization',
+                t('modals.flexibleAccess'),
+                t('modals.autoCompounding'),
+                t('modals.auditedContracts'),
+                t('modals.yieldOptimization'),
               ].map((feature, index) => (
                 <View key={index} className="flex-row items-center mb-2">
                   <View className="w-2 h-2 rounded-full bg-green-500 mr-3" />
@@ -401,7 +414,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             <View className="bg-gray-50 rounded-2xl p-4 mb-6">
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-sm text-gray-700">
-                  Wallet USDC Balance
+                  {t('modals.walletUSDCBalance')}
                 </Text>
                 <View className="items-end">
                   {isLoadingBalance ? (
@@ -426,7 +439,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
               </View>
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-sm text-gray-700">
-                  {`${selectedVault.protocol.toUpperCase()} Deposited`}
+                  {`${selectedVault.protocol.toUpperCase()} ${t('modals.deposited')}`}
                 </Text>
                 <View className="items-end">
                   {isLoadingBalance ? (
@@ -446,7 +459,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 className="bg-white rounded-xl p-4 text-base border border-gray-200 text-gray-900"
                 value={depositAmount}
                 onChangeText={setDepositAmount}
-                placeholder="Enter USDC amount"
+                placeholder={t('modals.enterUSDCAmount')}
                 keyboardType="decimal-pad"
                 placeholderTextColor="#9ca3af"
               />
@@ -466,7 +479,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   <ActivityIndicator size="small" color="#374151" />
                 ) : (
                   <Text className="text-base font-semibold text-gray-700">
-                    Withdraw
+                    {t('modals.withdraw')}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -483,7 +496,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <Text className="text-base font-semibold text-white">
-                    Start Saving
+                    {t('modals.startSaving')}
                   </Text>
                 )}
               </TouchableOpacity>

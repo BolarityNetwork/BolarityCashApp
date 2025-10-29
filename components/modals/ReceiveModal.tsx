@@ -5,10 +5,12 @@ import { BaseModal } from '@/components/common/BaseModal';
 import * as Clipboard from 'expo-clipboard';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import { useTranslation } from 'react-i18next';
 
 interface ReceiveModalProps {}
 
 const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
+  const { t } = useTranslation();
   const modal = useModal();
   const onClose = () => modal.hide();
   const { activeWallet } = useMultiChainWallet();
@@ -81,7 +83,11 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
   };
 
   return (
-    <BaseModal visible={modal.visible} onClose={onClose} title="Receive">
+    <BaseModal
+      visible={modal.visible}
+      onClose={onClose}
+      title={t('modals.receive')}
+    >
       <View className="items-center px-4" style={{ zIndex: 1000 }}>
         {/* QR Code Section */}
         <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
@@ -114,7 +120,7 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
         {/* Address Display */}
         <View className="w-full mb-6">
           <Text className="text-sm text-gray-600 mb-2 text-center">
-            Your wallet address
+            {t('modals.yourWalletAddress')}
           </Text>
           <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
             <Text className="text-center text-gray-800 font-mono text-sm">
@@ -140,7 +146,7 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
                   copied ? 'text-green-700' : 'text-blue-700'
                 }`}
               >
-                {copied ? 'Copied!' : 'Copy Address'}
+                {copied ? t('modals.copied') : t('modals.copyAddress')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -152,7 +158,7 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
             <View className="flex-row items-center justify-center">
               <Text className="text-lg mr-2">📤</Text>
               <Text className="text-base font-semibold text-gray-700">
-                Share Address
+                {t('modals.shareAddress')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -161,7 +167,7 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
         {/* Instructions */}
         <View className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200">
           <Text className="text-sm text-blue-800 text-center leading-5">
-            📱 Share this QR code or address with others to receive payments
+            {t('modals.shareQRCode')}
           </Text>
         </View>
       </View>
