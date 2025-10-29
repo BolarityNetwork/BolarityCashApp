@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axios } from './index';
+import { axios } from './client';
 
 // Types for user API responses
 export interface UserRegistrationResponse {

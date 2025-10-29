@@ -39,6 +39,14 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
     };
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
+  // Package exports in `rpc-websockets` are incorrect for React Native, so we need to disable them
+  if (moduleName === 'rpc-websockets') {
+    const ctx = {
+      ...context,
+      unstable_enablePackageExports: false,
+    };
+    return ctx.resolveRequest(ctx, moduleName, platform);
+  }
 
   return context.resolveRequest(context, moduleName, platform);
 };

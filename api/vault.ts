@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { axios } from './index';
+import { axios } from './client';
 
 export interface VaultItem {
   id: string;

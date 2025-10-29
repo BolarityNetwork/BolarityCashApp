@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { DEFAULT_CACHE_TIME, EndpointEnum } from '@/lib/endpoint';
 
-import { axios } from './index';
+import { axios } from './client';
 
 // Types for the coins API response
 export interface CoinData {
