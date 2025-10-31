@@ -120,12 +120,9 @@ const ActivityList: React.FC<ActivityListProps> = () => {
                     <Text style={styles.activityDetails}>
                       {transaction.vault}
                     </Text>
-                    {transaction.hash && (
+                    {transaction.date && (
                       <Text style={styles.activityHash}>
-                        {transaction.hash.substring(0, 8)}...
-                        {transaction.hash.substring(
-                          transaction.hash.length - 6
-                        )}
+                        {transaction.date}
                       </Text>
                     )}
                   </View>

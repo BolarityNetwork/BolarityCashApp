@@ -214,3 +214,63 @@ export const getWalletUSDCBalance = (
   );
   return usdcToken?.amount || 0;
 };
+
+// Types for token transfers API response
+export interface TokenTransferItem {
+  txHash: string;
+  type: 'transfer' | 'receive' | 'deposit' | 'withdraw';
+  status: 'success' | 'pending' | 'failed';
+  timestamp: number;
+  blockNumber: number;
+  tokenSymbol: string;
+  tokenAddress: string;
+  tokenDecimals: number;
+  amount: string;
+  from: string;
+  to: string;
+  chainId: number;
+}
+
+export interface TokenTransfersResponse {
+  code: number;
+  msg: string | null;
+  data: TokenTransferItem[];
+}
+
+// API: 查询token交易历史
+export const getTokenTransfers = async (
+  address: string,
+  page?: string,
+  size?: string,
+  chainId?: string
+): Promise<TokenTransfersResponse> => {
+  const params: Record<string, string | undefined> = {};
+  if (page) params.page = page;
+  if (size) params.size = size;
+  if (chainId) params.chainId = chainId;
+
+  const { data } = await axios.get<TokenTransfersResponse>(
+    `/router_api/v1/user/token/transfers/${address}`,
+    Object.keys(params).length ? { params } : undefined
+  );
+
+  console.log(2000, data);
+  return data;
+};
+
+// React Query hook
+export function useTokenTransfers(
+  address: string,
+  page?: string,
+  size?: string,
+  chainId?: string,
+  enabled: boolean = true
+) {
+  const queryEnabled = enabled && !!address;
+  return useQuery({
+    queryKey: ['tokenTransfers', address, page, size, chainId],
+    queryFn: () => getTokenTransfers(address, page, size, chainId),
+    enabled: queryEnabled,
+    staleTime: 30000, // 30 seconds cache
+  });
+}

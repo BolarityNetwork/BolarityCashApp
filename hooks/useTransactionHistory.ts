@@ -1,17 +1,21 @@
 // hooks/useTransactionHistory.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import useMultiChainWallet from './useMultiChainWallet';
+import { useTokenTransfers, TokenTransferItem } from '@/api/account';
+import { formatCurrency } from '@/utils/balance';
+import { formatDate as formatDateUtil } from '@/utils/utils';
 
 export interface RealTransaction {
   hash: string;
+  txHash: string;
   type: string;
   amount: string;
   token: string;
   timestamp: Date;
   protocol: string;
   status: 'success' | 'pending' | 'failed';
-  gasUsed?: string;
   isPositive: boolean;
+  vault: string;
 }
 
 interface TransactionHistoryState {
@@ -19,97 +23,11 @@ interface TransactionHistoryState {
   isLoading: boolean;
   error: string | null;
   hasMore: boolean;
+  currentPage: number;
+  pageSize: number;
 }
 
-// DeFi 协议合约地址映射
-const PROTOCOL_CONTRACTS = {
-  ethereum: {
-    aave: [
-      '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
-      '0x87870bace4f8b4a9c2a8c86aa6b1c9b0f1b52b75',
-      '0xa238dd80c259a72e81d7e4664a9801593f98d1c5',
-    ],
-    compound: [
-      '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
-      '0xc3d688b66703497daa19211eedff47f25384cdc3',
-    ],
-    uniswap: [
-      '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-      '0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45',
-    ],
-  },
-  solana: {
-    drift: ['DRiPbdKYaGfDXRiQeqKPjqNXVGH7LN8EtixZtHF5KYoC'],
-    solend: ['LendZqTs7gn5CTSJU1jWKhKuVpjJ6km9x6m3hbNq5Sg'],
-    raydium: ['675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'],
-  },
-};
-
-// Whitelist of legitimate tokens - Unix way: explicit is better than implicit
-const LEGITIMATE_TOKENS = new Set([
-  'ETH',
-  'WETH',
-  'USDC',
-  'USDT',
-  'DAI',
-  'WBTC',
-  'LINK',
-  'UNI',
-  'AAVE',
-  'COMP',
-]);
-
-// Scam token detection patterns
-const SCAM_PATTERNS = [
-  /^[A-Z]+\d+$/, // Random letters + numbers (e.g., ABC123)
-  /[\u4e00-\u9fff]/, // Chinese characters
-  /[\u0600-\u06ff]/, // Arabic characters
-  /[\u0400-\u04ff]/, // Cyrillic characters
-  /(.)\1{3,}/, // Repeated characters (e.g., AAAA)
-  /^.{1,2}$/, // Too short (1-2 chars)
-  /^.{15,}$/, // Too long (15+ chars)
-];
-
-// Clean token filter - reject garbage
-function isLegitimateToken(tokenSymbol: string): boolean {
-  if (!tokenSymbol) return false;
-
-  // Whitelist check first
-  if (LEGITIMATE_TOKENS.has(tokenSymbol.toUpperCase())) {
-    return true;
-  }
-
-  // Reject obvious scam patterns
-  for (const pattern of SCAM_PATTERNS) {
-    if (pattern.test(tokenSymbol)) {
-      return false;
-    }
-  }
-
-  // Reject tokens with weird characters
-  if (!/^[A-Za-z0-9]+$/.test(tokenSymbol)) {
-    return false;
-  }
-
-  return true;
-}
-
-// Simple protocol detection - Unix way: direct lookup
-function getProtocolFromAddress(address: string): string {
-  const addr = address.toLowerCase();
-
-  for (const [protocol, addresses] of Object.entries(
-    PROTOCOL_CONTRACTS.ethereum
-  )) {
-    if (addresses.some(contractAddr => contractAddr.toLowerCase() === addr)) {
-      return protocol.toUpperCase();
-    }
-  }
-
-  return 'Ethereum';
-}
-
-// Real blockchain transaction fetching - no fake data
+const PAGE_SIZE = 50; // 默认每页50条
 
 export function useTransactionHistory() {
   const { activeChain, ethereumAddress, solanaAddress } = useMultiChainWallet();
@@ -119,6 +37,8 @@ export function useTransactionHistory() {
     isLoading: false,
     error: null,
     hasMore: true,
+    currentPage: 1,
+    pageSize: PAGE_SIZE,
   });
 
   // 获取当前活跃地址
@@ -126,231 +46,87 @@ export function useTransactionHistory() {
     return activeChain === 'ethereum' ? ethereumAddress : solanaAddress;
   }, [activeChain, ethereumAddress, solanaAddress]);
 
-  // 从区块链获取真实交易记录
-  const fetchTransactions = useCallback(
-    async (address: string, offset = 0) => {
-      if (!address) return [];
+  // 获取当前 chainId（基于 activeChain 和网络配置）
+  const getCurrentChainId = useCallback(() => {
+    // TODO: 根据 activeChain 和网络配置返回正确的 chainId
+    // 目前默认为 8453 (Base Mainnet)
+    return '8453';
+  }, [activeChain]);
 
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-
-      try {
-        // 在实际应用中，这里应该调用区块链 RPC
-        if (activeChain === 'ethereum') {
-          return await fetchEthereumTransactions(address, offset);
-        } else {
-          return await fetchSolanaTransactions(address, offset);
-        }
-      } catch (error) {
-        console.error('Failed to fetch transactions:', error);
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : 'Failed to fetch transactions',
-        }));
-        return [];
-      }
-    },
-    [activeChain]
+  // 使用新的 API hook
+  const {
+    data: apiData,
+    isLoading: apiLoading,
+    error: apiError,
+  } = useTokenTransfers(
+    getCurrentAddress() || '',
+    state.currentPage.toString(),
+    state.pageSize.toString(),
+    getCurrentChainId(),
+    !!getCurrentAddress()
   );
 
-  // Direct Alchemy Base RPC - efficient asset transfer API
-  const fetchEthereumTransactions = async (
-    address: string,
-    offset: number
-  ): Promise<RealTransaction[]> => {
-    try {
-      const rpcUrl =
-        'https://base-mainnet.g.alchemy.com/v2/sxUAcWibwUCvJpaatUFXbX_khrwgsAT6';
+  // 将 API 数据转换为 RealTransaction 格式
+  const mapApiTransaction = useCallback(
+    (item: TokenTransferItem): RealTransaction => {
+      // 判断是转入还是转出
+      const currentAddress = getCurrentAddress();
+      const isPositive = Boolean(
+        item.type === 'deposit' ||
+          item.type === 'receive' ||
+          (currentAddress &&
+            item.to.toLowerCase() === currentAddress.toLowerCase())
+      );
 
-      // Get transfers FROM the address (outgoing)
-      const outgoingResponse = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'alchemy_getAssetTransfers',
-          params: [
-            {
-              fromAddress: address,
-              category: ['external', 'erc20', 'erc721', 'erc1155'],
-              order: 'desc',
-              maxCount: '0x14', // 20 results
-            },
-          ],
-          id: 1,
-        }),
-      });
+      // 格式化金额
+      const amountValue =
+        parseFloat(item.amount) / Math.pow(10, item.tokenDecimals);
 
-      // Get transfers TO the address (incoming)
-      const incomingResponse = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'alchemy_getAssetTransfers',
-          params: [
-            {
-              toAddress: address,
-              category: ['external', 'erc20', 'erc721', 'erc1155'],
-              order: 'desc',
-              maxCount: '0x14', // 20 results
-            },
-          ],
-          id: 2,
-        }),
-      });
+      return {
+        hash: item.timestamp.toString(), // 使用时间戳作为 key
+        txHash: item.txHash,
+        type: item.type, // 直接使用后端返回的类型
+        amount: amountValue.toString(),
+        token: item.tokenSymbol,
+        timestamp: new Date(item.timestamp * 1000),
+        protocol: 'DeFi',
+        status: item.status,
+        isPositive,
+        vault: item.tokenSymbol,
+      };
+    },
+    [getCurrentAddress]
+  );
 
-      const [outgoingData, incomingData] = await Promise.all([
-        outgoingResponse.json(),
-        incomingResponse.json(),
-      ]);
-
-      const allTransfers = [
-        ...(outgoingData.result?.transfers || []),
-        ...(incomingData.result?.transfers || []),
-      ];
-
-      // Remove duplicates and sort by block number
-      const uniqueTransfers = allTransfers
-        .filter(
-          (transfer, index, self) =>
-            index === self.findIndex(t => t.hash === transfer.hash)
-        )
-        .sort((a, b) => parseInt(b.blockNum, 16) - parseInt(a.blockNum, 16));
-
-      const transactions: RealTransaction[] = uniqueTransfers
-        .filter(transfer => {
-          // Filter out scam tokens - Unix principle: fail early
-          const tokenSymbol = transfer.asset || 'ETH';
-          const isLegit = isLegitimateToken(tokenSymbol);
-
-          if (!isLegit) {
-            return false;
-          }
-
-          return true;
-        })
-        .map(transfer => {
-          const protocol = getProtocolFromAddress(transfer.to);
-          const isIncoming =
-            transfer.to.toLowerCase() === address.toLowerCase();
-          const isDefi = protocol !== 'Ethereum';
-
-          // Determine transaction type
-          let type = 'Transfer';
-          if (isDefi) {
-            if (protocol === 'AAVE') {
-              type = transfer.asset === 'ETH' ? 'AAVE Deposit' : 'AAVE Token';
-            } else {
-              type = `${protocol} Transaction`;
-            }
-          } else {
-            type = isIncoming ? 'Received' : 'Sent';
-          }
-
-          return {
-            hash: transfer.hash,
-            type,
-            amount: transfer.value?.toString() || '0',
-            token: transfer.asset || 'ETH',
-            timestamp: new Date(parseInt(transfer.blockNum, 16) * 12 * 1000), // Approximate timestamp
-            protocol,
-            status: 'success' as const,
-            isPositive: isIncoming || isDefi,
-          };
-        });
-
-      return transactions.slice(offset, offset + 20);
-    } catch (_) {
-      return [];
+  // 当 API 数据变化时更新状态
+  useEffect(() => {
+    if (apiLoading) {
+      setState(prev => ({ ...prev, isLoading: true }));
+      return;
     }
-  };
 
-  // 获取 Solana 交易记录
-  const fetchSolanaTransactions = async (
-    address: string
-  ): Promise<RealTransaction[]> => {
-    try {
-      // 直接调用 Solana RPC 获取真实交易签名
-      const sigResponse = await fetch('https://api.mainnet-beta.solana.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getSignaturesForAddress',
-          params: [address, { limit: 10 }],
-        }),
-      });
-
-      if (!sigResponse.ok) {
-        throw new Error(`HTTP ${sigResponse.status}`);
-      }
-
-      const sigData = await sigResponse.json();
-
-      if (sigData.error || !sigData.result) {
-        return [];
-      }
-
-      // 获取每个交易的详细信息
-      const transactions: RealTransaction[] = [];
-
-      for (const sig of sigData.result.slice(0, 10)) {
-        try {
-          const txResponse = await fetch(
-            'https://api.mainnet-beta.solana.com',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'getTransaction',
-                params: [
-                  sig.signature,
-                  { encoding: 'json', maxSupportedTransactionVersion: 0 },
-                ],
-              }),
-            }
-          );
-
-          const txData = await txResponse.json();
-
-          if (txData.result) {
-            const tx = txData.result;
-            const preBalance = tx.meta?.preBalances?.[0] || 0;
-            const postBalance = tx.meta?.postBalances?.[0] || 0;
-            const balanceChange = (postBalance - preBalance) / 1000000000; // lamports to SOL
-
-            transactions.push({
-              hash: sig.signature,
-              type: balanceChange > 0 ? 'Deposit' : 'Withdraw',
-              amount: Math.abs(balanceChange).toFixed(6),
-              token: 'SOL',
-              timestamp: new Date((sig.blockTime || 0) * 1000),
-              protocol: 'Solana',
-              status: sig.err ? 'failed' : 'success',
-              isPositive: balanceChange > 0,
-            });
-          }
-        } catch (txError) {
-          console.error(
-            `Failed to fetch transaction ${sig.signature}:`,
-            txError
-          );
-        }
-      }
-
-      return transactions;
-    } catch (error) {
-      console.error('Solana API failed:', error);
-      return [];
+    if (apiError) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error:
+          apiError instanceof Error
+            ? apiError.message
+            : 'Failed to fetch transactions',
+      }));
+      return;
     }
-  };
+
+    if (apiData && apiData.data) {
+      const transactions = apiData.data.map(mapApiTransaction);
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: null,
+        hasMore: transactions.length >= prev.pageSize, // 如果返回的数量等于pageSize，可能还有更多
+      }));
+    }
+  }, [apiData, apiLoading, apiError, mapApiTransaction, state.pageSize]);
 
   // 加载交易记录
   const loadTransactions = useCallback(
@@ -366,20 +142,12 @@ export function useTransactionHistory() {
         return;
       }
 
-      const offset = refresh ? 0 : state.transactions.length;
-      const newTransactions = await fetchTransactions(address, offset);
-
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        transactions: refresh
-          ? newTransactions
-          : [...prev.transactions, ...newTransactions],
-        hasMore: newTransactions.length > 0,
-        error: null,
-      }));
+      // 重置分页
+      if (refresh) {
+        setState(prev => ({ ...prev, currentPage: 1 }));
+      }
     },
-    [getCurrentAddress, fetchTransactions, state.transactions.length]
+    [getCurrentAddress]
   );
 
   // 刷新交易记录
@@ -390,11 +158,11 @@ export function useTransactionHistory() {
   // 加载更多交易记录
   const loadMoreTransactions = useCallback(() => {
     if (!state.isLoading && state.hasMore) {
-      loadTransactions(false);
+      setState(prev => ({ ...prev, currentPage: prev.currentPage + 1 }));
     }
-  }, [loadTransactions, state.isLoading, state.hasMore]);
+  }, [state.isLoading, state.hasMore]);
 
-  // 监听钱包变化，自动刷新交易记录
+  // 监听地址变化，自动刷新交易记录
   useEffect(() => {
     const address = getCurrentAddress();
     if (address) {
@@ -402,23 +170,43 @@ export function useTransactionHistory() {
     }
   }, [getCurrentAddress, refreshTransactions]);
 
+  // 获取当前页的交易记录（用于显示）
+  const currentTransactions = useMemo(() => {
+    if (!apiData || !apiData.data) return [];
+    return apiData.data.map(mapApiTransaction);
+  }, [apiData, mapApiTransaction]);
+
   // 格式化交易记录为旧格式（保持兼容性）
   const getFormattedTransactions = useCallback(() => {
-    return state.transactions.map(tx => ({
-      type: tx.type,
-      amount: `${tx.isPositive ? '+' : ''}$${tx.amount}`,
-      date: formatDate(tx.timestamp),
-      vault: tx.protocol,
-      isPositive: tx.isPositive,
-      hash: tx.hash,
-      token: tx.token,
-      status: tx.status,
-    }));
-  }, [state.transactions]);
+    return currentTransactions.map(tx => {
+      const txAmount = parseFloat(tx.amount);
+      const formattedAmount = formatCurrency(txAmount, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6,
+        prefix: '',
+      });
+      // 使用 utils 中的 formatDate，传入 timestamp 毫秒数
+      const formattedDate = formatDateUtil(
+        tx.timestamp.getTime() / 1000,
+        false,
+        false
+      );
+      return {
+        type: tx.type,
+        amount: `${tx.isPositive ? '+' : ''}$${formattedAmount}`,
+        date: formattedDate || formatDate(tx.timestamp), // fallback to local format if null
+        vault: tx.vault,
+        isPositive: tx.isPositive,
+        hash: tx.txHash || tx.hash,
+        token: tx.token,
+        status: tx.status,
+      };
+    });
+  }, [currentTransactions]);
 
   return {
     // 状态
-    transactions: state.transactions,
+    transactions: currentTransactions,
     formattedTransactions: getFormattedTransactions(),
     isLoading: state.isLoading,
     error: state.error,
@@ -429,7 +217,7 @@ export function useTransactionHistory() {
     loadMoreTransactions,
 
     // 统计
-    totalTransactions: state.transactions.length,
+    totalTransactions: currentTransactions.length,
     currentAddress: getCurrentAddress(),
     currentChain: activeChain,
   };
