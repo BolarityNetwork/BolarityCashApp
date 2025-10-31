@@ -9,6 +9,7 @@ import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import RefreshIcon from '@/assets/icon/common/refresh.svg';
 import Skeleton from '../common/Skeleton';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 interface AccountCardProps {
   address: string;
   profileState?: any;
@@ -162,7 +163,10 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       <View className="h-px bg-slate-200 mb-4" />
 
       {/* Protocol Breakdown */}
-      <View className="mb-4">
+      <TouchableOpacity
+        onPress={() => router.push('/portfolio')}
+        className="mb-4"
+      >
         <Text className="text-sm font-medium text-slate-600 mb-3">
           {t('appProfile.protocol')}
         </Text>
@@ -234,7 +238,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             />
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Separator */}
       <View className="h-px bg-slate-200 mb-4" />

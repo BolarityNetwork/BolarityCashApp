@@ -286,6 +286,11 @@
     "invest": "Invest",
     "referAFriend": "Refer a Friend"
   },
+  "portfolio": {
+    "totalInvestment": "Total Investment",
+    "flexi": "Current",
+    "time": "Fixed Term"
+  },
   "modals": {
     "receive": "Receive",
     "yourWalletAddress": "Your wallet address",

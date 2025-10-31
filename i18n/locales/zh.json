@@ -286,6 +286,11 @@
     "invest": "投资",
     "referAFriend": "推荐朋友"
   },
+  "portfolio": {
+    "totalInvestment": "总投资",
+    "flexi": "活期",
+    "time": "定期"
+  },
   "modals": {
     "receive": "接收",
     "yourWalletAddress": "您的钱包地址",
