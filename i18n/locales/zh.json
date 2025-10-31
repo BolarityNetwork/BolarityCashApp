@@ -267,7 +267,7 @@
     "failedToLoadVaults": "加载金库失败",
     "noVaultCategoriesAvailable": "暂无可用金库类别",
     "recentActivity": "最近活动",
-    "loadingTransactions": "加载交易中...",
+    "loadingTransactions": "加载中...",
     "refresh": "刷新",
     "connectWalletToView": "连接钱包以查看交易",
     "noTransactionsFound": "未找到交易",

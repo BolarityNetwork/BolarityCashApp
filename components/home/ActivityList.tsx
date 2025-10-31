@@ -116,7 +116,10 @@ const ActivityList: React.FC<ActivityListProps> = () => {
                 <View style={styles.activityLeft}>
                   <Image source={SentIcon} style={{ width: 48, height: 48 }} />
                   <View style={styles.activityInfo}>
-                    <Text style={styles.activityType}>{transaction.type}</Text>
+                    <Text style={styles.activityType}>
+                      {transaction.type.charAt(0).toUpperCase() +
+                        transaction.type.slice(1)}
+                    </Text>
                     <Text style={styles.activityDetails}>
                       {transaction.vault}
                     </Text>

@@ -267,7 +267,7 @@
     "failedToLoadVaults": "Failed to load vault categories",
     "noVaultCategoriesAvailable": "No vault categories available",
     "recentActivity": "Recent Activity",
-    "loadingTransactions": "Loading transactions...",
+    "loadingTransactions": "Loading...",
     "refresh": "Refresh",
     "connectWalletToView": "Connect wallet to view transactions",
     "noTransactionsFound": "No transactions found",
