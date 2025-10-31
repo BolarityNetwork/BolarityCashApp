@@ -185,11 +185,10 @@ export function useTransactionHistory() {
         maximumFractionDigits: 6,
         prefix: '',
       });
-      // 使用 utils 中的 formatDate，传入 timestamp 毫秒数
       const formattedDate = formatDateUtil(
         tx.timestamp.getTime() / 1000,
         false,
-        false
+        true
       );
       return {
         type: tx.type,
