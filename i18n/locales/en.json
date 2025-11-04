@@ -22,7 +22,9 @@
     "none": "None",
     "yes": "Yes",
     "no": "No",
-    "ok": "OK"
+    "ok": "OK",
+    "emailCopied": "Email copied to clipboard",
+    "failedToCopy": "Failed to copy"
   },
   "navigation": {
     "home": "Home",
@@ -207,6 +209,7 @@
     "account": "Account",
     "preferences": "Preferences",
     "support": "Support",
+    "helpAndSupport": "Help & Support",
     "profileInformation": "Profile Information",
     "managePersonalDetails": "Manage your personal details",
     "passwordAndSecurity": "Password, 2FA, and security settings",
@@ -221,7 +224,21 @@
     "reportBug": "Report a Bug",
     "openSourceLicenses": "Open Source Licenses",
     "dataExport": "Data Export",
-    "downloadYourData": "Download your data"
+    "downloadYourData": "Download your data",
+    "deviceModel": "Device Model",
+    "distribution": "Distribution",
+    "environment": "Environment",
+    "keyringVersion": "Keyring Version",
+    "location": "Location",
+    "osVersion": "OS Version",
+    "runtimeVersion": "Runtime Version",
+    "updateChannel": "Update Channel",
+    "updateCreatedAt": "Update Created At",
+    "website": "Website",
+    "privacyStatement": "Privacy Statement",
+    "appInformation": "App Information",
+    "systemInformation": "System Information",
+    "updateInformation": "Update Information"
   },
   "errors": {
     "networkError": "Network error. Please check your connection.",

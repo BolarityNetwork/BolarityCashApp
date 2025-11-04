@@ -22,7 +22,9 @@
     "none": "无",
     "yes": "是",
     "no": "否",
-    "ok": "确定"
+    "ok": "确定",
+    "emailCopied": "邮件地址已复制到剪贴板",
+    "failedToCopy": "复制失败"
   },
   "navigation": {
     "home": "首页",
@@ -207,6 +209,7 @@
     "account": "账户",
     "preferences": "偏好设置",
     "support": "支持",
+    "helpAndSupport": "帮助&支持",
     "profileInformation": "个人资料信息",
     "managePersonalDetails": "管理您的个人资料",
     "passwordAndSecurity": "密码、双重认证和安全设置",
@@ -221,7 +224,21 @@
     "reportBug": "报告问题",
     "openSourceLicenses": "开源许可",
     "dataExport": "数据导出",
-    "downloadYourData": "下载您的数据"
+    "downloadYourData": "下载您的数据",
+    "deviceModel": "设备型号",
+    "distribution": "分发渠道",
+    "environment": "环境",
+    "keyringVersion": "密钥环版本",
+    "location": "位置",
+    "osVersion": "系统版本",
+    "runtimeVersion": "运行时版本",
+    "updateChannel": "更新渠道",
+    "updateCreatedAt": "更新创建时间",
+    "website": "网站",
+    "privacyStatement": "隐私声明",
+    "appInformation": "应用信息",
+    "systemInformation": "系统信息",
+    "updateInformation": "更新信息"
   },
   "errors": {
     "networkError": "网络错误，请检查您的连接。",

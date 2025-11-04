@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
@@ -64,36 +64,6 @@ export default function SettingsScreen() {
         className="flex-1 px-5 py-5"
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Section */}
-        <View className="mb-8">
-          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            {t('settings.account')}
-          </Text>
-          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
-            <SettingItem
-              title={t('settings.profileInformation')}
-              subtitle={t('settings.managePersonalDetails')}
-              onPress={() => {
-                // Navigate to profile edit
-              }}
-            />
-            <SettingItem
-              title={t('settings.security')}
-              subtitle={t('settings.passwordAndSecurity')}
-              onPress={() => {
-                // Navigate to security settings
-              }}
-            />
-            <SettingItem
-              title={t('settings.walletSettings')}
-              subtitle={t('settings.manageConnectedWallets')}
-              onPress={() => {
-                // Navigate to wallet settings
-              }}
-            />
-          </View>
-        </View>
-
         {/* Preferences Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
@@ -101,10 +71,10 @@ export default function SettingsScreen() {
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title={t('settings.notifications')}
-              subtitle={t('settings.pushNotificationsAndAlerts')}
+              title={t('settings.currency')}
+              subtitle="USD"
               onPress={() => {
-                // Navigate to notification settings
+                // Navigate to currency selection
               }}
             />
             <SettingItem
@@ -115,73 +85,25 @@ export default function SettingsScreen() {
               }}
             />
             <SettingItem
-              title={t('settings.theme')}
-              subtitle={t('settings.light')}
+              title={t('settings.security')}
+              subtitle={t('settings.passwordAndSecurity')}
               onPress={() => {
-                // Navigate to theme selection
-              }}
-            />
-            <SettingItem
-              title={t('settings.darkMode')}
-              rightComponent={
-                <Switch
-                  value={false}
-                  onValueChange={() => {
-                    // Handle theme toggle
-                  }}
-                  trackColor={{ false: '#e5e7eb', true: '#667eea' }}
-                  thumbColor="#fff"
-                />
-              }
-              showArrow={false}
-            />
-          </View>
-        </View>
-
-        {/* Privacy & Security Section */}
-        <View className="mb-8">
-          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            {t('settings.privacyAndSecurity')}
-          </Text>
-          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
-            <SettingItem
-              title={t('settings.privacyPolicy')}
-              onPress={() => {
-                // Open privacy policy
-              }}
-            />
-            <SettingItem
-              title={t('settings.termsOfService')}
-              onPress={() => {
-                // Open terms of service
-              }}
-            />
-            <SettingItem
-              title={t('settings.dataExport')}
-              subtitle={t('settings.downloadYourData')}
-              onPress={() => {
-                // Handle data export
+                // Navigate to security settings
               }}
             />
           </View>
         </View>
 
-        {/* Support Section */}
+        {/* Help & Support Section */}
         <View className="mb-8">
           <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            {t('settings.support')}
+            {t('settings.helpAndSupport')}
           </Text>
           <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title={t('settings.helpCenter')}
+              title={t('settings.about')}
               onPress={() => {
-                // Open help center
-              }}
-            />
-            <SettingItem
-              title={t('settings.contactSupport')}
-              onPress={() => {
-                // Open contact support
+                router.push('/settings/about');
               }}
             />
             <SettingItem
@@ -190,24 +112,10 @@ export default function SettingsScreen() {
                 // Open bug report
               }}
             />
-          </View>
-        </View>
-
-        {/* About Section */}
-        <View className="mb-8">
-          <Text className="text-base font-medium text-gray-500 mb-3 px-1">
-            {t('settings.about')}
-          </Text>
-          <View className="bg-white rounded-2xl overflow-hidden border border-gray-100">
             <SettingItem
-              title={t('settings.appVersion')}
-              subtitle="1.0.0"
-              showArrow={false}
-            />
-            <SettingItem
-              title={t('settings.openSourceLicenses')}
+              title={t('settings.support')}
               onPress={() => {
-                // Open licenses
+                // Open support
               }}
             />
           </View>
