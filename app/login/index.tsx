@@ -8,7 +8,6 @@ import {
   Image,
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
-import { ErrorDisplay } from '@/components/login/ErrorDisplay';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 import { Redirect } from 'expo-router';
 import AppleIcon from '@/assets/icon/login/apple.svg';
@@ -21,6 +20,7 @@ import SmsIcon from '@/assets/icon/login/sms.svg';
 import { usePrivy } from '@privy-io/expo';
 import { useFullScreenLoading } from '@/hooks/useFullScreenLoading';
 import { useTranslation } from 'react-i18next';
+import { TakoToast } from '@/components/common/TakoToast';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -68,6 +68,18 @@ export default function LoginScreen() {
   } = useAuth();
   const { user } = usePersistedPrivyUser();
 
+  // Show error toast when there's an error
+  React.useEffect(() => {
+    const errorMessage = error || (privyError ? privyError.message : '');
+    if (errorMessage) {
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: errorMessage,
+      });
+    }
+  }, [error, privyError]);
+
   if (user) {
     return <Redirect href="/(tabs)/home" />;
   }
@@ -108,10 +120,6 @@ export default function LoginScreen() {
               onPasskeyLogin={handlePasskeyLogin}
             />
           </View>
-
-          <ErrorDisplay
-            error={error || (privyError ? privyError.message : '')}
-          />
         </ScrollView>
       </View>
     </>
@@ -160,7 +168,12 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
       <TouchableOpacity
         className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
         onPress={() => {
-          /* SMS function */
+          TakoToast.show({
+            type: 'normal',
+            status: 'info',
+            message: `SMS ${t('actions.comingSoon')}`,
+          });
+          // TODO: Implement SMS login
         }}
         disabled={isLoading}
       >
@@ -240,7 +253,18 @@ function OAuthSection({
         <Text className="text-lg text-gray-400">›</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white">
+      <TouchableOpacity
+        className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
+        onPress={() => {
+          TakoToast.show({
+            type: 'normal',
+            status: 'info',
+            message: `Wallet ${t('actions.comingSoon')}`,
+          });
+          // TODO: Implement Wallet login
+        }}
+        disabled={isLoading}
+      >
         <View className="flex-row items-center flex-1">
           <WalletIcon />
           <Text className="ml-3 text-base font-medium text-gray-900 flex-1">

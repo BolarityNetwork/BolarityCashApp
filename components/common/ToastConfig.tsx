@@ -6,6 +6,8 @@ import ToastImportantCommon from '@/assets/icon/toast/toast-important-common.svg
 import ToastImportantSuccess from '@/assets/icon/toast/toast-important-success.svg';
 import ToastImportantError from '@/assets/icon/toast/toast-important-error.svg';
 import ToastSuccessWithBackground from '@/assets/icon/toast/toast-success-with-background.svg';
+import ToastNormalError from '@/assets/icon/toast/toast-normal-error.svg';
+import ToastNormalSuccess from '@/assets/icon/toast/toast-normal-success.svg';
 
 export const toastConfig: ToastConfig = {
   TakoToastError: ({ text1 }) => (
@@ -56,7 +58,7 @@ export const toastConfig: ToastConfig = {
             className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
-            <ToastImportantError />
+            <ToastNormalError />
             <Text className="ml-[10px] text-white font-bold text-[14px]">
               {text1}
             </Text>
@@ -79,7 +81,7 @@ export const toastConfig: ToastConfig = {
             className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
-            <ToastImportantSuccess />
+            <ToastNormalSuccess />
             <Text className="ml-[10px] text-white font-bold text-[14px]">
               {text1}
             </Text>
