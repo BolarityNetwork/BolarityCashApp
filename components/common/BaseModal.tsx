@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { TakoToast } from './TakoToast';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from './ToastConfig';
 
 interface ModalProps {
   visible: boolean;
@@ -85,6 +88,8 @@ export const BaseModal: React.FC<ModalProps> = ({
         >
           {children}
         </ScrollView>
+        <TakoToast.Component />
+        <Toast config={toastConfig} />
       </SafeAreaView>
     </Modal>
   );
