@@ -32,11 +32,14 @@ import NotificationIcon from '@/assets/icon/profile/notification.svg';
 import ShareIcon from '@/assets/icon/profile/share.svg';
 import ContactIcon from '@/assets/icon/profile/contact.svg';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/hooks/useLanguage';
+import { TakoToast } from '@/components/common/TakoToast';
 
 export default function ProfileScreen() {
   const { user: persistedUser, logout } = usePersistedPrivyUser();
   const router = useRouter();
   const { t } = useTranslation();
+  const { currentLanguageInfo } = useLanguage();
   const {
     activeWallet,
     getAvailableNetworks,
@@ -59,7 +62,7 @@ export default function ProfileScreen() {
   return (
     <CommonSafeAreaView className="flex-1 bg-white" isIncludeBottomBar={true}>
       <StatusBar barStyle="dark-content" />
-      <ProfileHeader onSettingsPress={() => router.push('/settings')} />
+      <ProfileHeader />
 
       <ScrollView
         className="flex-1"
@@ -71,35 +74,18 @@ export default function ProfileScreen() {
           profileState={profileState}
         />
 
-        <SettingSection title={t('appProfile.security')}>
-          <SettingItem
-            icon={<KeyIcon />}
-            title={t('appProfile.keysAndRecovery')}
-            onPress={() => router.push('/settings/keys-recovery')}
-          />
-          <SettingItem
-            icon={<SpendingIcon />}
-            title={t('appProfile.spendingLimits')}
-            onPress={() => router.push('/settings/spending-limits')}
-          />
-          <SettingItem
-            icon={<PrivyIcon />}
-            title={t('appProfile.privyRelative')}
-            onPress={() => router.push('/settings/privy-relative')}
-          />
-        </SettingSection>
-
-        {/* General Section */}
-        <SettingSection title={t('appProfile.general')}>
+        {/* Feature Section */}
+        <SettingSection title={t('appProfile.feature')}>
           <SettingItem
             icon={<EditIcon />}
             title={t('appProfile.editWallet')}
-            onPress={() => router.push('/settings/edit-wallet')}
-          />
-          <SettingItem
-            icon={<NotificationIcon />}
-            title={t('appProfile.notifications')}
-            onPress={() => router.push('/settings/notifications')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.editWallet')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
           <SettingItem
             icon={<AddressIcon />}
@@ -107,33 +93,146 @@ export default function ProfileScreen() {
             onPress={() => router.push('/settings/address-book')}
           />
           <SettingItem
-            icon={<SettingIcon />}
-            title={t('appProfile.setting')}
-            onPress={() => router.push('/settings')}
+            icon={<NetworkIcon />}
+            title={t('appProfile.network')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.network')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
           <SettingItem
             icon={<NftsIcon />}
             title={t('appProfile.nfts')}
-            onPress={() => router.push('/settings/nfts')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.nfts')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
           <SettingItem
-            icon={<NetworkIcon />}
-            title={t('appProfile.network')}
-            onPress={() => router.push('/settings/network')}
+            icon={<KeyIcon />}
+            title={t('appProfile.keysAndRecovery')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.keysAndRecovery')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+          <SettingItem
+            icon={<SpendingIcon />}
+            title={t('appProfile.spendingLimits')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.spendingLimits')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+          <SettingItem
+            icon={<PrivyIcon />}
+            title={t('appProfile.privyRelative')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.privyRelative')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+          <SettingItem
+            icon={<NotificationIcon />}
+            title={t('appProfile.notifications')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.notifications')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
         </SettingSection>
 
-        {/* About Section */}
-        <SettingSection title={t('appProfile.about')}>
+        {/* Preference Section */}
+        <SettingSection title={t('settings.preferences')}>
+          <SettingItem
+            icon={<SettingIcon />}
+            title={t('settings.currency')}
+            subtitle="USD"
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('settings.currency')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+          <SettingItem
+            icon={<SettingIcon />}
+            title={t('settings.language')}
+            subtitle={currentLanguageInfo.name}
+            onPress={() => router.push('/settings/language')}
+          />
+          <SettingItem
+            icon={<SettingIcon />}
+            title={t('settings.security')}
+            subtitle={t('settings.passwordAndSecurity')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('settings.security')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+        </SettingSection>
+
+        {/* Help & Support Section */}
+        <SettingSection title={t('settings.helpAndSupport')}>
+          <SettingItem
+            icon={<SettingIcon />}
+            title={t('settings.about')}
+            onPress={() => router.push('/settings/about')}
+          />
           <SettingItem
             icon={<ContactIcon />}
             title={t('appProfile.contactSupport')}
-            onPress={() => router.push('/settings/contact-support')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.contactSupport')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
           <SettingItem
             icon={<ShareIcon />}
             title={t('appProfile.shareFeedback')}
-            onPress={() => router.push('/settings/share-feedback')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.shareFeedback')} ${t('actions.comingSoon')}`,
+              });
+            }}
+          />
+          <SettingItem
+            icon={<SettingIcon />}
+            title={t('appProfile.reportBug')}
+            onPress={() => {
+              TakoToast.show({
+                type: 'normal',
+                status: 'info',
+                message: `${t('appProfile.reportBug')} ${t('actions.comingSoon')}`,
+              });
+            }}
           />
           <SettingItem
             icon={<FollowingIcon />}
