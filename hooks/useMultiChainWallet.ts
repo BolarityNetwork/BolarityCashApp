@@ -6,8 +6,8 @@ import {
   createContext,
   useContext,
 } from 'react';
-import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TakoToast } from '@/components/common/TakoToast';
 import {
   usePrivy,
   useEmbeddedEthereumWallet,
@@ -466,9 +466,17 @@ export function useMultiChainWalletState(): WalletContextType {
         await provider.ensureNetwork(network);
         setState(prev => ({ ...prev, activeNetwork: network }));
         await Storage.save({ activeNetwork: network });
-        Alert.alert('Success', `Switched to ${NETWORKS[network].name}`);
+        TakoToast.show({
+          type: 'normal',
+          status: 'success',
+          message: `Switched to ${NETWORKS[network].name}`,
+        });
       } catch (error: any) {
-        Alert.alert('Error', `Failed to switch: ${error.message}`);
+        TakoToast.show({
+          type: 'normal',
+          status: 'error',
+          message: `Failed to switch: ${error.message}`,
+        });
         throw error;
       } finally {
         setIsSwitching(false);
@@ -479,7 +487,11 @@ export function useMultiChainWalletState(): WalletContextType {
 
   const createSolanaWallet = useCallback(async () => {
     if (!user) {
-      Alert.alert('Error', 'Please login first');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Please login first',
+      });
       return false;
     }
 
@@ -489,12 +501,20 @@ export function useMultiChainWalletState(): WalletContextType {
       if (wallet) {
         setState(prev => ({ ...prev, activeChain: 'solana' }));
         await Storage.save({ activeChain: 'solana' });
-        Alert.alert('Success', 'Solana wallet created');
+        TakoToast.show({
+          type: 'normal',
+          status: 'success',
+          message: 'Solana wallet created',
+        });
         return true;
       }
       throw new Error('Failed to create wallet');
     } catch (_) {
-      Alert.alert('Error', 'Failed to create Solana wallet');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Failed to create Solana wallet',
+      });
       return false;
     } finally {
       setIsCreating(false);
@@ -502,10 +522,12 @@ export function useMultiChainWalletState(): WalletContextType {
   }, [user, createSolWallet]);
 
   const removeSolanaWallet = useCallback(async () => {
-    Alert.alert(
-      'Info',
-      'Wallet removal not supported. It remains linked to your account.'
-    );
+    TakoToast.show({
+      type: 'normal',
+      status: 'info',
+      message:
+        'Wallet removal not supported. It remains linked to your account.',
+    });
   }, []);
 
   const getActiveWallet = useCallback(() => {
@@ -585,12 +607,11 @@ export function useMultiChainWalletState(): WalletContextType {
       const txHash = await txHandler.sendTransaction(address);
 
       if (state.activeChain === 'ethereum') {
-        const network = NETWORKS[state.activeNetwork];
-        Alert.alert(
-          'Transaction Sent!',
-          `Hash: ${txHash.substring(0, 10)}...\n\nView on ${network.blockExplorer}`,
-          [{ text: 'OK' }]
-        );
+        TakoToast.show({
+          type: 'normal',
+          status: 'success',
+          message: `Transaction Sent! Hash: ${txHash.substring(0, 10)}...`,
+        });
       }
 
       return txHash;

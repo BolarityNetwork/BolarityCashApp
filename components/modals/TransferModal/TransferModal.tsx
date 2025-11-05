@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { BaseModal } from '@/components/common/BaseModal';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
@@ -16,6 +16,7 @@ import RecipientStep from './RecipientStep';
 import AmountStep from './AmountStep';
 import ConfirmStep from './ConfirmStep';
 import ResultStep from './ResultStep';
+import { TakoToast } from '@/components/common/TakoToast';
 
 interface TransferModalProps {}
 
@@ -98,10 +99,11 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
   // Handle token selection
   const handleTokenSelect = useCallback((token: Token) => {
     if (!token.balance || parseFloat(token.balance) <= 0) {
-      Alert.alert(
-        'Insufficient Balance',
-        'Please select a token with balance greater than 0'
-      );
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Please select a token with balance greater than 0',
+      });
       return;
     }
     setSelectedToken(token);
@@ -118,7 +120,11 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
   // Handle address input completion
   const handleAddressInputComplete = useCallback(() => {
     if (!recipientAddress.trim()) {
-      Alert.alert('Error', 'Please enter recipient address');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Please enter recipient address',
+      });
       return;
     }
     setCurrentStep(Step.ENTER_AMOUNT);
@@ -144,7 +150,11 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
   // Handle amount input completion
   const handleAmountInputComplete = useCallback(() => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Error', 'Please enter a valid amount');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Please enter a valid amount',
+      });
       return;
     }
     setCurrentStep(Step.CONFIRM);
@@ -203,11 +213,13 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
       setCurrentStep(Step.RESULT);
     } catch (error: any) {
       console.error('Transfer Failed:', error);
-      Alert.alert(
-        'Transfer Failed',
-        error?.message ||
-          'Please check your network connection and permissions, then try again'
-      );
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message:
+          error?.message ||
+          'Please check your network connection and permissions, then try again',
+      });
       setIsSuccess(false);
       setCurrentStep(Step.RESULT);
     } finally {
@@ -231,9 +243,17 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
         try {
           addAddress(name.trim(), recipientAddress);
           setShowAddToAddressBook(false);
-          Alert.alert('Success', 'Address has been added to address book');
+          TakoToast.show({
+            type: 'normal',
+            status: 'success',
+            message: 'Address has been added to address book',
+          });
         } catch (_error) {
-          Alert.alert('Error', 'Failed to add address, please try again');
+          TakoToast.show({
+            type: 'normal',
+            status: 'error',
+            message: 'Failed to add address, please try again',
+          });
         }
       }
     },

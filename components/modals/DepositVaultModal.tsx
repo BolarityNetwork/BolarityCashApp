@@ -27,6 +27,9 @@ import {
 import AnimatedNumber from '../AnimatedNumber';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import { TakoToast } from '@/components/common/TakoToast';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '@/components/common/ToastConfig';
 
 interface DepositVaultModalProps {
   visible: boolean;
@@ -43,7 +46,6 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [isDepositing, setIsDepositing] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { activeWallet } = useMultiChainWallet();
 
   const {
@@ -69,12 +71,20 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   // Handle deposit
   const handleDeposit = useCallback(async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert(t('modals.error'), t('modals.pleaseEnterValidDepositAmount'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.pleaseEnterValidDepositAmount'),
+      });
       return;
     }
 
     if (!selectedVault) {
-      Alert.alert(t('modals.error'), t('modals.noVaultSelected'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.noVaultSelected'),
+      });
       return;
     }
 
@@ -83,12 +93,15 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       selectedVault.protocol.toLowerCase() === 'pendle' &&
       parseFloat(depositAmount) < 0.01
     ) {
-      Alert.alert(t('modals.error'), t('modals.pendleMinimumDepositInfo'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.pendleMinimumDepositInfo'),
+      });
       return;
     }
 
     setIsDepositing(true);
-    setError(null);
 
     try {
       const protocol = selectedVault.protocol.toLowerCase() as
@@ -136,27 +149,24 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       );
 
       if (result.success) {
-        Alert.alert(
-          t('modals.depositSuccessful'),
-          `${t('modals.depositSuccessfulDetails')} ${depositAmount} USDC ${t('modals.toProtocol')} ${selectedVault.protocol}\n${t('modals.transaction')} ${result.txHash?.slice(0, 10)}...`,
-          [
-            {
-              text: t('modals.ok'),
-              onPress: () => {
-                setDepositAmount('');
-                refetchBalance();
-              },
-            },
-          ]
-        );
+        TakoToast.show({
+          type: 'normal',
+          status: 'success',
+          message: `${t('modals.depositSuccessfulDetails')} ${depositAmount} USDC ${t('modals.toProtocol')} ${selectedVault.protocol}`,
+        });
+        setDepositAmount('');
+        refetchBalance();
       } else {
         throw new Error(result.error || t('modals.depositFailed'));
       }
     } catch (err) {
       console.error('❌ Deposit error:', err);
-      const errorMsg = getErrorMessage(err);
-      setError(errorMsg);
-      Alert.alert(t('modals.depositFailed'), errorMsg);
+      const errorMsg = getErrorMessage(err, t);
+      TakoToast.show({
+        type: 'important',
+        status: 'error',
+        message: errorMsg,
+      });
     } finally {
       setIsDepositing(false);
     }
@@ -172,15 +182,20 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   // Handle withdraw
   const handleWithdraw = useCallback(async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
-      Alert.alert(
-        t('modals.error'),
-        t('modals.pleaseEnterValidWithdrawAmount')
-      );
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.pleaseEnterValidWithdrawAmount'),
+      });
       return;
     }
 
     if (!selectedVault) {
-      Alert.alert(t('modals.error'), t('modals.noVaultSelected'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.noVaultSelected'),
+      });
       return;
     }
 
@@ -193,7 +208,6 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
           text: t('modals.confirm'),
           onPress: async () => {
             setIsWithdrawing(true);
-            setError(null);
 
             try {
               const protocol = selectedVault.protocol.toLowerCase() as
@@ -241,27 +255,24 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
               );
 
               if (result.success) {
-                Alert.alert(
-                  t('modals.withdrawalSuccessful'),
-                  `${t('modals.withdrawalSuccessfulDetails')} ${depositAmount} ${t('modals.withdrew')} ${selectedVault.protocol}\n${t('modals.transaction')} ${result.txHash?.slice(0, 10)}...`,
-                  [
-                    {
-                      text: t('modals.ok'),
-                      onPress: () => {
-                        setDepositAmount('');
-                        refetchBalance();
-                      },
-                    },
-                  ]
-                );
+                TakoToast.show({
+                  type: 'normal',
+                  status: 'success',
+                  message: `${t('modals.withdrawalSuccessfulDetails')} ${depositAmount} ${t('modals.withdrew')} ${selectedVault.protocol}`,
+                });
+                setDepositAmount('');
+                refetchBalance();
               } else {
                 throw new Error(result.error || t('modals.withdrawalFailed'));
               }
             } catch (err) {
               console.error('❌ Withdrawal error:', err);
-              const errorMsg = getErrorMessage(err);
-              setError(errorMsg);
-              Alert.alert(t('modals.withdrawalFailed'), errorMsg);
+              const errorMsg = getErrorMessage(err, t);
+              TakoToast.show({
+                type: 'important',
+                status: 'error',
+                message: errorMsg,
+              });
             } finally {
               setIsWithdrawing(false);
             }
@@ -312,24 +323,6 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 40 }}
           >
-            {/* Error Display */}
-            {error && (
-              <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <Text className="text-red-700 text-sm font-medium mb-1">
-                  {t('modals.transactionError')}
-                </Text>
-                <Text className="text-red-600 text-xs">{error}</Text>
-                <TouchableOpacity
-                  onPress={() => setError(null)}
-                  className="mt-2 self-start"
-                >
-                  <Text className="text-red-600 text-xs font-semibold">
-                    {t('modals.dismiss')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
             {/* Vault Header */}
             <LinearGradient
               colors={['#10b981', '#06b6d4']}
@@ -503,6 +496,8 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
           </ScrollView>
         </SafeAreaView>
+        <TakoToast.Component />
+        <Toast config={toastConfig} />
       </KeyboardAvoidingView>
     </Modal>
   );

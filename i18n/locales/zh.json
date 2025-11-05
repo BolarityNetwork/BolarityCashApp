@@ -24,7 +24,10 @@
     "no": "否",
     "ok": "确定",
     "emailCopied": "邮件地址已复制到剪贴板",
-    "failedToCopy": "复制失败"
+    "addressCopied": "地址已复制到剪贴板",
+    "failedToCopy": "复制失败",
+    "failedToShare": "分享失败",
+    "add": "添加"
   },
   "navigation": {
     "home": "首页",
@@ -243,19 +246,20 @@
     "updateInformation": "更新信息"
   },
   "errors": {
-    "networkError": "网络错误，请检查您的连接。",
-    "serverError": "服务器错误，请稍后重试。",
-    "unauthorized": "未授权，请重新登录。",
-    "forbidden": "访问被拒绝。",
-    "notFound": "资源未找到。",
-    "validationError": "请检查您的输入。",
-    "insufficientBalance": "余额不足。",
-    "transactionFailed": "交易失败，请重试。",
-    "walletConnectionFailed": "钱包连接失败。",
-    "invalidAddress": "地址无效。",
-    "invalidAmount": "金额无效。",
-    "gasTooHigh": "燃料费过高。",
-    "slippageTooHigh": "滑点容忍度超出。"
+    "networkError": "网络错误",
+    "serverError": "服务器错误",
+    "unauthorized": "未授权",
+    "forbidden": "访问被拒绝",
+    "notFound": "资源未找到",
+    "validationError": "输入无效",
+    "insufficientBalance": "余额不足",
+    "transactionFailed": "交易失败",
+    "transactionCancelled": "交易已取消",
+    "walletConnectionFailed": "钱包连接失败",
+    "invalidAddress": "地址无效",
+    "invalidAmount": "金额无效",
+    "gasTooHigh": "燃料费过高",
+    "slippageTooHigh": "滑点超出"
   },
   "success": {
     "transactionSent": "交易发送成功",

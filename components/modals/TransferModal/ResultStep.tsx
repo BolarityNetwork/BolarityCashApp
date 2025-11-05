@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Token } from './types';
+import { TakoToast } from '@/components/common/TakoToast';
 
 interface ResultStepProps {
   isSuccess: boolean | null;
@@ -30,7 +31,11 @@ const ResultStep: React.FC<ResultStepProps> = ({
 
   const handleAddToAddressBook = () => {
     if (!addressBookName.trim()) {
-      Alert.alert('Error', 'Please enter contact name');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Please enter contact name',
+      });
       return;
     }
     onAddToAddressBook?.(addressBookName);

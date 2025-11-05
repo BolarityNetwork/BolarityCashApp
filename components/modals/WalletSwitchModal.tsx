@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { BaseModal } from '@/components/common/BaseModal';
 import { WalletLogo } from '@/components/profile/WalletLogo';
 import { formatAddress } from '@/utils/profile';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import { useTranslation } from 'react-i18next';
+import { TakoToast } from '@/components/common/TakoToast';
 
 interface WalletSwitchModalProps {
   visible: boolean;
@@ -34,7 +35,11 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
   };
 
   const handleCreateEthereumWallet = () => {
-    Alert.alert('Info', t('modals.ethereumWalletInfo'));
+    TakoToast.show({
+      type: 'normal',
+      status: 'info',
+      message: t('modals.ethereumWalletInfo'),
+    });
     onClose();
   };
 

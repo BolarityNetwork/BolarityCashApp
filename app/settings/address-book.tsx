@@ -16,10 +16,12 @@ import {
 } from '@/stores/addressBookStore';
 import { AddAddressModal } from '@/components/modals/AddAddressModal';
 import { useNiceModal } from '@/hooks/useNiceModal';
-
+import { TakoToast } from '@/components/common/TakoToast';
+import { useTranslation } from 'react-i18next';
 import * as Clipboard from 'expo-clipboard';
 
 export default function AddressBookScreen() {
+  const { t } = useTranslation();
   const { addresses, deleteAddress } = useAddressBookStore();
   const addAddressModal = useNiceModal(AddAddressModal);
 
@@ -60,8 +62,21 @@ export default function AddressBookScreen() {
 
   // Copy address to clipboard
   const handleCopyAddress = async (address: string) => {
-    await Clipboard.setStringAsync(address);
-    Alert.alert('Success', 'Address copied to clipboard');
+    try {
+      await Clipboard.setStringAsync(address);
+      TakoToast.show({
+        type: 'normal',
+        status: 'success',
+        message: t('common.addressCopied') || 'Address copied to clipboard',
+      });
+    } catch (error) {
+      console.error('Error copying address:', error);
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('common.failedToCopy') || 'Failed to copy address',
+      });
+    }
   };
 
   // Share address
@@ -73,7 +88,11 @@ export default function AddressBookScreen() {
       });
     } catch (error) {
       console.error('Error sharing address:', error);
-      Alert.alert('Error', 'Sharing failed', [{ text: 'OK', style: 'cancel' }]);
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('common.failedToShare') || 'Sharing failed',
+      });
     }
   };
 

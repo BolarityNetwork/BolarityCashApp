@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,6 +12,7 @@ import { BaseModal } from '../common/BaseModal';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { useAddressBookStore } from '@/stores/addressBookStore';
 import { useTranslation } from 'react-i18next';
+import { TakoToast } from '@/components/common/TakoToast';
 
 const AddAddressModalComponent: React.FC = () => {
   const { t } = useTranslation();
@@ -37,10 +37,14 @@ const AddAddressModalComponent: React.FC = () => {
   // Handle error display
   useEffect(() => {
     if (error) {
-      Alert.alert(t('modals.error'), error);
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: error,
+      });
       clearError();
     }
-  }, [error, clearError, t]);
+  }, [error, clearError]);
 
   // Validate Ethereum address
   const validateAddress = (addr: string): boolean => {
@@ -56,12 +60,20 @@ const AddAddressModalComponent: React.FC = () => {
   const handleSubmit = async () => {
     // 验证输入
     if (!name.trim()) {
-      Alert.alert('Notice', t('modals.enterAddressName'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.enterAddressName'),
+      });
       return;
     }
 
     if (!address.trim()) {
-      Alert.alert('Notice', t('modals.enterAddress'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.enterAddress'),
+      });
       return;
     }
 
@@ -80,7 +92,11 @@ const AddAddressModalComponent: React.FC = () => {
       modal.hide();
     } catch (err) {
       console.error('Error adding/updating address:', err);
-      Alert.alert(t('modals.error'), t('modals.operationFailed'));
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: t('modals.operationFailed'),
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -122,7 +138,7 @@ const AddAddressModalComponent: React.FC = () => {
             {/* 地址输入 */}
             <View style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 14, color: '#64748b', marginBottom: 8 }}>
-                Address
+                {t('common.address')}
               </Text>
               <TextInput
                 style={{

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Share } from 'react-native';
+import { View, Text, TouchableOpacity, Share } from 'react-native';
 import QRCode from 'react-native-qrcode-styled';
 import { BaseModal } from '@/components/common/BaseModal';
 import * as Clipboard from 'expo-clipboard';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { useTranslation } from 'react-i18next';
+import { TakoToast } from '@/components/common/TakoToast';
 
 interface ReceiveModalProps {}
 
@@ -48,7 +49,11 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
 
   const handleCopyAddress = async () => {
     if (!walletAddress) {
-      Alert.alert('Error', 'No wallet address available');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'No wallet address available',
+      });
       return;
     }
 
@@ -57,13 +62,21 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (_error) {
-      Alert.alert('Error', 'Failed to copy address');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Failed to copy address',
+      });
     }
   };
 
   const handleShareAddress = async () => {
     if (!walletAddress) {
-      Alert.alert('Error', 'No wallet address available');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'No wallet address available',
+      });
       return;
     }
 
@@ -73,7 +86,11 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
         title: 'Wallet Address',
       });
     } catch (_error) {
-      Alert.alert('Error', 'Failed to share address');
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: 'Failed to share address',
+      });
     }
   };
 
