@@ -5,6 +5,7 @@ import { View, Text, TouchableOpacity, Modal, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TakoToast } from '@/components/common/TakoToast';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 
 interface ActionModalProps {
   onReceivePress?: () => void;
@@ -63,7 +64,12 @@ const ActionModal: React.FC<ActionModalProps & NiceModalProps> = ({
       title: t('actions.portfolio'),
       icon: 'trending-up' as const,
       color: 'bg-black',
-      onPress: () => handleComingSoon(t('actions.portfolio')),
+      onPress: () => {
+        handleClose();
+        setTimeout(() => {
+          router.push('/portfolio');
+        }, 250);
+      },
     },
     {
       id: 'actions',
