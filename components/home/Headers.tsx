@@ -23,6 +23,8 @@ const Header: React.FC<HeaderProps> = ({
   currentWalletInfo,
   formatAddress,
 }) => {
+  console.log(222, { user, currentWalletInfo });
+
   const { t } = useTranslation();
   return (
     <View className="px-5 pt-3 pb-1.5">

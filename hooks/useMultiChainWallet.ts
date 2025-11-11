@@ -3,6 +3,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   createContext,
   useContext,
 } from 'react';
@@ -420,9 +421,34 @@ export function useMultiChainWalletState(): WalletContextType {
   // Privy hooks
   const { wallets: ethWallets } = useEmbeddedEthereumWallet();
   const ethAccount = getUserEmbeddedEthereumWallet(user);
+  console.log(333, { ethAccount, user });
   const { wallets: solWallets, create: createSolWallet } =
     useEmbeddedSolanaWallet();
   const solAccount = getUserEmbeddedSolanaWallet(user);
+
+  const externalEthereumAccount = useMemo(() => {
+    if (!user?.linked_accounts?.length) return null;
+    return (
+      user.linked_accounts.find(
+        account =>
+          account.type === 'wallet' && account.chain_type === 'ethereum'
+      ) ?? null
+    );
+  }, [user]);
+
+  const externalSolanaAccount = useMemo(() => {
+    if (!user?.linked_accounts?.length) return null;
+    return (
+      user.linked_accounts.find(
+        account => account.type === 'wallet' && account.chain_type === 'solana'
+      ) ?? null
+    );
+  }, [user]);
+
+  const ethereumAddress =
+    ethAccount?.address || externalEthereumAccount?.address || null;
+  const solanaAddress =
+    solAccount?.address || externalSolanaAccount?.address || null;
 
   // 核心状态
   const [state, setState] = useState<WalletState>({
@@ -535,7 +561,7 @@ export function useMultiChainWalletState(): WalletContextType {
       const network = NETWORKS[state.activeNetwork];
       return {
         type: 'ethereum' as const,
-        address: ethAccount?.address || null,
+        address: ethereumAddress,
         network: network?.name || 'Ethereum Mainnet',
         networkConfig: network,
         iconType: 'ethereum' as const,
@@ -544,14 +570,14 @@ export function useMultiChainWalletState(): WalletContextType {
     } else {
       return {
         type: 'solana' as const,
-        address: solAccount?.address || null,
+        address: solanaAddress,
         network: 'mainnet-beta',
         networkConfig: null,
         iconType: 'solana' as const,
         fallbackIcon: '🌞',
       };
     }
-  }, [state, ethAccount, solAccount]);
+  }, [state, ethereumAddress, solanaAddress]);
 
   const getCurrentNetwork = useCallback(
     () => NETWORKS[state.activeNetwork] || NETWORKS.sepolia,
@@ -562,8 +588,8 @@ export function useMultiChainWalletState(): WalletContextType {
 
   const canSwitchTo = useCallback(
     (chain: ChainType) =>
-      chain === 'ethereum' ? !!ethAccount?.address : !!solAccount,
-    [ethAccount, solAccount]
+      chain === 'ethereum' ? !!ethereumAddress : !!solanaAddress,
+    [ethereumAddress, solanaAddress]
   );
 
   const getProvider = useCallback(() => provider.get(), [provider]);
@@ -639,9 +665,9 @@ export function useMultiChainWalletState(): WalletContextType {
     // 状态
     activeChain: state.activeChain,
     activeNetwork: state.activeNetwork,
-    ethereumAddress: ethAccount?.address || null,
-    solanaAddress: solAccount?.address || null,
-    hasSolanaWallet: !!solAccount,
+    ethereumAddress,
+    solanaAddress,
+    hasSolanaWallet: !!solanaAddress,
     isCreatingSolanaWallet: isCreating,
     isSwitchingNetwork: isSwitching,
 
@@ -671,7 +697,7 @@ export function useMultiChainWalletState(): WalletContextType {
     // 向后兼容
     activeWalletType: state.activeChain,
     activeEthereumNetwork: state.activeNetwork,
-    hasEthereumWallet: !!ethAccount?.address,
+    hasEthereumWallet: !!ethereumAddress,
     activeWallet: getActiveWallet(),
     switchWalletType: switchChain,
     switchEthereumNetwork: switchNetwork,

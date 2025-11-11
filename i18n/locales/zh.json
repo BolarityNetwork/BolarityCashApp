@@ -69,7 +69,9 @@
     "otherOptions": "其他选项",
     "google": "Google",
     "apple": "Apple",
-    "discord": "Discord"
+    "discord": "Discord",
+    "walletLoginSuccess": "钱包登录成功",
+    "walletLoginFailed": "钱包登录失败"
   },
   "wallet": {
     "balance": "余额",

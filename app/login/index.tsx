@@ -10,40 +10,29 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 import { Redirect } from 'expo-router';
-import AppleIcon from '@/assets/icon/login/apple.svg';
-import GoogleIcon from '@/assets/icon/login/google.svg';
 import WalletIcon from '@/assets/icon/login/wallet.svg';
-import DiscordIcon from '@/assets/icon/login/discord.svg';
 import PasskeyIcon from '@/assets/icon/login/passkey.svg';
 import EmailIcon from '@/assets/icon/login/email.svg';
 import SmsIcon from '@/assets/icon/login/sms.svg';
 import { usePrivy } from '@privy-io/expo';
+import {
+  useAccount,
+  useAppKit,
+  useAppKitState,
+} from '@reown/appkit-react-native';
 import { useFullScreenLoading } from '@/hooks/useFullScreenLoading';
 import { useTranslation } from 'react-i18next';
 import { TakoToast } from '@/components/common/TakoToast';
+import Constants from 'expo-constants';
 
-export const OAUTH_PROVIDERS = [
-  {
-    name: 'google',
-    label: 'Google',
-    colors: ['#4285F4', '#34A853'] as const,
-    icon: <GoogleIcon />,
-  },
-  {
-    name: 'apple',
-    label: 'Continue with Apple',
-    colors: ['#000', '#333'] as const,
-    icon: <AppleIcon />,
-  },
-  {
-    name: 'discord',
-    label: 'Continue with Discord',
-    colors: ['#5865F2', '#7289DA'] as const,
-    icon: <DiscordIcon />,
-  },
-] as const;
-
-export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]['name'];
+const SIWE_DOMAIN =
+  Constants.expoConfig?.extra?.siweDomain ||
+  Constants.expoConfig?.extra?.privyAppDomain ||
+  'app.bolarity.xyz';
+const SIWE_URI =
+  Constants.expoConfig?.extra?.siweUri ||
+  Constants.expoConfig?.extra?.privyAppUri ||
+  `https://app.bolarity.xyz`;
 
 export default function LoginScreen() {
   const { isReady, error: privyError } = usePrivy();
@@ -61,12 +50,76 @@ export default function LoginScreen() {
   const {
     isLoading,
     error,
-    oauthLoading,
     handleEmailLogin,
     handlePasskeyLogin,
-    handleOAuthLogin,
+    loginWithWallet,
+    siweState,
   } = useAuth();
   const { user } = usePersistedPrivyUser();
+  const { address, isConnected, chainId, namespace } = useAccount();
+  const { open, close } = useAppKit();
+  const { isLoading: isAppKitLoading } = useAppKitState();
+  const walletLoginAttemptRef = React.useRef(false);
+
+  const siweInProgress =
+    siweState.status === 'generating-message' ||
+    siweState.status === 'awaiting-signature' ||
+    siweState.status === 'submitting-signature';
+
+  const handleWalletPress = React.useCallback(() => {
+    try {
+      open();
+    } catch (_err: any) {
+      TakoToast.show({
+        type: 'normal',
+        status: 'error',
+        message: _err?.message || t('errors.walletConnectionFailed'),
+      });
+    }
+  }, [open, t]);
+
+  React.useEffect(() => {
+    if (user) {
+      walletLoginAttemptRef.current = false;
+      return;
+    }
+
+    if (!isConnected || !address || namespace !== 'eip155') {
+      if (!isConnected) {
+        walletLoginAttemptRef.current = false;
+      }
+      return;
+    }
+
+    if (walletLoginAttemptRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+    walletLoginAttemptRef.current = true;
+
+    (async () => {
+      try {
+        await loginWithWallet({
+          address,
+          domain: SIWE_DOMAIN,
+          uri: SIWE_URI,
+          chainId,
+        });
+        if (!cancelled) {
+          close();
+        }
+      } catch (_err) {
+        if (!cancelled) {
+          walletLoginAttemptRef.current = false;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isConnected, address, loginWithWallet, close, chainId, namespace]);
 
   // Show error toast when there's an error
   React.useEffect(() => {
@@ -113,11 +166,12 @@ export default function LoginScreen() {
           </View>
 
           <View className="bg-white rounded-2xl mx-1 shadow-sm overflow-hidden">
-            <OAuthSection
-              providers={OAUTH_PROVIDERS}
-              isLoading={isLoading || oauthLoading}
-              onProviderSelect={handleOAuthLogin}
+            <WalletOptions
+              isLoading={isLoading}
+              isAppKitLoading={isAppKitLoading}
+              isSiweInProgress={siweInProgress}
               onPasskeyLogin={handlePasskeyLogin}
+              onWalletPress={handleWalletPress}
             />
           </View>
         </ScrollView>
@@ -189,56 +243,24 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
   );
 }
 
-function OAuthSection({
-  providers,
+function WalletOptions({
   isLoading,
-  onProviderSelect,
+  isAppKitLoading,
+  isSiweInProgress,
   onPasskeyLogin,
-}: any) {
+  onWalletPress,
+}: {
+  isLoading: boolean;
+  isAppKitLoading: boolean;
+  isSiweInProgress: boolean;
+  onPasskeyLogin: () => void;
+  onWalletPress: () => void;
+}) {
   const { t } = useTranslation();
-  const renderProviderIcon = (providerName: string) => {
-    switch (providerName) {
-      case 'google':
-        return <GoogleIcon />;
-      case 'apple':
-        return <AppleIcon />;
-      case 'discord':
-        return <DiscordIcon />;
-      default:
-        return (
-          <Text className="text-xl mr-4">
-            {providers.find((p: any) => p.name === providerName)?.icon}
-          </Text>
-        );
-    }
-  };
-
-  const getProviderLabel = (providerName: string) => {
-    if (providerName === 'google') return t('auth.google');
-    if (providerName === 'apple') return t('auth.apple');
-    if (providerName === 'discord') return t('auth.discord');
-    return providerName;
-  };
+  const walletDisabled = isLoading || isAppKitLoading || isSiweInProgress;
 
   return (
     <View className="bg-white">
-      {providers.map((provider: any) => (
-        <TouchableOpacity
-          key={provider.name}
-          className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
-          onPress={() => onProviderSelect(provider.name)}
-          disabled={isLoading}
-        >
-          <View className="flex-row items-center">
-            {renderProviderIcon(provider.name)}
-            <Text className="ml-3 text-base font-medium text-gray-900">
-              {getProviderLabel(provider.name)}
-            </Text>
-          </View>
-          <Text className="text-lg text-gray-400">›</Text>
-        </TouchableOpacity>
-      ))}
-
       <TouchableOpacity
         className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
         onPress={onPasskeyLogin}
@@ -255,15 +277,8 @@ function OAuthSection({
 
       <TouchableOpacity
         className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
-        onPress={() => {
-          TakoToast.show({
-            type: 'normal',
-            status: 'info',
-            message: `Wallet ${t('actions.comingSoon')}`,
-          });
-          // TODO: Implement Wallet login
-        }}
-        disabled={isLoading}
+        onPress={onWalletPress}
+        disabled={walletDisabled}
       >
         <View className="flex-row items-center flex-1">
           <WalletIcon />

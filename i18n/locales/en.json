@@ -69,7 +69,9 @@
     "otherOptions": "Other options",
     "google": "Google",
     "apple": "Apple",
-    "discord": "Discord"
+    "discord": "Discord",
+    "walletLoginSuccess": "Wallet login successful",
+    "walletLoginFailed": "Wallet login failed"
   },
   "wallet": {
     "balance": "Balance",
