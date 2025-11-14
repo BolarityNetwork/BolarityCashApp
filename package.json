@@ -36,6 +36,8 @@
   "dependencies": {
     "@aave/client": "^0.7.0",
     "@aave/core-v3": "^1.19.3",
+    "@account-kit/infra": "^4.78.0",
+    "@account-kit/smart-contracts": "^4.78.0",
     "@ebay/nice-modal-react": "^1.2.13",
     "@ethersproject/shims": "^5.8.0",
     "@expo-google-fonts/inter": "^0.3.0",
