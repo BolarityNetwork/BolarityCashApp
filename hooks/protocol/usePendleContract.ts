@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { usePrivyWallet } from '../usePrivyWallet';
 import { ethers } from 'ethers';
 import { VaultOperationParams, VaultOperationResult } from '@/types/vault';
+import { useAlchemy7702Gasless } from '@/hooks/transactions/useAlchemy7702Gasless';
+import { base } from '@account-kit/infra';
 
 interface PendleContractOperations {
   deposit: (params: VaultOperationParams) => Promise<VaultOperationResult>;
@@ -15,12 +17,14 @@ interface PendleContractOperations {
 const PENDLE_ROUTER = '0x888888888889758F76e7103c6CbF23ABbF58F946';
 const PENDLE_API_BASE = 'https://api-v2.pendle.finance';
 
+const ZERO_ADDRESS =
+  '0x0000000000000000000000000000000000000000' as `0x${string}`;
+
 export function usePendleContract(): PendleContractOperations {
   const {
     isLoading: walletLoading,
     error: walletError,
     accounts,
-    sendTransaction,
     getAccounts,
     clearError: clearWalletError,
   } = usePrivyWallet();
@@ -28,10 +32,59 @@ export function usePendleContract(): PendleContractOperations {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const gaslessOptions = useMemo(
+    () => ({
+      chain: base,
+      apiKey: process.env.EXPO_PUBLIC_ALCHEMY_API_KEY ?? '',
+      policyId: process.env.EXPO_PUBLIC_ALCHEMY_POLICY_ID ?? '',
+      implementationAddress: (process.env
+        .EXPO_PUBLIC_ALCHEMY_IMPLEMENTATION_ADDRESS ??
+        ZERO_ADDRESS) as `0x${string}`,
+    }),
+    []
+  );
+
+  const {
+    isInitializing: isGaslessInitializing,
+    isSending: isGaslessSending,
+    error: gaslessError,
+    smartAccountAddress,
+    sendGaslessTransaction,
+  } = useAlchemy7702Gasless(gaslessOptions);
+
   const clearError = useCallback(() => {
     setError(null);
     clearWalletError();
   }, [clearWalletError]);
+
+  const validateGaslessConfig = useCallback(() => {
+    if (
+      !gaslessOptions.apiKey ||
+      !gaslessOptions.policyId ||
+      gaslessOptions.implementationAddress === ZERO_ADDRESS
+    ) {
+      throw new Error('Missing 7702 gasless configuration');
+    }
+  }, [gaslessOptions]);
+
+  const resolveTargetAddress = useCallback(
+    async (overrideAddress?: string): Promise<`0x${string}`> => {
+      if (overrideAddress) return overrideAddress as `0x${string}`;
+      if (smartAccountAddress) return smartAccountAddress;
+
+      let currentAccounts = accounts;
+      if (currentAccounts.length === 0) {
+        currentAccounts = await getAccounts();
+      }
+
+      if (currentAccounts.length === 0) {
+        throw new Error('No accounts available');
+      }
+
+      return currentAccounts[0] as `0x${string}`;
+    },
+    [accounts, getAccounts, smartAccountAddress]
+  );
 
   // Parse amount to wei
   const parseAmount = useCallback(
@@ -152,6 +205,8 @@ export function usePendleContract(): PendleContractOperations {
       setError(null);
 
       try {
+        validateGaslessConfig();
+
         const { vault, amount, userAddress } = params;
 
         // Validate minimum amount for Pendle (at least $0.01)
@@ -160,17 +215,7 @@ export function usePendleContract(): PendleContractOperations {
           throw new Error('Pendle requires minimum deposit of $0.01 USD');
         }
 
-        // Ensure there are accounts
-        let currentAccounts = accounts;
-        if (currentAccounts.length === 0) {
-          currentAccounts = await getAccounts();
-        }
-
-        if (currentAccounts.length === 0) {
-          throw new Error('No accounts available');
-        }
-
-        const targetAddress = userAddress || currentAccounts[0];
+        const targetAddress = await resolveTargetAddress(userAddress);
         const amountWei = parseAmount(amount, vault.decimals);
 
         console.log('Pendle Deposit:', {
@@ -203,11 +248,13 @@ export function usePendleContract(): PendleContractOperations {
               '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
             ]);
 
-            const approveTxHash = await sendTransaction({
-              from: targetAddress,
-              to: approval.token,
-              data: approveData,
-            });
+            const approveTxHash = await sendGaslessTransaction([
+              {
+                to: approval.token as `0x${string}`,
+                data: approveData as `0x${string}`,
+                value: 0n,
+              },
+            ]);
 
             console.log('✅ Approval transaction:', approveTxHash);
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -215,12 +262,13 @@ export function usePendleContract(): PendleContractOperations {
         }
 
         // 2. Execute swap via Pendle Router
-        const swapTxHash = await sendTransaction({
-          from: targetAddress,
-          to: swapQuote.tx.to,
-          data: swapQuote.tx.data,
-          value: swapQuote.tx.value || 0,
-        });
+        const swapTxHash = await sendGaslessTransaction([
+          {
+            to: (swapQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
+            data: (swapQuote.tx.data || '0x') as `0x${string}`,
+            value: BigInt(swapQuote.tx.value ?? 0),
+          },
+        ]);
 
         console.log('✅ Pendle swap transaction:', swapTxHash);
 
@@ -241,12 +289,12 @@ export function usePendleContract(): PendleContractOperations {
       }
     },
     [
-      accounts,
-      getAccounts,
-      sendTransaction,
       parseAmount,
       encodeFunctionCall,
       getSwapQuote,
+      resolveTargetAddress,
+      sendGaslessTransaction,
+      validateGaslessConfig,
     ]
   );
 
@@ -257,19 +305,11 @@ export function usePendleContract(): PendleContractOperations {
       setError(null);
 
       try {
+        validateGaslessConfig();
+
         const { vault, amount, userAddress } = params;
 
-        // Ensure there are accounts
-        let currentAccounts = accounts;
-        if (currentAccounts.length === 0) {
-          currentAccounts = await getAccounts();
-        }
-
-        if (currentAccounts.length === 0) {
-          throw new Error('No accounts available');
-        }
-
-        const targetAddress = userAddress || currentAccounts[0];
+        const targetAddress = await resolveTargetAddress(userAddress);
 
         console.log('Pendle Withdraw:', {
           vault: vault.marketAddress,
@@ -313,11 +353,13 @@ export function usePendleContract(): PendleContractOperations {
               '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
             ]);
 
-            const approveTxHash = await sendTransaction({
-              from: targetAddress,
-              to: approval.token,
-              data: approveData,
-            });
+            const approveTxHash = await sendGaslessTransaction([
+              {
+                to: approval.token as `0x${string}`,
+                data: approveData as `0x${string}`,
+                value: 0n,
+              },
+            ]);
 
             console.log('✅ Approval transaction:', approveTxHash);
             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -325,12 +367,13 @@ export function usePendleContract(): PendleContractOperations {
         }
 
         // 2. Execute redeem via Pendle Router
-        const redeemTxHash = await sendTransaction({
-          from: targetAddress,
-          to: redeemQuote.tx.to,
-          data: redeemQuote.tx.data,
-          value: redeemQuote.tx.value || 0,
-        });
+        const redeemTxHash = await sendGaslessTransaction([
+          {
+            to: (redeemQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
+            data: (redeemQuote.tx.data || '0x') as `0x${string}`,
+            value: BigInt(redeemQuote.tx.value ?? 0),
+          },
+        ]);
 
         console.log('✅ Pendle redeem transaction:', redeemTxHash);
 
@@ -350,14 +393,21 @@ export function usePendleContract(): PendleContractOperations {
         setIsLoading(false);
       }
     },
-    [accounts, getAccounts, sendTransaction, parseAmount, encodeFunctionCall]
+    [
+      parseAmount,
+      encodeFunctionCall,
+      resolveTargetAddress,
+      sendGaslessTransaction,
+      validateGaslessConfig,
+    ]
   );
 
   return {
     deposit,
     withdraw,
-    isLoading: isLoading || walletLoading,
-    error: error || walletError,
+    isLoading:
+      isLoading || walletLoading || isGaslessInitializing || isGaslessSending,
+    error: error || walletError || gaslessError,
     clearError,
   };
 }

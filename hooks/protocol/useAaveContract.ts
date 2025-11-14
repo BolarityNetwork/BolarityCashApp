@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { usePrivyWallet } from '../usePrivyWallet';
 import { ethers } from 'ethers';
 import { VaultOperationParams, VaultOperationResult } from '@/types/vault';
+import { useAlchemy7702Gasless } from '@/hooks/transactions/useAlchemy7702Gasless';
+import { base } from '@account-kit/infra';
 
 interface AaveContractOperations {
   deposit: (params: VaultOperationParams) => Promise<VaultOperationResult>;
@@ -11,12 +13,14 @@ interface AaveContractOperations {
   clearError: () => void;
 }
 
+const ZERO_ADDRESS =
+  '0x0000000000000000000000000000000000000000' as `0x${string}`;
+
 export function useAaveContract(): AaveContractOperations {
   const {
     isLoading: walletLoading,
     error: walletError,
     accounts,
-    sendTransaction,
     getAccounts,
     clearError: clearWalletError,
   } = usePrivyWallet();
@@ -24,10 +28,59 @@ export function useAaveContract(): AaveContractOperations {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const gaslessOptions = useMemo(
+    () => ({
+      chain: base,
+      apiKey: process.env.EXPO_PUBLIC_ALCHEMY_API_KEY ?? '',
+      policyId: process.env.EXPO_PUBLIC_ALCHEMY_POLICY_ID ?? '',
+      implementationAddress: (process.env
+        .EXPO_PUBLIC_ALCHEMY_IMPLEMENTATION_ADDRESS ??
+        ZERO_ADDRESS) as `0x${string}`,
+    }),
+    []
+  );
+
+  const {
+    isInitializing: isGaslessInitializing,
+    isSending: isGaslessSending,
+    error: gaslessError,
+    smartAccountAddress,
+    sendGaslessTransaction,
+  } = useAlchemy7702Gasless(gaslessOptions);
+
   const clearError = useCallback(() => {
     setError(null);
     clearWalletError();
   }, [clearWalletError]);
+
+  const validateGaslessConfig = useCallback(() => {
+    if (
+      !gaslessOptions.apiKey ||
+      !gaslessOptions.policyId ||
+      gaslessOptions.implementationAddress === ZERO_ADDRESS
+    ) {
+      throw new Error('Missing 7702 gasless configuration');
+    }
+  }, [gaslessOptions]);
+
+  const resolveTargetAddress = useCallback(
+    async (overrideAddress?: string): Promise<`0x${string}`> => {
+      if (overrideAddress) return overrideAddress as `0x${string}`;
+      if (smartAccountAddress) return smartAccountAddress;
+
+      let currentAccounts = accounts;
+      if (currentAccounts.length === 0) {
+        currentAccounts = await getAccounts();
+      }
+
+      if (currentAccounts.length === 0) {
+        throw new Error('No accounts available');
+      }
+
+      return currentAccounts[0] as `0x${string}`;
+    },
+    [accounts, getAccounts, smartAccountAddress]
+  );
 
   // Parse amount to wei
   const parseAmount = useCallback(
@@ -92,19 +145,10 @@ export function useAaveContract(): AaveContractOperations {
       setError(null);
 
       try {
+        validateGaslessConfig();
+
         const { vault, amount, userAddress } = params;
-
-        // Ensure there are accounts
-        let currentAccounts = accounts;
-        if (currentAccounts.length === 0) {
-          currentAccounts = await getAccounts();
-        }
-
-        if (currentAccounts.length === 0) {
-          throw new Error('No accounts available');
-        }
-
-        const targetAddress = userAddress || currentAccounts[0];
+        const targetAddress = await resolveTargetAddress(userAddress);
         const amountWei = parseAmount(amount, vault.decimals);
 
         console.log('Aave Deposit:', {
@@ -121,11 +165,13 @@ export function useAaveContract(): AaveContractOperations {
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
         ]);
 
-        const approveTxHash = await sendTransaction({
-          from: targetAddress,
-          to: vault.asset,
-          data: approveData,
-        });
+        const approveTxHash = await sendGaslessTransaction([
+          {
+            to: vault.asset as `0x${string}`,
+            data: approveData as `0x${string}`,
+            value: 0n,
+          },
+        ]);
 
         console.log('✅ Approval transaction:', approveTxHash);
 
@@ -143,11 +189,13 @@ export function useAaveContract(): AaveContractOperations {
           ]
         );
 
-        const supplyTxHash = await sendTransaction({
-          from: targetAddress,
-          to: vault.protocolSpecific?.poolAddress,
-          data: supplyData,
-        });
+        const supplyTxHash = await sendGaslessTransaction([
+          {
+            to: vault.protocolSpecific?.poolAddress as `0x${string}`,
+            data: supplyData as `0x${string}`,
+            value: 0n,
+          },
+        ]);
 
         console.log('✅ Supply transaction:', supplyTxHash);
 
@@ -167,7 +215,13 @@ export function useAaveContract(): AaveContractOperations {
         setIsLoading(false);
       }
     },
-    [accounts, getAccounts, sendTransaction, parseAmount, encodeFunctionCall]
+    [
+      parseAmount,
+      encodeFunctionCall,
+      resolveTargetAddress,
+      sendGaslessTransaction,
+      validateGaslessConfig,
+    ]
   );
 
   // Aave Withdraw
@@ -177,19 +231,11 @@ export function useAaveContract(): AaveContractOperations {
       setError(null);
 
       try {
+        validateGaslessConfig();
+
         const { vault, amount, userAddress } = params;
 
-        // Ensure there are accounts
-        let currentAccounts = accounts;
-        if (currentAccounts.length === 0) {
-          currentAccounts = await getAccounts();
-        }
-
-        if (currentAccounts.length === 0) {
-          throw new Error('No accounts available');
-        }
-
-        const targetAddress = userAddress || currentAccounts[0];
+        const targetAddress = await resolveTargetAddress(userAddress);
 
         // Handle 'all' amount
         const amountWei =
@@ -211,11 +257,13 @@ export function useAaveContract(): AaveContractOperations {
           [vault.asset, amountWei, targetAddress]
         );
 
-        const txHash = await sendTransaction({
-          from: targetAddress,
-          to: vault.protocolSpecific?.poolAddress,
-          data: withdrawData,
-        });
+        const txHash = await sendGaslessTransaction([
+          {
+            to: vault.protocolSpecific?.poolAddress as `0x${string}`,
+            data: withdrawData as `0x${string}`,
+            value: 0n,
+          },
+        ]);
 
         console.log('✅ Withdraw transaction:', txHash);
 
@@ -235,14 +283,21 @@ export function useAaveContract(): AaveContractOperations {
         setIsLoading(false);
       }
     },
-    [accounts, getAccounts, sendTransaction, parseAmount, encodeFunctionCall]
+    [
+      parseAmount,
+      encodeFunctionCall,
+      resolveTargetAddress,
+      sendGaslessTransaction,
+      validateGaslessConfig,
+    ]
   );
 
   return {
     deposit,
     withdraw,
-    isLoading: isLoading || walletLoading,
-    error: error || walletError,
+    isLoading:
+      isLoading || walletLoading || isGaslessInitializing || isGaslessSending,
+    error: error || walletError || gaslessError,
     clearError,
   };
 }
