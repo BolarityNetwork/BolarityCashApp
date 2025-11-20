@@ -3,12 +3,16 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { useNiceModal } from '@/hooks/useNiceModal';
 import ActionModal from './modals/ActionModal';
 import { ReceiveModal } from './modals/ReceiveModal';
 import NiceModal from '@ebay/nice-modal-react';
 import { TransferModal } from './modals/TransferModal/TransferModal';
+import AddIcon from '@/assets/icon/nav/add.svg';
+import ProfileIcon from '@/assets/icon/nav/profile.svg';
+import HomeIcon from '@/assets/icon/nav/home.svg';
+import HomeOffIcon from '@/assets/icon/nav/home_off.svg';
+import ProfileOffIcon from '@/assets/icon/nav/profile_off.svg';
 
 export const TabBar: FC<BottomTabBarProps> = ({
   state,
@@ -36,11 +40,16 @@ export const TabBar: FC<BottomTabBarProps> = ({
   return (
     <>
       <View
-        className="absolute left-0 right-0 bg-white rounded-3xl py-4 px-6 flex-row items-center justify-between shadow-lg border border-gray-200"
+        className="absolute left-0 right-0 bg-white rounded-[300px] py-4 px-6 flex-row items-center justify-between"
         style={{
           bottom: insets.bottom + 12,
           zIndex: 50,
           marginHorizontal: 24,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.102, // 1A in hex = 26/255 ≈ 0.102
+          shadowRadius: 20,
+          elevation: 8,
         }}
       >
         {routeNameArr.map(name => {
@@ -75,7 +84,7 @@ export const TabBar: FC<BottomTabBarProps> = ({
                 className="items-center py-2 flex-1"
               >
                 <View className="w-8 h-8 bg-black rounded-full items-center justify-center">
-                  <Icon name="add" size={16} color="white" />
+                  <AddIcon />
                 </View>
                 <Text className="text-xs mt-1 text-black font-semibold">
                   {t('navigation.actions')}
@@ -93,13 +102,19 @@ export const TabBar: FC<BottomTabBarProps> = ({
               style={{ flex: route.name === 'actions' ? 0 : 1 }}
             >
               <View className="items-center">
-                <Icon
-                  name={
-                    route.name === 'home' ? 'home-outline' : 'person-outline'
-                  }
-                  size={24}
-                  color={isFocused ? '#000' : '#9CA3AF'}
-                />
+                {route.name === 'home' ? (
+                  isFocused ? (
+                    <HomeIcon />
+                  ) : (
+                    <HomeOffIcon />
+                  )
+                ) : route.name === 'profile' ? (
+                  isFocused ? (
+                    <ProfileIcon />
+                  ) : (
+                    <ProfileOffIcon />
+                  )
+                ) : null}
                 <Text
                   className={`text-xs mt-1 ${
                     isFocused ? 'text-black font-semibold' : 'text-gray-400'

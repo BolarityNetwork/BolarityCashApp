@@ -1,18 +1,11 @@
 // components/PerfectVaultSavingsPlatform/components/ActivityList.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTransactionHistory } from '@/hooks/useTransactionHistory';
 import SentIcon from '@/assets/icon/transaction/sent.png';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
+import Skeleton from '../common/Skeleton';
 
 interface ActivityListProps {}
 
@@ -23,8 +16,6 @@ const ActivityList: React.FC<ActivityListProps> = () => {
     isLoading,
     error,
     refreshTransactions,
-    loadMoreTransactions,
-    hasMore,
     currentAddress,
   } = useTransactionHistory();
 
@@ -56,12 +47,6 @@ const ActivityList: React.FC<ActivityListProps> = () => {
         </View>
         <View style={styles.errorState}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={refreshTransactions}
-          >
-            <Text style={styles.retryButtonText}>{t('home.tryAgain')}</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -79,11 +64,31 @@ const ActivityList: React.FC<ActivityListProps> = () => {
 
       {/* 加载状态 */}
       {isLoading && formattedTransactions.length === 0 ? (
-        <View style={styles.loadingState}>
-          <ActivityIndicator size="large" color="#059669" />
-          <Text style={styles.loadingText}>
-            {t('home.loadingTransactions')}
-          </Text>
+        <View style={styles.activityContainer}>
+          {[1, 2, 3].map(index => (
+            <React.Fragment key={index}>
+              <View style={styles.activityItem}>
+                <View style={styles.activityLeft}>
+                  <Skeleton width={44} height={44} borderRadius={16} />
+                  <View style={styles.activityInfo}>
+                    <Skeleton width={80} height={16} borderRadius={8} />
+                    <View style={{ marginTop: 4 }}>
+                      <Skeleton width={120} height={12} borderRadius={6} />
+                    </View>
+                    <View style={{ marginTop: 4 }}>
+                      <Skeleton width={100} height={12} borderRadius={6} />
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.activityRight}>
+                  <Skeleton width={60} height={16} borderRadius={8} />
+                  <View style={{ marginTop: 4 }}>
+                    <Skeleton width={40} height={12} borderRadius={6} />
+                  </View>
+                </View>
+              </View>
+            </React.Fragment>
+          ))}
         </View>
       ) : formattedTransactions.length === 0 ? (
         <View style={styles.emptyState}>
@@ -95,75 +100,55 @@ const ActivityList: React.FC<ActivityListProps> = () => {
           </Text>
         </View>
       ) : (
-        <ScrollView
-          style={styles.activityList}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refreshTransactions}
-              colors={['#059669']}
-              tintColor="#059669"
-            />
-          }
-        >
+        <View style={styles.activityContainer}>
           {formattedTransactions.map((transaction, index) => {
+            // Format transaction hash for display
+            const displayHash = transaction.hash
+              ? transaction.hash.length > 20
+                ? `${transaction.hash.slice(0, 6)}...${transaction.hash.slice(-6)}`
+                : transaction.hash
+              : '';
+
             return (
-              <View
-                key={`${transaction.hash || index}`}
-                style={styles.activityItem}
-              >
-                <View style={styles.activityLeft}>
-                  <Image source={SentIcon} style={{ width: 48, height: 48 }} />
-                  <View style={styles.activityInfo}>
-                    <Text style={styles.activityType}>
-                      {transaction.type.charAt(0).toUpperCase() +
-                        transaction.type.slice(1)}
+              <React.Fragment key={index}>
+                <View style={styles.activityItem}>
+                  <View style={styles.activityLeft}>
+                    {/* Gradient Icon */}
+                    <Image
+                      source={SentIcon}
+                      style={{ width: 44, height: 44 }}
+                      contentFit="contain"
+                    />
+                    <View style={styles.activityInfo}>
+                      <Text style={styles.activityType}>
+                        {transaction.type.charAt(0).toUpperCase() +
+                          transaction.type.slice(1)}
+                      </Text>
+                      {transaction.date && (
+                        <Text style={styles.activityDetails}>
+                          Ethereum . {transaction.date}
+                        </Text>
+                      )}
+                      {displayHash && (
+                        <Text style={styles.activityHash}>{displayHash}</Text>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.activityRight}>
+                    <Text style={styles.activityAmount}>
+                      {transaction.amount}
                     </Text>
-                    <Text style={styles.activityDetails}>
-                      {transaction.vault}
-                    </Text>
-                    {transaction.date && (
-                      <Text style={styles.activityHash}>
-                        {transaction.date}
+                    {transaction.token && (
+                      <Text style={styles.activityToken}>
+                        {transaction.token}
                       </Text>
                     )}
                   </View>
                 </View>
-                <View style={styles.activityRight}>
-                  <Text
-                    style={[
-                      styles.activityAmount,
-                      { color: transaction.isPositive ? '#059669' : '#2563eb' },
-                    ]}
-                  >
-                    {transaction.amount}
-                  </Text>
-                  {transaction.token && (
-                    <Text style={styles.activityToken}>
-                      {transaction.token}
-                    </Text>
-                  )}
-                </View>
-              </View>
+              </React.Fragment>
             );
           })}
-
-          {/* 加载更多按钮 */}
-          {hasMore && (
-            <TouchableOpacity
-              style={styles.loadMoreButton}
-              onPress={loadMoreTransactions}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color="#059669" />
-              ) : (
-                <Text style={styles.loadMoreText}>{t('home.loadMore')}</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </ScrollView>
+        </View>
       )}
     </View>
   );
@@ -171,9 +156,12 @@ const ActivityList: React.FC<ActivityListProps> = () => {
 
 const styles = StyleSheet.create({
   activitySection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-    marginTop: 32,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 10,
+    marginTop: 2,
+    backgroundColor: '#fff',
+    borderRadius: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -182,93 +170,69 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
   },
   sectionAction: {
     fontSize: 14,
-    color: '#059669',
+    color: '#ACB3BF', // Exact color from design
     fontWeight: '600',
   },
-  activityList: {
-    maxHeight: 400, // 限制高度，使其可滚动
+  activityContainer: {
+    // Container is now part of activitySection
   },
   activityItem: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    marginBottom: 12,
+    marginBottom: 0,
   },
   activityLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  activityIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
   activityInfo: {
     flex: 1,
-    minWidth: 0, // Allow text to wrap properly
-    marginLeft: 12,
+    minWidth: 0,
+    marginLeft: 10,
   },
   activityType: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111827',
-    flexShrink: 1,
-    flexWrap: 'nowrap',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000',
+    lineHeight: 20,
+    marginBottom: 0,
   },
   activityDetails: {
-    fontSize: 14,
-    color: '#6b7280',
-    flexShrink: 1,
-    flexWrap: 'nowrap',
+    fontSize: 12,
+    color: '#ACB3BF',
+    lineHeight: 17,
   },
   activityRight: {
     alignItems: 'flex-end',
   },
   activityAmount: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#00C87F',
   },
   activityToken: {
     fontSize: 12,
-    color: '#6b7280',
-    marginTop: 2,
+    color: '#ACB3BF',
   },
   activityHash: {
-    fontSize: 11,
-    color: '#9ca3af',
-    fontFamily: 'monospace',
-    marginTop: 2,
+    fontSize: 12,
+    color: '#505C5C',
+    lineHeight: 17,
   },
-
-  // 状态样式
-  loadingState: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 12,
+  activitySeparator: {
+    height: 1,
+    backgroundColor: '#DADADA',
+    marginVertical: 0,
   },
   emptyState: {
     alignItems: 'center',
@@ -292,20 +256,9 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: '#dc2626',
+    lineHeight: 20,
+    color: '#ef4444',
     textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: '#dc2626',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   loadMoreButton: {
     backgroundColor: '#f9fafb',

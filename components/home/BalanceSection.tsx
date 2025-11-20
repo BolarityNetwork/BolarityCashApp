@@ -48,19 +48,23 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
   }, [rewardsData]);
   if (isLoading) {
     return (
-      <View className="px-6 py-4">
-        <View className="mb-3">
-          <Text className="text-sm text-gray-500 mb-3">
-            {t('home.totalPortfolioBalance')}
-          </Text>
-          <View className="flex-row justify-between items-start">
-            <View className="flex-1">
-              <View className="h-8 bg-gray-200 rounded mb-3 w-3/5" />
-              <View className="flex-row gap-6">
-                <View className="h-5 bg-gray-200 rounded w-16" />
-                <View className="h-5 bg-gray-200 rounded w-20" />
-              </View>
-            </View>
+      <View className="items-center">
+        <Text className="text-[14px] leading-[20px] text-[#ACB3BF]">
+          {t('home.totalPortfolioBalance')}
+        </Text>
+        <View className="h-[42px] bg-gray-200 rounded mt-[6px] w-32" />
+        <View className="flex-row justify-start gap-10 mt-1 px-[6px]">
+          <View className="flex-row items-center gap-1.5 h-[20px]">
+            <View className="h-[20px] bg-gray-200 rounded w-16" />
+            <Text className="text-[10px] text-[#ACB3BF]">
+              {t('home.yesterday')}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <View className="h-[20px] bg-gray-200 rounded w-20" />
+            <Text className="text-[10px] text-[#ACB3BF]">
+              {t('home.cumulativeEarnings')}
+            </Text>
           </View>
         </View>
       </View>
@@ -69,86 +73,86 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
 
   if (isError) {
     return (
-      <View className="px-6 py-4">
-        <View className="mb-3">
-          <Text className="text-sm text-gray-500 mb-3">
-            {t('home.totalPortfolioBalance')}
-          </Text>
-          <View className="items-center justify-center py-8">
-            <Text className="text-sm text-red-500">
-              {t('home.failedToLoadBalance')}
-            </Text>
-          </View>
-        </View>
+      <View className="items-center">
+        <Text className="text-[14px] leading-[20px] text-[#ACB3BF]">
+          {t('home.totalPortfolioBalance')}
+        </Text>
+        <Text
+          style={{
+            fontSize: 14,
+            lineHeight: 20,
+            color: '#ef4444',
+            marginTop: 6,
+          }}
+        >
+          {t('home.failedToLoadBalance')}
+        </Text>
       </View>
     );
   }
 
   return (
-    <View className="px-6 py-4">
-      <View className="mb-3">
-        <Text className="text-sm text-gray-500 mb-3">
-          {t('home.totalPortfolioBalance')}
-        </Text>
-        <View className="flex-row justify-between items-start">
-          <View className="flex-1">
-            <AnimatedNumber
-              value={totalBalance}
-              style={{
-                fontSize: 28,
-                fontWeight: '300',
-                color: '#111827',
-                marginBottom: 8,
-              }}
-              duration={1200}
-              formatOptions={{
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 3,
-                prefix: '$',
-              }}
-            />
-            <View className="flex-row gap-6">
-              <View className="flex-row items-center gap-1.5">
-                <AnimatedNumber
-                  value={yesterdayEarnings}
-                  style={{
-                    fontSize: 15,
-                    color: '#059669',
-                    fontWeight: '600',
-                  }}
-                  duration={800}
-                  formatOptions={{
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 3,
-                    prefix: '+$',
-                  }}
-                />
-                <Text className="text-sm text-gray-500">
-                  {t('home.yesterday')}
-                </Text>
-              </View>
-              {/* Cumulative earning */}
-              <View className="flex-row items-center gap-1.5">
-                <AnimatedNumber
-                  value={rewardsData?.data?.cumulative_reward || 0}
-                  duration={800}
-                  style={{
-                    fontSize: 15,
-                    color: '#059669',
-                    fontWeight: '600',
-                  }}
-                  formatOptions={{
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 3,
-                    prefix: '+$',
-                  }}
-                />
-                <Text className="text-sm text-gray-500">
-                  {t('home.cumulativeEarnings')}
-                </Text>
-              </View>
-            </View>
-          </View>
+    <View className="items-center">
+      <Text className="text-[14px] leading-[20px] text-[#ACB3BF]">
+        {t('home.totalPortfolioBalance')}
+      </Text>
+      <AnimatedNumber
+        value={totalBalance}
+        style={{
+          fontSize: 30,
+          fontWeight: '600',
+          color: '#000000',
+          lineHeight: 42,
+          marginTop: 6,
+        }}
+        duration={1200}
+        formatOptions={{
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 3,
+          prefix: '$',
+        }}
+      />
+      <View className="flex-row justify-start gap-10 mt-1 px-[6px]">
+        <View className="flex-2 flex-row items-center gap-1.5 h-[20px]">
+          <AnimatedNumber
+            value={yesterdayEarnings}
+            style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '#00C87F',
+              fontWeight: '600',
+            }}
+            duration={800}
+            formatOptions={{
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 3,
+              prefix: '+$',
+            }}
+          />
+          <Text className="text-[10px] text-[#ACB3BF]">
+            {t('home.yesterday')}
+          </Text>
+        </View>
+        {/* Cumulative earning */}
+        <View className="flex-3 flex-row items-center gap-1.5">
+          <AnimatedNumber
+            value={rewardsData?.data?.cumulative_reward || 0}
+            duration={800}
+            style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '#00C87F',
+              fontWeight: '600',
+            }}
+            formatOptions={{
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 3,
+              prefix: '+$',
+            }}
+          />
+          <Text className="text-[10px] text-[#ACB3BF]">
+            {t('home.cumulativeEarnings')}
+          </Text>
         </View>
       </View>
     </View>

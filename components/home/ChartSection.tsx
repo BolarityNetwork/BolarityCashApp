@@ -24,6 +24,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
         : '365',
     !!activeWallet?.address
   );
+
   useAppRefresh(() => {
     if (activeWallet?.address && _refetchRewards) {
       _refetchRewards();
@@ -67,7 +68,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     // Sort rewards by date (oldest first, newest last)
     const sortedRewards = [...dailyRewards].sort((a, b) => a.date - b.date);
 
-    // If we have less than 5 days of data, fill with 0 values
+    // Generate 5 days of data (4 days ago to today, plus 1 future day)
     const result = [];
     const today = new Date();
 
@@ -100,132 +101,212 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     return result;
   }, [rewardsData]);
 
-  // Calculate Y-axis labels and max value based on data with better adaptability
+  // Calculate Y-axis labels dynamically based on actual reward data
   const yAxisData = useMemo(() => {
     if (!chartData || chartData.length === 0) {
-      return { maxValue: 100, labels: ['100', '75', '50', '25', '0'] };
+      return { maxValue: 12000, labels: ['12K', '10K', '8K'] };
     }
 
-    const rewards = chartData.map(item => item.reward);
-    const maxReward = Math.max(...rewards);
-    const nonZeroRewards = rewards.filter(r => r > 0);
-    const avgReward =
-      nonZeroRewards.length > 0
-        ? nonZeroRewards.reduce((sum, r) => sum + r, 0) / nonZeroRewards.length
-        : 0;
+    // Get all reward values (excluding future dates)
+    const rewards = chartData
+      .filter(item => !item.isFuture)
+      .map(item => item.reward);
 
-    // If all rewards are 0, use a default range
+    const maxReward = Math.max(...rewards, 0);
+
+    // If all rewards are 0, use default range
     if (maxReward === 0) {
-      return { maxValue: 100, labels: ['100', '75', '50', '25', '0'] };
+      return { maxValue: 12000, labels: ['12K', '10K', '8K'] };
     }
 
-    // Improved adaptive max value calculation
-    let maxValue;
-    if (avgReward > 0) {
-      // For more adaptive scaling
-      maxValue = Math.ceil(Math.max(maxReward * 1.1, avgReward * 2));
-    } else {
-      maxValue = Math.ceil(maxReward * 1.2); // Add 20% padding
+    // Calculate a nice rounded max value with some padding
+    const calculateNiceMax = (value: number): number => {
+      if (value <= 0) return 0.1;
+
+      // For very small values (< 1), use decimal steps
+      if (value < 1) {
+        // Round up to next nice decimal (0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0)
+        if (value <= 0.01) return 0.01;
+        if (value <= 0.02) return 0.02;
+        if (value <= 0.05) return 0.05;
+        if (value <= 0.1) return 0.1;
+        if (value <= 0.2) return 0.2;
+        if (value <= 0.5) return 0.5;
+        return 1.0;
+      }
+
+      // For values >= 1, use normal rounding
+      const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+      const normalized = value / magnitude;
+
+      let niceNormalized;
+      if (normalized <= 1) niceNormalized = 1;
+      else if (normalized <= 2) niceNormalized = 2;
+      else if (normalized <= 5) niceNormalized = 5;
+      else niceNormalized = 10;
+
+      // Add 20% padding for better visualization
+      const maxValue = niceNormalized * magnitude * 1.2;
+      return Math.ceil(maxValue * 100) / 100; // Round to 2 decimal places
+    };
+
+    const maxValue = calculateNiceMax(maxReward);
+
+    // Format label based on value size
+    const formatLabel = (value: number): string => {
+      if (value >= 1000) {
+        const kValue = value / 1000;
+        if (kValue % 1 === 0) {
+          return `${Math.round(kValue)}K`;
+        }
+        return `${kValue.toFixed(1)}K`;
+      } else if (value >= 1) {
+        // For values >= 1, show as integer or 1 decimal
+        if (value % 1 === 0) {
+          return Math.round(value).toString();
+        }
+        return value.toFixed(1);
+      } else {
+        // For values < 1, show 2 decimal places
+        return value.toFixed(2);
+      }
+    };
+
+    // Generate 3 labels: top (max), middle, bottom (0)
+    const middleValue = maxValue / 2;
+    const labels = [
+      formatLabel(maxValue), // Top label
+      formatLabel(middleValue), // Middle label
+      formatLabel(0), // Bottom label
+    ];
+
+    // Remove duplicate labels
+    const uniqueLabels = Array.from(new Set(labels));
+    // Ensure we have 3 labels, fill with calculated values if needed
+    if (uniqueLabels.length < 3) {
+      // If we have duplicates, recalculate middle value
+      const step1 = maxValue * 0.67;
+      const step2 = maxValue * 0.33;
+      return {
+        maxValue,
+        labels: [
+          formatLabel(maxValue),
+          formatLabel(step1),
+          formatLabel(step2),
+        ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
+      };
     }
 
-    // Generate Y-axis labels with better scaling
-    const labels = [];
-    // Adjust step size based on maxValue to avoid too many digits
-    const stepSize = Math.ceil(maxValue / 4);
-    for (let i = 4; i >= 0; i--) {
-      const value = i * stepSize;
-      labels.push(value.toString());
-    }
-
-    return { maxValue, labels };
+    return { maxValue, labels: uniqueLabels };
   }, [chartData]);
 
-  // Calculate bar heights based on actual data with better visual scaling
+  // Calculate bar heights based on actual data
   const getBarHeight = (dataPoint: any) => {
-    const maxHeight = 160; // Maximum height in pixels
-    const minHeight = 8; // Minimum height for 0 values
-
-    if (dataPoint.reward === 0) return minHeight;
-
-    // Use a slightly logarithmic scaling for better visual representation
+    const maxHeight = 160; // Reduced height since period buttons are removed
+    if (dataPoint.reward === 0) return 0;
     const heightRatio = dataPoint.reward / yAxisData.maxValue;
-    // Ensure bars don't get too small compared to each other
-    const adjustedHeight = heightRatio * maxHeight;
-    return Math.max(adjustedHeight, minHeight);
+    return heightRatio * maxHeight;
+  };
+
+  // Get gradient colors for bars - green gradient for most, special for future
+  const getBarGradient = (dataPoint: any) => {
+    if (dataPoint.isFuture) {
+      // Last bar (24 Apr) - orange to purple gradient with border
+      return {
+        colors: ['#FF4D00', '#FF00D6'] as [string, string],
+        borderColor: '#FF4D00',
+        borderWidth: 1,
+      };
+    }
+    // Green gradient for other bars
+    return {
+      colors: ['#12B04A', '#33CD95'] as [string, string],
+      borderColor: 'transparent',
+      borderWidth: 0,
+    };
   };
 
   return (
-    <View style={styles.chartSection}>
-      <View style={styles.chartContainer}>
-        <View style={styles.chartHeader}>
-          <View style={styles.chartYAxis}>
-            {yAxisData.labels.map((label, index) => (
-              <Text key={index} style={styles.yAxisLabel}>
-                {label}
-              </Text>
-            ))}
-          </View>
+    <View style={styles.chartContainer}>
+      <View style={styles.chartHeader}>
+        <View style={styles.chartYAxis}>
+          {yAxisData.labels.map((label, index) => (
+            <Text key={index} style={styles.yAxisLabel}>
+              {label}
+            </Text>
+          ))}
+        </View>
 
-          <View style={styles.chartBars}>
-            {chartData.map((dataPoint, index) => (
+        <View style={styles.chartBars}>
+          {chartData.map((dataPoint, index) => {
+            const barHeight = getBarHeight(dataPoint);
+            const gradientConfig = getBarGradient(dataPoint);
+
+            return (
               <View key={index} style={styles.barContainer}>
                 <View style={styles.barWrapper}>
-                  <LinearGradient
-                    colors={
-                      dataPoint.isFuture
-                        ? ['transparent', 'transparent']
-                        : ['#3b82f6', '#2563eb'] // Unified blue color for all bars
-                    }
+                  {/* Background bar (light gray) */}
+                  <View
                     style={[
-                      styles.bar,
+                      styles.backgroundBar,
                       {
-                        height: getBarHeight(dataPoint),
-                        width: dataPoint.isToday ? 40 : 36, // Make bars thinner
-                        borderWidth: dataPoint.isFuture ? 2 : 0,
-                        borderColor: dataPoint.isFuture
-                          ? '#d1d5db'
-                          : 'transparent',
-                        borderStyle: dataPoint.isFuture ? 'dashed' : 'solid',
-                        opacity: dataPoint.isToday ? 1 : 0.8, // Slightly less prominent for other days
+                        height: 160,
+                        width: 44,
                       },
                     ]}
                   />
-                  {/* Always show the value on top of each bar, including when reward is 0 */}
-                  <View style={styles.earningsTooltip}>
-                    <Text
+                  {/* Actual bar with gradient */}
+                  {barHeight > 0 && (
+                    <LinearGradient
+                      colors={gradientConfig.colors}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
                       style={[
-                        styles.tooltipText,
+                        styles.bar,
                         {
-                          opacity: dataPoint.isToday ? 1 : 0.8, // Make other days' tooltips less prominent
-                          fontWeight: dataPoint.isToday ? '600' : '500',
-                          fontSize: dataPoint.isToday ? 9 : 8, // Smaller font to prevent wrapping
+                          height: barHeight,
+                          width: 44,
+                          borderWidth: gradientConfig.borderWidth,
+                          borderColor: gradientConfig.borderColor,
+                          position: 'absolute',
+                          bottom: 0,
+                          // Dynamic border radius: fully rounded only if height is large enough
+                          // For small heights, use smaller radius to avoid visual issues
+                          borderRadius:
+                            barHeight >= 22
+                              ? 22
+                              : barHeight > 0
+                                ? Math.max(barHeight / 2, 4)
+                                : 0,
                         },
                       ]}
-                    >
-                      ${formatCompactNumber(Number(dataPoint.reward))}
-                    </Text>
-                  </View>
+                    />
+                  )}
+                  {/* Tooltip - show for all bars with data */}
+                  {barHeight > 0 && (
+                    <View style={styles.earningsTooltip}>
+                      <View style={styles.tooltipContainer}>
+                        <Text style={styles.tooltipText}>
+                          +${formatCompactNumber(Number(dataPoint.reward))}
+                        </Text>
+                        <View style={styles.tooltipArrow} />
+                      </View>
+                    </View>
+                  )}
                 </View>
                 <Text
                   style={[
                     styles.barLabel,
                     {
-                      color: dataPoint.isToday
-                        ? '#0369a1' // More vibrant color for today's label
-                        : dataPoint.isFuture
-                          ? '#9ca3af'
-                          : '#94a3b8', // Lighter color for other day labels
-                      fontWeight: dataPoint.isToday ? '700' : '400',
-                      fontSize: dataPoint.isToday ? 13 : 12, // Slightly larger font for today
-                      opacity: dataPoint.isToday ? 1 : 0.7, // Make other day labels less prominent
+                      color: dataPoint.isToday ? '#000000' : '#ACB3BF',
                     },
                   ]}
                 >
                   {dataPoint.date}
                 </Text>
               </View>
-            ))}
-          </View>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -233,24 +314,17 @@ const ChartSection: React.FC<ChartSectionProps> = ({
 };
 
 const styles = StyleSheet.create({
-  chartSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-    marginTop: 8,
-  },
   chartContainer: {
     backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    borderRadius: 20,
+    paddingHorizontal: 25,
+    paddingTop: 64,
+    paddingBottom: 30,
   },
   chartHeader: {
-    height: 200,
+    height: 180,
     position: 'relative',
+    marginBottom: 0,
   },
   chartYAxis: {
     position: 'absolute',
@@ -258,13 +332,15 @@ const styles = StyleSheet.create({
     top: 0,
     height: '100%',
     justifyContent: 'space-between',
+    width: 30,
   },
   yAxisLabel: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#ACB3BF',
+    lineHeight: 17,
   },
   chartBars: {
-    marginLeft: 36,
+    marginLeft: 38,
     height: '100%',
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -272,68 +348,93 @@ const styles = StyleSheet.create({
   },
   barContainer: {
     alignItems: 'center',
+    flex: 1,
   },
   barWrapper: {
     position: 'relative',
+    width: 44,
+    height: 160,
+    alignItems: 'center',
+  },
+  backgroundBar: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 50, // Fully rounded
+    position: 'absolute',
+    bottom: 0,
   },
   bar: {
-    width: 36,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderRadius: 50,
   },
   earningsTooltip: {
     position: 'absolute',
-    top: -28,
+    top: -30,
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
-  tooltipText: {
-    backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue color matching the bars
-    color: '#fff',
+  tooltipContainer: {
+    backgroundColor: '#000000',
+    borderRadius: 4,
     paddingHorizontal: 4,
     paddingVertical: 2,
-    borderRadius: 4,
-    fontSize: 8,
+    position: 'relative',
+  },
+  tooltipText: {
+    color: '#FFFFFF',
+    fontSize: 10,
     fontWeight: '500',
+    lineHeight: 17,
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    bottom: -3,
+    left: '50%',
+    width: 0,
+    height: 0,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderTopWidth: 3,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#000000',
   },
   barLabel: {
-    fontSize: 12,
-    marginTop: 10,
+    fontSize: 14,
+    lineHeight: 17,
+    marginTop: 8,
+    color: '#ACB3BF',
   },
   chartControls: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 16,
-    paddingHorizontal: 12,
+    gap: 4,
+    marginTop: 0,
+    paddingTop: 0,
   },
-  activeControl: {
-    backgroundColor: '#111827',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    flex: 1,
-    maxWidth: 90,
+  periodButton: {
+    width: 80,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#000000',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeControlText: {
-    color: '#fff',
+  periodButtonActive: {
+    backgroundColor: '#000000',
+    borderWidth: 0,
+  },
+  periodButtonText: {
     fontSize: 12,
     fontWeight: '600',
+    color: '#000000',
+    lineHeight: 14,
   },
-  inactiveControl: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flex: 1,
-    maxWidth: 90,
-    alignItems: 'center',
+  periodButtonTextActive: {
+    color: '#FFFFFF',
   },
-  inactiveControlText: {
-    color: '#6b7280',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  // Loading and error states
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',

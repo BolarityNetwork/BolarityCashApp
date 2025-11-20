@@ -11,7 +11,6 @@ const VaultList: React.FC<{
   handleVaultPress: (category: CategoryInfo) => void;
 }> = ({ handleVaultPress }) => {
   const { t } = useTranslation();
-  // Fetch vault categories from API
   const {
     data: categories,
     isLoading,
@@ -30,50 +29,53 @@ const VaultList: React.FC<{
     }
   };
 
-  // Handle loading state with skeleton
   if (isLoading) {
     return (
-      <View className="px-6 mb-8 mt-4">
-        <Text className="text-xl font-bold text-gray-900 mb-4">
-          {t('home.savingsVaults')}
-        </Text>
-        <View className="gap-4">
-          {/* Render 2 skeleton cards */}
+      <View className="px-[20] pt-[20] pb-[26]">
+        <View className="flex-row justify-between items-center mb-[27]">
+          <Text className="text-[18px] font-[600] text-black">
+            {t('home.savingsVaults')}
+          </Text>
+          <Text className="text-[14px] font-[600] text-[#ACB3BF]">
+            {t('common.all')}
+          </Text>
+        </View>
+        <View className="gap-[30]">
           {[1, 2].map(index => (
-            <View
-              key={index}
-              className="rounded-3xl p-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500"
-            >
-              <View className="bg-white rounded-[22px] p-5">
-                <View className="flex-row justify-between items-center mb-4">
-                  <View className="flex-row items-center flex-1">
-                    <Skeleton width={48} height={48} borderRadius={16} />
-                    <View className="ml-3 flex-1">
-                      <Skeleton width={120} height={16} borderRadius={8} />
-                      <View className="mt-1">
-                        <Skeleton width={200} height={14} borderRadius={7} />
-                      </View>
-                    </View>
-                  </View>
-                  <View className="items-end">
-                    <Skeleton width={60} height={24} borderRadius={12} />
-                    <View className="mt-0.5">
-                      <Skeleton width={30} height={12} borderRadius={6} />
+            <View key={index}>
+              <View className="flex-row justify-between items-start">
+                <View className="flex-row items-start flex-1">
+                  <Skeleton width={48} height={48} borderRadius={16} />
+                  <View className="ml-3 flex-1">
+                    <Skeleton width={120} height={16} borderRadius={8} />
+                    <View className="mt-1">
+                      <Skeleton width={200} height={14} borderRadius={7} />
                     </View>
                   </View>
                 </View>
-
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row gap-4 flex-1">
-                    <View>
-                      <Skeleton width={40} height={12} borderRadius={6} />
-                      <View className="mt-1">
-                        <Skeleton width={100} height={14} borderRadius={7} />
-                      </View>
-                    </View>
+                <View className="items-end ml-4">
+                  <Skeleton width={60} height={24} borderRadius={12} />
+                  <View className="mt-0.5">
+                    <Skeleton width={30} height={12} borderRadius={6} />
                   </View>
-                  <Skeleton width={80} height={32} borderRadius={20} />
                 </View>
+              </View>
+              <View className="flex-row justify-between items-center mt-[10]">
+                <View className="flex-row gap-6">
+                  <View>
+                    <Text className="text-[12px] text-[#ACB3BF] mb-1">
+                      Type
+                    </Text>
+                    <Skeleton width={80} height={16} borderRadius={8} />
+                  </View>
+                  <View>
+                    <Text className="text-[12px] text-[#ACB3BF] mb-1">
+                      Minimum
+                    </Text>
+                    <Skeleton width={40} height={16} borderRadius={8} />
+                  </View>
+                </View>
+                <Skeleton width={80} height={32} borderRadius={6} />
               </View>
             </View>
           ))}
@@ -82,25 +84,27 @@ const VaultList: React.FC<{
     );
   }
 
-  // Handle error state
   if (isError) {
     return (
-      <View className="px-6 mb-8 mt-4">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold text-gray-900">
+      <View className="px-[20] pt-[20] pb-[26]">
+        <View className="flex-row justify-between items-center mb-[27]">
+          <Text className="text-[18px] font-[600] text-black">
             {t('home.savingsVaults')}
           </Text>
-          <TouchableOpacity
-            onPress={() => refetch()}
-            className="bg-red-500 px-3 py-1.5 rounded-2xl"
-          >
-            <Text className="text-xs text-white font-semibold">
+          <TouchableOpacity onPress={() => refetch()}>
+            <Text className="text-[14px] font-[600] text-[#ACB3BF]">
               {t('home.retry')}
             </Text>
           </TouchableOpacity>
         </View>
         <View className="items-center justify-center py-10">
-          <Text className="text-sm text-red-500">
+          <Text
+            style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '#ef4444',
+            }}
+          >
             {t('home.failedToLoadVaults')}
           </Text>
         </View>
@@ -110,12 +114,23 @@ const VaultList: React.FC<{
 
   if (!categories || categories.length === 0) {
     return (
-      <View className="px-6 mb-8 mt-4">
-        <Text className="text-xl font-bold text-gray-900 mb-4">
-          {t('home.savingsVaults')}
-        </Text>
+      <View className="px-[20] pt-[20] pb-[26]">
+        <View className="flex-row justify-between items-center mb-[27]">
+          <Text className="text-[18px] font-[600] text-black">
+            {t('home.savingsVaults')}
+          </Text>
+          <Text className="text-[14px] font-[600] text-[#ACB3BF]">
+            {t('common.all')}
+          </Text>
+        </View>
         <View className="items-center justify-center py-10">
-          <Text className="text-sm text-gray-500">
+          <Text
+            style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: '#ACB3BF',
+            }}
+          >
             {t('home.noVaultCategoriesAvailable')}
           </Text>
         </View>
@@ -135,72 +150,88 @@ const VaultList: React.FC<{
   };
 
   return (
-    <View className="px-6 mb-8 mt-4">
-      <Text className="text-xl font-bold text-gray-900 mb-4">
-        {t('home.savingsVaults')}
-      </Text>
-      <View className="gap-4">
+    <View className="px-[20] pt-[20] pb-[26]">
+      <View className="flex-row justify-between items-center mb-[27]">
+        <Text className="text-[18px] font-[600] text-black">
+          {t('home.savingsVaults')}
+        </Text>
+        <TouchableOpacity>
+          <Text className="text-[14px] font-[600] text-[#ACB3BF]">
+            {t('common.all')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View className="gap-[30]">
         {categories.map(category => (
           <TouchableOpacity
             key={category.id}
-            className="rounded-3xl p-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500"
             onPress={() => {
               handleVaultPress(category);
             }}
+            activeOpacity={0.7}
           >
-            <View className="bg-white rounded-[22px] p-5">
-              <View className="flex-row justify-between items-center mb-4">
-                <View className="flex-row items-center flex-1">
-                  <LinearGradient
-                    colors={getGradientColors(category.id) as [string, string]}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 16,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 12,
-                    }}
-                  >
-                    <VaultLogo
-                      vaultName={getVaultIcon(category.id)}
-                      size={24}
-                    />
-                  </LinearGradient>
-                  <View>
-                    <Text className="text-base font-bold text-gray-900">
-                      {category.name}
-                    </Text>
-                    <Text className="text-sm text-gray-500">
-                      {category.description}
-                    </Text>
-                  </View>
-                </View>
-                <View className="items-end">
-                  <Text className="text-2xl font-bold text-emerald-600">
-                    {category.apy}
+            <View className="flex-row justify-between items-start">
+              <View className="flex-row items-start flex-1">
+                <LinearGradient
+                  colors={getGradientColors(category.id) as [string, string]}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12,
+                  }}
+                >
+                  <VaultLogo vaultName={getVaultIcon(category.id)} size={24} />
+                </LinearGradient>
+                <View className="flex-1">
+                  <Text className="text-base font-[600] text-[#000000]">
+                    {category.name}
                   </Text>
-                  <Text className="text-xs text-gray-500">APY</Text>
+                  <Text className="text-sm text-[#ACB3BF]">
+                    {category.description}
+                  </Text>
                 </View>
               </View>
+              <View className="items-end ml-4">
+                <Text className="text-[20px] font-[600] text-[#00C87F]">
+                  {category.apy}
+                </Text>
+                <Text className="text-[12px] text-[#ACB3BF]">APY</Text>
+              </View>
+            </View>
 
-              <View className="flex-row justify-between items-center">
-                <View className="flex-row gap-4 flex-1">
-                  <View>
-                    <Text className="text-xs text-gray-500">Type</Text>
-                    <Text className="text-sm font-semibold text-gray-900">
-                      {category.id === 'flexi'
-                        ? t('home.currentSavings')
-                        : t('home.fixedTermSavings')}
-                    </Text>
-                  </View>
+            <View className="flex-row justify-between items-center mt-[10]">
+              <View className="flex-row gap-6">
+                <View>
+                  <Text className="text-[12px] text-[#ACB3BF] mb-1">Type</Text>
+                  <Text className="text-sm font-semibold text-gray-900">
+                    {category.id === 'flexi'
+                      ? t('home.currentSavings')
+                      : t('home.fixedTermSavings')}
+                  </Text>
                 </View>
-                <View className="bg-gray-900 px-6 py-2 rounded-2xl">
-                  <Text className="text-sm font-semibold text-white">
-                    {t('home.deposit')}
+                <View>
+                  <Text className="text-[12px] text-[#ACB3BF] mb-1">
+                    Minimum
+                  </Text>
+                  <Text className="text-sm font-semibold text-gray-900">
+                    $10
                   </Text>
                 </View>
               </View>
+              <TouchableOpacity
+                className="bg-gray-900 px-6 py-2 rounded-[6]"
+                onPress={e => {
+                  e.stopPropagation();
+                  handleVaultPress(category);
+                }}
+              >
+                <Text className="text-sm font-semibold text-white">
+                  {t('home.deposit')}
+                </Text>
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         ))}

@@ -1,6 +1,6 @@
 // components/PerfectVaultSavingsPlatform/index.tsx
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StatusBar, Animated } from 'react-native';
+import { ScrollView, Animated } from 'react-native';
 import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
 import { useUserRegistration } from '@/hooks/useUserRegistration';
@@ -22,6 +22,7 @@ import ActionsMenu from '@/components/modals/ActionsMenu';
 import { CategoryInfo, VaultItem } from '@/api/vault';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
+import { ShadowCard } from '@/components/common/ShadowCard';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
@@ -141,31 +142,30 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
 
   return (
     <CommonSafeAreaView className="flex-1 bg-gray-50" isIncludeBottomBar={true}>
-      <StatusBar barStyle="dark-content" />
-
       <Header
         user={user}
         currentWalletInfo={currentWalletInfo}
         formatAddress={formatAddress}
       />
-      <BalanceSection
-        address={activeWallet.address}
-        todayEarnings={todayEarnings}
-        monthlyEarnings={monthlyEarnings}
-      />
-
       <ScrollView
-        className="flex-1"
+        className="flex-1 px-5"
         contentContainerStyle={{ paddingBottom: 10 }}
         showsVerticalScrollIndicator={false}
       >
-        <ChartSection />
-
-        <VaultList handleVaultPress={handleVaultPress} />
-
-        <ActivityList />
-
-        <View className="h-5" />
+        <BalanceSection
+          address={activeWallet.address}
+          todayEarnings={todayEarnings}
+          monthlyEarnings={monthlyEarnings}
+        />
+        <ShadowCard className="mt-[27]">
+          <ChartSection />
+        </ShadowCard>
+        <ShadowCard className="mt-[18]" borderRadius={20}>
+          <VaultList handleVaultPress={handleVaultPress} />
+        </ShadowCard>
+        <ShadowCard className="mt-[18] mb-[160]" borderRadius={20}>
+          <ActivityList />
+        </ShadowCard>
       </ScrollView>
 
       {/* Actions Menu */}
