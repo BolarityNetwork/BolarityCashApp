@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import AnimatedNumber from '../AnimatedNumber';
 import { useUserBalances, getProtocolTotalUSD } from '@/api/account';
 import { WalletSwitchModal } from '@/components/modals/WalletSwitchModal';
-import { WalletLogo } from '@/components/profile/WalletLogo';
 import { formatAddress } from '@/utils/profile';
-import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import RefreshIcon from '@/assets/icon/common/refresh.svg';
 import Skeleton from '../common/Skeleton';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
+import { DashedLine } from '@/components/common/DashedLine';
+import ArrowDownIcon from '@/assets/icon/profile/arrow-down.svg';
+import EthIcon from '@/assets/icon/profile/ETH.svg';
 interface AccountCardProps {
   address: string;
   profileState?: any;
@@ -21,7 +22,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const [showWalletSwitchModal, setShowWalletSwitchModal] = useState(false);
-  const { activeWallet } = useMultiChainWallet();
   const {
     data: balancesData,
     isLoading,
@@ -36,37 +36,28 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   const cashTotal = balancesData?.wallet?.totals?.stableUsd || 0;
   const protocolsCount = balancesData?.protocols.length || 0;
 
-  const ethData = balancesData?.wallet?.assets?.find(
-    asset => asset.symbol === 'ETH'
-  ) || { amount: 0, usdValue: 0 };
-  const totalStablecoins = balancesData?.wallet?.totals?.stableUsd || 0;
-
   const aaveBalance = getProtocolTotalUSD(balancesData, 'aave');
   const compoundBalance = getProtocolTotalUSD(balancesData, 'compound');
   const pendleBalance = getProtocolTotalUSD(balancesData, 'pendle');
 
   return (
-    <View className="bg-white mx-5 mt-5 rounded-2xl p-5 shadow-sm border border-slate-100">
+    <View className="p-5">
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-4">
+      <View className="flex-row items-start justify-between">
         <View className="flex-1">
-          <Text className="text-lg font-bold text-slate-800">
+          <Text className="text-[18px] font-[600] leading-[25px] text-black ">
             {t('appProfile.portfolioBalances')}
           </Text>
           <TouchableOpacity
             onPress={() => setShowWalletSwitchModal(true)}
-            className="mt-1"
+            className="flex-row items-center mt-[6px]"
           >
-            <View className="flex-row items-center">
-              <Text className="text-sm text-slate-500 font-mono">
-                {formatAddress(address)}
-              </Text>
-              <WalletLogo
-                type={activeWallet.type === 'ethereum' ? 'ethereum' : 'solana'}
-                size={16}
-                style={{ marginLeft: 8, marginRight: 4 }}
-              />
-              <Text className="text-xs text-slate-400">▼</Text>
+            <EthIcon />
+            <Text className="text-[10px] leading-[14px] ml-[6px]">
+              {formatAddress(address)}
+            </Text>
+            <View className="ml-[5px]">
+              <ArrowDownIcon />
             </View>
           </TouchableOpacity>
         </View>
@@ -76,21 +67,22 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       </View>
 
       {/* Total Balance */}
-      <View className="mb-4">
+      <View className="mt-[7px]">
         <View className="flex-row items-center justify-between">
           {isLoading ? (
-            <Skeleton width={100} height={24} borderRadius={12} />
+            <Skeleton width={170} height={28} borderRadius={12} />
           ) : isError ? (
-            <Text className="text-2xl font-bold text-red-500">
+            <Text className="text-[20px] font-[600] leading-[28px] text-[#EF4444]">
               {t('appProfile.error')}
             </Text>
           ) : (
             <AnimatedNumber
               value={totalBalance}
               style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: '#1e293b',
+                fontSize: 20,
+                fontWeight: '600',
+                lineHeight: 28,
+                color: '#000000',
               }}
               duration={1200}
               formatOptions={{
@@ -100,27 +92,27 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
             />
           )}
-          <Text className="text-sm text-slate-500">
+          <Text className="text-[12px] leading-[17px] text-[#ACB3BE]">
             {t('appProfile.totalBalance')}
           </Text>
         </View>
       </View>
 
-      {/* Separator */}
-      <View className="h-px bg-slate-200 mb-4" />
-
+      <DashedLine className="mt-3" />
       {/* Balance Breakdown */}
-      <View className="flex-row justify-between mb-4">
-        <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">
+      <View className="flex-row justify-between mt-3">
+        <View className="items-start">
+          <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.saving')}
           </Text>
           <AnimatedNumber
             value={depositsTotal}
             style={{
               fontSize: 16,
-              fontWeight: 'bold',
-              color: '#10B981',
+              fontWeight: '600',
+              lineHeight: 22,
+              color: '#00C87F',
+              marginTop: 2,
             }}
             duration={800}
             formatOptions={{
@@ -130,16 +122,18 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             }}
           />
         </View>
-        <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">
+        <View className="items-start">
+          <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.cash')}
           </Text>
           <AnimatedNumber
             value={cashTotal}
             style={{
               fontSize: 16,
-              fontWeight: 'bold',
-              color: '#3B82F6',
+              fontWeight: '600',
+              lineHeight: 22,
+              color: '#2381FE',
+              marginTop: 2,
             }}
             duration={800}
             formatOptions={{
@@ -150,40 +144,41 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           />
         </View>
         <View className="items-center">
-          <Text className="text-sm text-slate-500 mb-1">
+          <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.protocols')}
           </Text>
-          <Text className="text-lg font-bold text-slate-800">
+          <Text className="text-[16px] font-[600] leading-[22px] text-black">
             {protocolsCount}
           </Text>
         </View>
       </View>
 
       {/* Separator */}
-      <View className="h-px bg-slate-200 mb-4" />
+      <DashedLine className="mt-[14px]" />
 
       {/* Protocol Breakdown */}
       <TouchableOpacity
+        className="mt-3"
         onPress={() => router.push('/portfolio')}
-        className="mb-4"
       >
-        <Text className="text-sm font-medium text-slate-600 mb-3">
+        <Text className="text-[12px] leading-[17px] text-[#ACB3BE]">
           {t('appProfile.protocol')}
         </Text>
-        <View className="space-y-2">
-          <View className="flex-row items-center justify-between">
+        <View className="mt-[2px]">
+          <View className="flex-row items-center justify-between my-[3px]">
             <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
-              <Text className="text-sm text-slate-700">
+              <View className="w-2 h-2 rounded-full bg-[#2381FE] mr-2" />
+              <Text className="text-[12px] leading-[17px] text-[#000000]">
                 {t('appProfile.aave')}
               </Text>
             </View>
             <AnimatedNumber
               value={aaveBalance}
               style={{
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: '#1e293b',
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 22,
+                color: '#000000',
               }}
               duration={800}
               formatOptions={{
@@ -193,19 +188,20 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
             />
           </View>
-          <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between my-[3px]">
             <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-              <Text className="text-sm text-slate-700">
+              <View className="w-2 h-2 rounded-full bg-[#00C87F] mr-2" />
+              <Text className="text-[12px] leading-[17px] text-[#000000]">
                 {t('appProfile.compound')}
               </Text>
             </View>
             <AnimatedNumber
               value={compoundBalance}
               style={{
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: '#1e293b',
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 22,
+                color: '#000000',
               }}
               duration={800}
               formatOptions={{
@@ -215,19 +211,20 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               }}
             />
           </View>
-          <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center justify-between my-[3px]">
             <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-purple-500 mr-2" />
-              <Text className="text-sm text-slate-700">
+              <View className="w-2 h-2 rounded-full bg-[#FF4D00] mr-2" />
+              <Text className="text-[12px] leading-[17px] text-[#000000]">
                 {t('appProfile.pendle')}
               </Text>
             </View>
             <AnimatedNumber
               value={pendleBalance}
               style={{
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: '#1e293b',
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 22,
+                color: '#000000',
               }}
               duration={800}
               formatOptions={{
@@ -239,63 +236,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           </View>
         </View>
       </TouchableOpacity>
-
-      {/* Separator */}
-      <View className="h-px bg-slate-200 mb-4" />
-
-      {/* ETH and Stablecoin Balance */}
-      <View className="mb-4">
-        <Text className="text-sm font-medium text-slate-600 mb-3">
-          {t('appProfile.asset')}
-        </Text>
-        <View className="space-y-2">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-yellow-500 mr-2" />
-              <Text className="text-sm text-slate-700">
-                {t('appProfile.eth')}
-              </Text>
-            </View>
-            <View className="flex items-end">
-              <AnimatedNumber
-                value={ethData.amount}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  color: '#1e293b',
-                }}
-                duration={800}
-                formatOptions={{
-                  minimumFractionDigits: 4,
-                  maximumFractionDigits: 6,
-                }}
-              />
-            </View>
-          </View>
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center">
-              <View className="w-2 h-2 rounded-full bg-teal-500 mr-2" />
-              <Text className="text-sm text-slate-700">
-                {t('appProfile.stablecoins')}
-              </Text>
-            </View>
-            <AnimatedNumber
-              value={totalStablecoins}
-              style={{
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: '#1e293b',
-              }}
-              duration={800}
-              formatOptions={{
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 3,
-                prefix: '$',
-              }}
-            />
-          </View>
-        </View>
-      </View>
 
       {/* Wallet Switch Modal */}
       <WalletSwitchModal

@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { TakoToast } from '@/components/common/TakoToast';
 import { ShadowCard } from '@/components/common/ShadowCard';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
+import { DashedLine } from '@/components/common/DashedLine';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -149,14 +150,7 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         </Text>
       </TouchableOpacity>
 
-      <View
-        className="flex-row items-center overflow-hidden"
-        style={{ height: 1 }}
-      >
-        {Array.from({ length: 100 }).map((_, i) => (
-          <View key={i} className="bg-[#DADADA] w-[3px] h-[1px] mr-[2px]" />
-        ))}
-      </View>
+      <DashedLine />
 
       <TouchableOpacity
         className="flex-row items-center justify-between py-[20px] pl-[1px] pr-1"

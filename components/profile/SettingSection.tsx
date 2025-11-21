@@ -11,13 +11,11 @@ export const SettingSection: React.FC<SettingSectionProps> = ({
   children,
 }) => {
   return (
-    <View className="mx-5 mt-6">
-      <Text className="text-sm font-medium text-slate-500 mb-3 px-1">
+    <View className="pt-5 pb-[10px] px-5">
+      <Text className="text-[18px] font-[600] leading-[26px] text-black mb-[3px]">
         {title}
       </Text>
-      <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-        {children}
-      </View>
+      {children}
     </View>
   );
 };
