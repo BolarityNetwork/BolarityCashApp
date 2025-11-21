@@ -205,7 +205,10 @@ const ChartSection: React.FC<ChartSectionProps> = ({
     const maxHeight = 160; // Reduced height since period buttons are removed
     if (dataPoint.reward === 0) return 0;
     const heightRatio = dataPoint.reward / yAxisData.maxValue;
-    return heightRatio * maxHeight;
+    const calculatedHeight = heightRatio * maxHeight;
+    // Minimum height is 48px for any reward > 0, then scale proportionally
+    const minHeight = 48;
+    return calculatedHeight < minHeight ? minHeight : calculatedHeight;
   };
 
   // Get gradient colors for bars - green gradient for most, special for future
@@ -270,14 +273,7 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                           borderColor: gradientConfig.borderColor,
                           position: 'absolute',
                           bottom: 0,
-                          // Dynamic border radius: fully rounded only if height is large enough
-                          // For small heights, use smaller radius to avoid visual issues
-                          borderRadius:
-                            barHeight >= 22
-                              ? 22
-                              : barHeight > 0
-                                ? Math.max(barHeight / 2, 4)
-                                : 0,
+                          borderRadius: 160,
                         },
                       ]}
                     />

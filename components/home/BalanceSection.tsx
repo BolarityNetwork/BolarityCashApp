@@ -6,6 +6,7 @@ import { useUserRewards, getDailyRewards } from '@/api/user';
 import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import useAppRefresh from '@/hooks/useAppRefresh';
 import { useTranslation } from 'react-i18next';
+import Skeleton from '@/components/common/Skeleton';
 
 interface BalanceSectionProps {
   address: string;
@@ -52,21 +53,18 @@ const BalanceSection: React.FC<BalanceSectionProps> = ({ address }) => {
         <Text className="text-[14px] leading-[20px] text-[#ACB3BF]">
           {t('home.totalPortfolioBalance')}
         </Text>
-        <View className="h-[42px] bg-gray-200 rounded mt-[6px] w-32" />
-        <View className="flex-row justify-start gap-10 mt-1 px-[6px]">
-          <View className="flex-row items-center gap-1.5 h-[20px]">
-            <View className="h-[20px] bg-gray-200 rounded w-16" />
-            <Text className="text-[10px] text-[#ACB3BF]">
-              {t('home.yesterday')}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-1.5">
-            <View className="h-[20px] bg-gray-200 rounded w-20" />
-            <Text className="text-[10px] text-[#ACB3BF]">
-              {t('home.cumulativeEarnings')}
-            </Text>
-          </View>
-        </View>
+        <Skeleton
+          width={180}
+          height={42}
+          borderRadius={16}
+          style={{ marginTop: 6 }}
+        />
+        <Skeleton
+          width={280}
+          height={20}
+          borderRadius={16}
+          style={{ marginTop: 4 }}
+        />
       </View>
     );
   }

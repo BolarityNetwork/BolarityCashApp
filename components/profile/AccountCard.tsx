@@ -105,51 +105,67 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.saving')}
           </Text>
-          <AnimatedNumber
-            value={depositsTotal}
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              lineHeight: 22,
-              color: '#00C87F',
-              marginTop: 2,
-            }}
-            duration={800}
-            formatOptions={{
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 3,
-              prefix: '$',
-            }}
-          />
+          {isLoading ? (
+            <Skeleton
+              width={100}
+              height={22}
+              borderRadius={12}
+              style={{ marginTop: 2 }}
+            />
+          ) : (
+            <AnimatedNumber
+              value={depositsTotal}
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 22,
+                color: '#00C87F',
+                marginTop: 2,
+              }}
+            />
+          )}
         </View>
         <View className="items-start">
           <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.cash')}
           </Text>
-          <AnimatedNumber
-            value={cashTotal}
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              lineHeight: 22,
-              color: '#2381FE',
-              marginTop: 2,
-            }}
-            duration={800}
-            formatOptions={{
-              minimumFractionDigits: 1,
-              maximumFractionDigits: 3,
-              prefix: '$',
-            }}
-          />
+          {isLoading ? (
+            <Skeleton
+              width={100}
+              height={22}
+              borderRadius={12}
+              style={{ marginTop: 2 }}
+            />
+          ) : (
+            <AnimatedNumber
+              value={cashTotal}
+              style={{
+                fontSize: 16,
+                fontWeight: '600',
+                lineHeight: 22,
+                color: '#2381FE',
+                marginTop: 2,
+              }}
+              duration={800}
+              formatOptions={{
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 3,
+                prefix: '$',
+              }}
+            />
+          )}
         </View>
         <View className="items-center">
           <Text className="text-[10px] leading-[14px] text-[#ACB3BE]">
             {t('appProfile.protocols')}
           </Text>
-          <Text className="text-[16px] font-[600] leading-[22px] text-black">
-            {protocolsCount}
-          </Text>
+          {isLoading ? (
+            <Skeleton width={100} height={22} borderRadius={12} />
+          ) : (
+            <Text className="text-[16px] font-[600] leading-[22px] text-black">
+              {protocolsCount}
+            </Text>
+          )}
         </View>
       </View>
 
@@ -172,21 +188,25 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 {t('appProfile.aave')}
               </Text>
             </View>
-            <AnimatedNumber
-              value={aaveBalance}
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                lineHeight: 22,
-                color: '#000000',
-              }}
-              duration={800}
-              formatOptions={{
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 3,
-                prefix: '$',
-              }}
-            />
+            {isLoading ? (
+              <Skeleton width={100} height={22} borderRadius={12} />
+            ) : (
+              <AnimatedNumber
+                value={aaveBalance}
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  lineHeight: 22,
+                  color: '#000000',
+                }}
+                duration={800}
+                formatOptions={{
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 3,
+                  prefix: '$',
+                }}
+              />
+            )}
           </View>
           <View className="flex-row items-center justify-between my-[3px]">
             <View className="flex-row items-center">
@@ -195,21 +215,25 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 {t('appProfile.compound')}
               </Text>
             </View>
-            <AnimatedNumber
-              value={compoundBalance}
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                lineHeight: 22,
-                color: '#000000',
-              }}
-              duration={800}
-              formatOptions={{
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 3,
-                prefix: '$',
-              }}
-            />
+            {isLoading ? (
+              <Skeleton width={100} height={22} borderRadius={12} />
+            ) : (
+              <AnimatedNumber
+                value={compoundBalance}
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  lineHeight: 22,
+                  color: '#000000',
+                }}
+                duration={800}
+                formatOptions={{
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 3,
+                  prefix: '$',
+                }}
+              />
+            )}
           </View>
           <View className="flex-row items-center justify-between my-[3px]">
             <View className="flex-row items-center">
@@ -218,21 +242,25 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 {t('appProfile.pendle')}
               </Text>
             </View>
-            <AnimatedNumber
-              value={pendleBalance}
-              style={{
-                fontSize: 16,
-                fontWeight: '600',
-                lineHeight: 22,
-                color: '#000000',
-              }}
-              duration={800}
-              formatOptions={{
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 3,
-                prefix: '$',
-              }}
-            />
+            {isLoading ? (
+              <Skeleton width={100} height={22} borderRadius={12} />
+            ) : (
+              <AnimatedNumber
+                value={pendleBalance}
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  lineHeight: 22,
+                  color: '#000000',
+                }}
+                duration={800}
+                formatOptions={{
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 3,
+                  prefix: '$',
+                }}
+              />
+            )}
           </View>
         </View>
       </TouchableOpacity>
