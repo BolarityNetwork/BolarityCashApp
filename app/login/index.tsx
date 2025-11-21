@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StatusBar,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 import { Redirect } from 'expo-router';
@@ -21,6 +14,8 @@ import { usePrivy } from '@privy-io/expo';
 import { useFullScreenLoading } from '@/hooks/useFullScreenLoading';
 import { useTranslation } from 'react-i18next';
 import { TakoToast } from '@/components/common/TakoToast';
+import { ShadowCard } from '@/components/common/ShadowCard';
+import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 
 export const OAUTH_PROVIDERS = [
   {
@@ -85,51 +80,38 @@ export default function LoginScreen() {
   }
 
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <View className="flex-1 bg-gray-50">
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 24,
-            paddingTop: 80,
-            paddingBottom: 40,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Header />
+    <CommonSafeAreaView className="bg-[#F9FAFC]">
+      <View className="flex-1 px-5">
+        <Header className="mt-[30px]" />
+        <ShadowCard borderRadius={20} className="mt-[50px]">
+          <PrimaryActions
+            isLoading={isLoading}
+            onEmailLogin={handleEmailLogin}
+          />
+        </ShadowCard>
 
-          <View className="bg-white rounded-2xl mx-1 shadow-sm overflow-hidden">
-            <PrimaryActions
-              isLoading={isLoading}
-              onEmailLogin={handleEmailLogin}
-            />
-          </View>
-
-          <View className="py-6 px-6 bg-gray-50">
-            <Text className="text-sm text-gray-500 font-medium text-center">
-              {t('auth.otherOptions')}
-            </Text>
-          </View>
-
-          <View className="bg-white rounded-2xl mx-1 shadow-sm overflow-hidden">
-            <OAuthSection
-              providers={OAUTH_PROVIDERS}
-              isLoading={isLoading || oauthLoading}
-              onProviderSelect={handleOAuthLogin}
-              onPasskeyLogin={handlePasskeyLogin}
-            />
-          </View>
-        </ScrollView>
+        <View className="flex-row items-center justify-between mt-[50px] px-[10px]">
+          <View className="w-[100px] h-[1px] bg-[#EBEBEB] mr-[12px]" />
+          <Text className="text-[10px] text-[#ACB3BE]">
+            {t('auth.otherOptions')}
+          </Text>
+          <View className="w-[100px] h-[1px] bg-[#EBEBEB] ml-[12px]" />
+        </View>
+        <OAuthSection
+          providers={OAUTH_PROVIDERS}
+          isLoading={isLoading || oauthLoading}
+          onProviderSelect={handleOAuthLogin}
+          onPasskeyLogin={handlePasskeyLogin}
+        />
       </View>
-    </>
+    </CommonSafeAreaView>
   );
 }
 
-function Header() {
+function Header({ className }: { className?: string }) {
   const { t } = useTranslation();
   return (
-    <View className="items-center mb-16">
+    <View className={`items-center ${className}`}>
       <View className="flex-row items-center mb-6">
         <Image
           source={require('@/assets/images/adaptive-icon.png')}
@@ -150,23 +132,34 @@ function Header() {
 function PrimaryActions({ isLoading, onEmailLogin }: any) {
   const { t } = useTranslation();
   return (
-    <View className="p-0">
+    <View className="pt-[3px] bg-white px-5 rounded-[20px]">
       <TouchableOpacity
-        className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
+        className="flex-row items-center justify-between pl-[3px] pr-[7px] py-[20px]"
         onPress={onEmailLogin}
         disabled={isLoading}
       >
         <View className="flex-row items-center flex-1">
           <EmailIcon />
-          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            {t('auth.continueWithEmail')}
+          <Text className="ml-[14px] text-[12px] text-[#DADADA] font-[600] flex-1">
+            your@emsil.com
           </Text>
         </View>
-        <Text className="text-lg text-gray-400">{t('common.submit')}</Text>
+        <Text className="text-[12px] text-[#ACB3BF] font-[600]">
+          {t('common.submit')}
+        </Text>
       </TouchableOpacity>
 
+      <View
+        className="flex-row items-center overflow-hidden"
+        style={{ height: 1 }}
+      >
+        {Array.from({ length: 100 }).map((_, i) => (
+          <View key={i} className="bg-[#DADADA] w-[3px] h-[1px] mr-[2px]" />
+        ))}
+      </View>
+
       <TouchableOpacity
-        className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
+        className="flex-row items-center justify-between py-[20px] pl-[1px] pr-1"
         onPress={() => {
           TakoToast.show({
             type: 'normal',
@@ -176,14 +169,22 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
           // TODO: Implement SMS login
         }}
         disabled={isLoading}
+        style={{ paddingVertical: 0 }}
       >
         <View className="flex-row items-center flex-1">
           <SmsIcon />
-          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
+          <Text className="ml-3 text-[12px] text-[#DADADA] font-[600] flex-1">
             {t('auth.continueWithSMS')}
           </Text>
         </View>
-        <Text className="text-lg text-gray-400">›</Text>
+        <Text
+          style={{
+            color: '#DADADA',
+            fontSize: 16,
+          }}
+        >
+          ›
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -196,6 +197,7 @@ function OAuthSection({
   onPasskeyLogin,
 }: any) {
   const { t } = useTranslation();
+
   const renderProviderIcon = (providerName: string) => {
     switch (providerName) {
       case 'google':
@@ -205,11 +207,7 @@ function OAuthSection({
       case 'discord':
         return <DiscordIcon />;
       default:
-        return (
-          <Text className="text-xl mr-4">
-            {providers.find((p: any) => p.name === providerName)?.icon}
-          </Text>
-        );
+        return null;
     }
   };
 
@@ -220,59 +218,58 @@ function OAuthSection({
     return providerName;
   };
 
+  const oauthOptions = [
+    ...providers.map((p: any) => ({
+      type: 'oauth' as const,
+      name: p.name,
+      label: getProviderLabel(p.name),
+      icon: renderProviderIcon(p.name),
+      onPress: () => onProviderSelect(p.name),
+    })),
+    {
+      type: 'passkey' as const,
+      name: 'passkey',
+      label: t('auth.continueWithPasskey'),
+      icon: <PasskeyIcon />,
+      onPress: onPasskeyLogin,
+    },
+    {
+      type: 'wallet' as const,
+      name: 'wallet',
+      label: t('auth.continueWithWallet'),
+      icon: <WalletIcon />,
+      onPress: () => {
+        TakoToast.show({
+          type: 'normal',
+          status: 'info',
+          message: `Wallet ${t('actions.comingSoon')}`,
+        });
+      },
+    },
+  ];
+
   return (
-    <View className="bg-white">
-      {providers.map((provider: any) => (
+    <View className="justify-start mt-6 flex-row flex-wrap px-[33px]">
+      {oauthOptions.map((option, index) => (
         <TouchableOpacity
-          key={provider.name}
-          className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
-          onPress={() => onProviderSelect(provider.name)}
+          key={option.name}
+          className="items-center"
+          style={{
+            width: 83,
+            marginRight: index % 3 === 2 ? 0 : 20,
+            marginBottom: index < 3 ? 24 : 0,
+            paddingVertical: 12,
+          }}
+          onPress={option.onPress}
           disabled={isLoading}
+          activeOpacity={0.7}
         >
-          <View className="flex-row items-center">
-            {renderProviderIcon(provider.name)}
-            <Text className="ml-3 text-base font-medium text-gray-900">
-              {getProviderLabel(provider.name)}
-            </Text>
-          </View>
-          <Text className="text-lg text-gray-400">›</Text>
+          {option.icon}
+          <Text className="text-[12px] text-[#ACB3BE] mt-[5px] leading-[17px]">
+            {option.label}
+          </Text>
         </TouchableOpacity>
       ))}
-
-      <TouchableOpacity
-        className="flex-row items-center justify-between py-5 px-6 border-b border-gray-100 bg-white"
-        onPress={onPasskeyLogin}
-        disabled={isLoading}
-      >
-        <View className="flex-row items-center flex-1">
-          <PasskeyIcon />
-          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            {t('auth.continueWithPasskey')}
-          </Text>
-        </View>
-        <Text className="text-lg text-gray-400">›</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        className="flex-row items-center justify-between py-5 px-6 border-b-0 bg-white"
-        onPress={() => {
-          TakoToast.show({
-            type: 'normal',
-            status: 'info',
-            message: `Wallet ${t('actions.comingSoon')}`,
-          });
-          // TODO: Implement Wallet login
-        }}
-        disabled={isLoading}
-      >
-        <View className="flex-row items-center flex-1">
-          <WalletIcon />
-          <Text className="ml-3 text-base font-medium text-gray-900 flex-1">
-            {t('auth.continueWithWallet')}
-          </Text>
-        </View>
-        <Text className="text-lg text-gray-400">›</Text>
-      </TouchableOpacity>
     </View>
   );
 }
