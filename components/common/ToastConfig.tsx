@@ -32,9 +32,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <Text className="text-center text-white text-sm font-normal">
@@ -53,9 +53,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastNormalError />
@@ -76,9 +76,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastNormalSuccess />
@@ -99,9 +99,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastImportantCommon />
@@ -121,9 +121,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[52px] mx-2 px-2.5 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[52px] mx-2 px-8 py-[14px] overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <Text className="text-white font-bold text-[14px]">{text1}</Text>
@@ -138,9 +138,9 @@ export const toastConfig: ToastConfig = {
         <View className="shadow-xl">
           <View
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="px-[10px] py-[9px] overflow-hidden rounded-[8px] justify-center items-center inline-flex flex-row"
+            className="px-[10px] py-[9px] overflow-hidden rounded-[20px] justify-center items-center inline-flex flex-row"
           >
             <Text className="text-font-1 text-[14px]">{text1}</Text>
           </View>
@@ -156,9 +156,9 @@ export const toastConfig: ToastConfig = {
             intensity={4}
             tint="default"
             style={{
-              backgroundColor: '#000000B2',
+              backgroundColor: '#000000E5',
             }}
-            className="h-[62px] mx-2 px-3 overflow-hidden rounded-lg border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
+            className="h-[62px] mx-2 px-3 overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px] justify-center items-center inline-flex flex-row"
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastSuccessWithBackground />
