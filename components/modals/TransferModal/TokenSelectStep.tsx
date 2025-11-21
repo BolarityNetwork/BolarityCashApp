@@ -10,6 +10,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Skeleton from '../../common/Skeleton';
 import { Token } from './types';
 import { Image } from 'expo-image';
+import IconSearch from '@/assets/icon/common/search.svg';
 
 interface TokenSelectStepProps {
   isLoading: boolean;
@@ -37,78 +38,55 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <View style={{ flex: 1 }}>
-        {/* Show actual search box */}
-        <View style={{ padding: 16 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#f1f5f9',
-              borderRadius: 8,
-              padding: 12,
-            }}
-          >
-            <Icon name="search" size={20} color="#64748b" />
-            <TextInput
-              style={{ marginLeft: 8, flex: 1, color: '#1e293b' }}
-              placeholder="Search for a token..."
-              placeholderTextColor="#94a3b8"
-              editable={false}
-            />
-          </View>
+      <ScrollView
+        className="flex-1 px-5 mt-4"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Search box */}
+        <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
+          <IconSearch />
+          <TextInput
+            className="ml-3 flex-1 text-gray-800 text-base"
+            placeholder="Search for a token"
+            placeholderTextColor="#DADADA"
+            editable={false}
+          />
         </View>
 
         {/* Token list skeleton */}
-        <ScrollView
-          style={{ flex: 1, paddingHorizontal: 16 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={{ gap: 12 }}>
-            {[1, 2, 3].map(index => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: 16,
-                  backgroundColor: 'white',
-                  borderRadius: 12,
-                }}
-              >
-                <Skeleton width={40} height={40} borderRadius={20} />
-                <View style={{ marginLeft: 16, flex: 1 }}>
-                  <Skeleton
-                    width={80}
-                    height={20}
-                    style={{ marginBottom: 6 }}
-                  />
-                  <Skeleton width={100} height={14} />
-                </View>
-                <Skeleton width={60} height={20} />
-              </View>
-            ))}
+        {[1, 2, 3].map(index => (
+          <View
+            key={index}
+            className="flex-row items-center py-4 px-5 bg-white rounded-[16px] border border-[#F8F8F8] mb-3"
+          >
+            <Skeleton width={48} height={48} borderRadius={24} />
+            <View className="ml-4 flex-1">
+              <Skeleton width={80} height={20} style={{ marginBottom: 6 }} />
+              <Skeleton width={100} height={14} />
+            </View>
           </View>
-        </ScrollView>
-      </View>
+        ))}
+      </ScrollView>
     );
   }
 
   // Error state
   if (isError) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Icon name="alert-circle-outline" size={48} color="#ef4444" />
-        <Text className="mt-4 text-gray-600 text-center">
-          Failed to load tokens, please try again
-        </Text>
-        <TouchableOpacity
-          className="mt-4 bg-indigo-600 rounded-lg p-3"
-          onPress={onRefetch}
-        >
-          <Text className="text-white font-medium">Retry</Text>
-        </TouchableOpacity>
+      <View className="flex-1 items-center justify-center px-5">
+        <View className="items-center">
+          <Icon name="alert-circle-outline" size={48} color="#ef4444" />
+          <Text className="mt-4 text-[14px] text-[#50555C] text-center">
+            Failed to load tokens, please try again
+          </Text>
+          <TouchableOpacity
+            className="mt-6 bg-black rounded-[16px] px-6 py-3"
+            onPress={onRefetch}
+            activeOpacity={0.7}
+          >
+            <Text className="text-white text-[14px] font-[600]">Retry</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -116,10 +94,29 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   // No tokens state
   if (tokens.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Icon name="wallet-outline" size={48} color="#94a3b8" />
-        <Text className="mt-4 text-gray-600">No tokens available</Text>
-      </View>
+      <ScrollView
+        className="flex-1 px-5 mt-4"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Search box */}
+        <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
+          <IconSearch />
+          <TextInput
+            className="ml-3 flex-1 text-gray-800 text-base"
+            placeholder="Search for a token"
+            placeholderTextColor="#DADADA"
+            editable={false}
+          />
+        </View>
+
+        {/* Empty state */}
+        <View className="items-center">
+          <Icon name="wallet-outline" size={48} color="#ACB3BF" />
+          <Text className="mt-4 text-[14px] text-[#50555C]">
+            No tokens available
+          </Text>
+        </View>
+      </ScrollView>
     );
   }
 
@@ -131,15 +128,17 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   });
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <ScrollView
+      className="flex-1 px-5 mt-4"
+      showsVerticalScrollIndicator={false}
+    >
       {/* Search box */}
-      <View className="flex-row items-center bg-gray-100 rounded-lg p-4 mb-6">
-        <Icon name="search" size={20} color="#64748b" />
+      <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
+        <IconSearch />
         <TextInput
           className="ml-3 flex-1 text-gray-800 text-base"
-          placeholder="Search for a token..."
-          placeholderTextColor="#94a3b8"
-          style={{ height: 24 }}
+          placeholder="Search for a token"
+          placeholderTextColor="#DADADA"
         />
       </View>
 
@@ -147,43 +146,38 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
       {sortedTokens.map(token => {
         const hasBalance = parseFloat(token.balance) > 0;
         return (
-          <TouchableOpacity
+          <View
             key={token.id}
-            className={`bg-white rounded-2xl p-4 mb-3 border ${
-              hasBalance
-                ? 'border-indigo-100 active:bg-indigo-50'
-                : 'border-gray-100 opacity-60'
-            }`}
-            onPress={() => onTokenSelect(token)}
-            disabled={!hasBalance}
-            activeOpacity={hasBalance ? 0.7 : 1}
+            className="mb-3 py-4 px-5 bg-white rounded-[16px] border border-[#F8F8F8]"
           >
-            <View className="flex-row items-center justify-between">
-              {/* Left: Token icon */}
-              <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-4">
-                <Image
-                  source={{ uri: iconUrl(token.symbol) }}
-                  style={{ width: 48, height: 48, borderRadius: 24 }}
-                />
-              </View>
-              {/* Right: Token info */}
-              <View className="flex-1">
-                {/* Token name */}
-                <Text className="text-base font-semibold text-gray-900 mb-1">
-                  {token.name}
-                </Text>
+            <TouchableOpacity
+              onPress={() => onTokenSelect(token)}
+              disabled={!hasBalance}
+              activeOpacity={hasBalance ? 0.7 : 1}
+            >
+              <View className="flex-row items-center">
+                {/* Left: Token icon */}
+                <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-4">
+                  <Image
+                    source={{ uri: iconUrl(token.symbol) }}
+                    style={{ width: 48, height: 48, borderRadius: 24 }}
+                  />
+                </View>
+                {/* Right: Token info */}
+                <View className="flex-1">
+                  {/* Token name */}
+                  <Text className="text-base font-[600] text-black mb-1">
+                    {token.name}
+                  </Text>
 
-                {/* Token amount + symbol */}
-                <Text
-                  className={`text-sm ${
-                    hasBalance ? 'text-gray-600' : 'text-gray-400'
-                  }`}
-                >
-                  {parseFloat(token.balance).toFixed(6)} {token.symbol}
-                </Text>
+                  {/* Token amount + symbol */}
+                  <Text className="text-[12px] text-[#ACB3BF]">
+                    {parseFloat(token.balance).toFixed(6)} {token.symbol}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         );
       })}
     </ScrollView>
