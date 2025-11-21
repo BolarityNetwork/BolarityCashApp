@@ -61,28 +61,26 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
       {/* Ethereum Wallet Option */}
       {ethereumAddress && (
         <TouchableOpacity
-          className={`bg-white rounded-2xl mb-3 shadow-md border ${
-            activeWalletType === 'ethereum'
-              ? 'border-indigo-500 border-2'
-              : 'border-slate-100'
+          className={`mx-5 px-5 py-4 bg-white rounded-[16px] mb-3 border border-[#F8F8F8] ${
+            activeWalletType === 'ethereum' ? 'border-black' : 'border-gray-200'
           }`}
           onPress={() => handleWalletSwitch('ethereum')}
         >
-          <View className="flex-row items-center p-4">
+          <View className="flex-row items-center">
             <WalletLogo type="ethereum" size={32} style={{ marginRight: 12 }} />
             <View className="flex-1">
-              <Text className="text-base font-bold text-slate-800">
+              <Text className="text-base font-[600] text-black">
                 {t('modals.ethereumWallet')}
               </Text>
-              <Text className="text-sm text-slate-500 font-mono mt-0.5">
+              <Text className="text-[12px] text-[#ACB3BF] font-mono mt-0.5">
                 {formatAddress(ethereumAddress)}
               </Text>
-              <Text className="text-xs text-slate-400 mt-0.5">
+              <Text className="text-[12px] text-[#ACB3BF] mt-0.5">
                 {t('modals.ethereumMainnet')}
               </Text>
             </View>
             {activeWalletType === 'ethereum' && (
-              <Text className="text-xl text-indigo-500 font-bold">✓</Text>
+              <Text className="text-xl text-black font-[600]">✓</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -91,46 +89,44 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
       {/* Solana Wallet Option */}
       {hasSolanaWallet && solanaAddress && (
         <TouchableOpacity
-          className={`bg-white rounded-2xl mb-3 shadow-md border ${
-            activeWalletType === 'solana'
-              ? 'border-indigo-500 border-2'
-              : 'border-slate-100'
+          className={`mx-5 px-5 py-4 bg-white rounded-[16px] mb-3 border border-[#F8F8F8] ${
+            activeWalletType === 'solana' ? 'border-black' : 'border-gray-200'
           }`}
           onPress={() => handleWalletSwitch('solana')}
         >
-          <View className="flex-row items-center p-4">
+          <View className="flex-row items-center">
             <WalletLogo type="solana" size={32} style={{ marginRight: 12 }} />
             <View className="flex-1">
-              <Text className="text-base font-bold text-slate-800">
+              <Text className="text-base font-[600] text-black">
                 {t('modals.solanaWallet')}
               </Text>
-              <Text className="text-sm text-slate-500 font-mono mt-0.5">
+              <Text className="text-[12px] text-[#ACB3BF] font-mono mt-0.5">
                 {formatAddress(solanaAddress)}
               </Text>
-              <Text className="text-xs text-slate-400 mt-0.5">
+              <Text className="text-[12px] text-[#ACB3BF] mt-0.5">
                 {t('modals.mainnetBeta')}
               </Text>
             </View>
             {activeWalletType === 'solana' && (
-              <Text className="text-xl text-indigo-500 font-bold">✓</Text>
+              <Text className="text-xl text-black font-[600]">✓</Text>
             )}
           </View>
         </TouchableOpacity>
       )}
 
       {/* Create New Wallet Section */}
-      <View className="mt-5 pt-5 border-t border-slate-100">
-        <Text className="text-base font-bold text-slate-800 mb-4">
+      <View className="mt-5 pt-4">
+        {/* <Text className="text-base font-[600] text-black mb-4">
           {t('modals.createNewWallet')}
-        </Text>
+        </Text> */}
 
         {!ethereumAddress && (
           <TouchableOpacity
-            className="flex-row items-center bg-slate-50 rounded-xl p-4 mb-3 border border-slate-200"
+            className="flex-row items-center bg-white rounded-[16px] p-4 mb-3 border border-[#F8F8F8]"
             onPress={handleCreateEthereumWallet}
           >
             <WalletLogo type="ethereum" size={24} style={{ marginRight: 12 }} />
-            <Text className="text-base font-semibold text-slate-800">
+            <Text className="text-base font-[600] text-black">
               {t('modals.createEthereumWallet')}
             </Text>
           </TouchableOpacity>
@@ -138,12 +134,12 @@ export const WalletSwitchModal: React.FC<WalletSwitchModalProps> = ({
 
         {!hasSolanaWallet && (
           <TouchableOpacity
-            className="flex-row items-center bg-slate-50 rounded-xl p-4 mb-3 border border-slate-200"
+            className="flex-row items-center bg-white rounded-[16px] p-4 mb-3 border border-[#F8F8F8]"
             onPress={handleCreateSolanaWallet}
             disabled={isCreatingSolanaWallet}
           >
             <WalletLogo type="solana" size={24} style={{ marginRight: 12 }} />
-            <Text className="text-base font-semibold text-slate-800">
+            <Text className="text-base font-[600] text-black">
               {isCreatingSolanaWallet
                 ? t('modals.creating')
                 : t('modals.createSolanaWallet')}
