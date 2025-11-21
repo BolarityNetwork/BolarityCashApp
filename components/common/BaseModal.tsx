@@ -34,7 +34,7 @@ export const BaseModal: React.FC<ModalProps> = ({
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: '#f8fafc',
+          backgroundColor: '#F9FAFC',
         }}
       >
         <View
@@ -42,18 +42,16 @@ export const BaseModal: React.FC<ModalProps> = ({
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingHorizontal: 20,
+            paddingHorizontal: 25,
             paddingVertical: 16,
-            backgroundColor: '#fff',
-            borderBottomWidth: 1,
-            borderBottomColor: '#f1f5f9',
+            backgroundColor: 'transparent',
           }}
         >
           <Text
             style={{
               fontSize: 18,
-              fontWeight: 'bold',
-              color: '#1e293b',
+              fontWeight: '600',
+              color: '#000000',
             }}
           >
             {title || ''}
@@ -63,7 +61,7 @@ export const BaseModal: React.FC<ModalProps> = ({
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: '#f1f5f9',
+              backgroundColor: '#F1F5F7',
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -72,7 +70,7 @@ export const BaseModal: React.FC<ModalProps> = ({
             <Text
               style={{
                 fontSize: 16,
-                color: '#64748b',
+                color: '#000000',
               }}
             >
               ✕
@@ -83,7 +81,9 @@ export const BaseModal: React.FC<ModalProps> = ({
         <ScrollView
           style={{
             flex: 1,
-            padding: 20,
+          }}
+          contentContainerStyle={{
+            paddingBottom: 40,
           }}
         >
           {children}

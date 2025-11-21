@@ -7,6 +7,11 @@ import { useMultiChainWallet } from '@/hooks/useMultiChainWallet';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import { useTranslation } from 'react-i18next';
 import { TakoToast } from '@/components/common/TakoToast';
+import { ShadowCard } from '@/components/common/ShadowCard';
+import bolarityLogo from '@/assets/logos/bolarity_round.png';
+import IconShare from '@/assets/icon/common/share.svg';
+import IconCopy from '@/assets/icon/common/copy.svg';
+import IconInfo from '@/assets/icon/common/info.svg';
 
 interface ReceiveModalProps {}
 
@@ -105,88 +110,112 @@ const ReceiveModalComponent: React.FC<ReceiveModalProps> = () => {
       onClose={onClose}
       title={t('modals.receive')}
     >
-      <View className="items-center px-4" style={{ zIndex: 1000 }}>
-        {/* QR Code Section */}
-        <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
-          <QRCode
-            data={walletAddress}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 12,
-            }}
-            pieceSize={8}
-            pieceBorderRadius={2}
-            isPiecesGlued={false}
-            color="#1e293b"
-            outerEyesOptions={{
-              borderRadius: 12,
-              color: '#1e293b',
-            }}
-            innerEyesOptions={{
-              borderRadius: 6,
-              color: '#1e293b',
-            }}
-            logo={{
-              href: require('@/assets/logos/bolarity.png'),
-              padding: 4,
-              hidePieces: false,
-            }}
-          />
-        </View>
+      {/* <View className="px-5 bg-[#F9FAFC]" style={{ zIndex: 1000 }}> */}
+      {/* QR Code Section */}
+      <ShadowCard
+        borderRadius={16}
+        bordered={false}
+        className="items-center justify-center mt-8 mx-[60px] p-[25px]"
+      >
+        <QRCode
+          data={walletAddress}
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 16,
+            width: 260,
+            height: 260,
+          }}
+          pieceSize={8}
+          pieceBorderRadius={0}
+          isPiecesGlued={false}
+          color="#000000"
+          logo={{
+            href: bolarityLogo,
+          }}
+        />
+      </ShadowCard>
 
-        {/* Address Display */}
-        <View className="w-full mb-6">
-          <Text className="text-sm text-gray-600 mb-2 text-center">
-            {t('modals.yourWalletAddress')}
-          </Text>
-          <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-            <Text className="text-center text-gray-800 font-mono text-sm">
-              {formatAddress(walletAddress)}
-            </Text>
+      {/* Your wallet address divider */}
+      <View className="flex-row items-center justify-center mt-8">
+        <View className="w-[100px] h-[1px] bg-[#EBEBEB] mr-[12px]" />
+        <Text className="text-[14px] text-[#ACB3BE]">
+          {t('modals.yourWalletAddress')}
+        </Text>
+        <View className="w-[100px] h-[1px] bg-[#EBEBEB] ml-[12px]" />
+      </View>
+
+      {/* Address Display */}
+      <View
+        className="mt-8 py-5"
+        style={{
+          borderRadius: 20,
+          overflow: 'hidden',
+          borderStyle: 'dashed',
+          borderWidth: 1,
+          borderColor: '#DADADA',
+          marginHorizontal: 20,
+        }}
+      >
+        <Text className="text-center text-black text-sm">
+          {formatAddress(walletAddress)}
+        </Text>
+      </View>
+
+      {/* Action Buttons */}
+      <ShadowCard
+        borderRadius={20}
+        bordered={true}
+        style={{
+          borderColor: '#000000',
+          borderWidth: 1,
+          marginHorizontal: 20,
+          marginTop: 15,
+        }}
+      >
+        <TouchableOpacity
+          onPress={handleCopyAddress}
+          className="flex-row items-center justify-center"
+          style={{ height: 60, paddingHorizontal: 20 }}
+          activeOpacity={0.7}
+        >
+          <View className="w-[22px] h-[22px] items-center justify-center mr-3">
+            <IconCopy />
           </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View className="w-full space-y-3">
-          <TouchableOpacity
-            onPress={handleCopyAddress}
-            className={`w-full py-4 rounded-xl ${
-              copied
-                ? 'bg-green-100 border-green-300'
-                : 'bg-blue-50 border-blue-200'
-            } border-2`}
-          >
-            <View className="flex-row items-center justify-center">
-              <Text className="text-lg mr-2">{copied ? '✅' : '📋'}</Text>
-              <Text
-                className={`text-base font-semibold ${
-                  copied ? 'text-green-700' : 'text-blue-700'
-                }`}
-              >
-                {copied ? t('modals.copied') : t('modals.copyAddress')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleShareAddress}
-            className="w-full py-4 rounded-xl bg-gray-50 border-2 border-gray-200"
-          >
-            <View className="flex-row items-center justify-center">
-              <Text className="text-lg mr-2">📤</Text>
-              <Text className="text-base font-semibold text-gray-700">
-                {t('modals.shareAddress')}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* Instructions */}
-        <View className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200">
-          <Text className="text-sm text-blue-800 text-center leading-5">
-            {t('modals.shareQRCode')}
+          <Text className="text-[14px] font-[600] text-black">
+            {copied ? t('modals.copied') : t('modals.copyAddress')}
           </Text>
+        </TouchableOpacity>
+      </ShadowCard>
+
+      <TouchableOpacity
+        onPress={handleShareAddress}
+        className="flex-row items-center justify-center "
+        style={{
+          paddingVertical: 20,
+          paddingHorizontal: 20,
+          borderColor: '#DADADA',
+          borderWidth: 1,
+          marginHorizontal: 20,
+          marginTop: 15,
+          borderStyle: 'dashed',
+          borderRadius: 20,
+        }}
+        activeOpacity={0.7}
+      >
+        <View className="w-[22px] h-[22px] items-center justify-center mr-3">
+          <IconShare />
         </View>
+        <Text className="text-[14px]  text-black">
+          {t('modals.shareAddress')}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Instructions */}
+      <View className="flex-row items-center justify-center px-5 py-4 border border-[#F8F8F8] rounded-[16px] mx-5 mt-[25px] bg-white">
+        <IconInfo />
+        <Text className="ml-[10px] text-[12px] text-[#50555C] flex-1 text-center">
+          {t('modals.shareQRCode')}
+        </Text>
       </View>
     </BaseModal>
   );
