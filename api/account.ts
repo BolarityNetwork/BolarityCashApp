@@ -254,7 +254,6 @@ export const getTokenTransfers = async (
     Object.keys(params).length ? { params } : undefined
   );
 
-  console.log(2000, data);
   return data;
 };
 
