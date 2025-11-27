@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import { getLocales } from 'expo-localization';
 import {
   Inter_400Regular,
@@ -10,6 +9,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supportedLanguages, defaultLanguage, Language } from '@/i18n';
 import i18n from '@/i18n';
+import { usePersistedPrivyUser } from './usePersistedPrivyUser';
+import * as SplashScreen from 'expo-splash-screen';
 
 export function useAppReady() {
   const [fontsLoaded] = useFonts({
@@ -18,6 +19,7 @@ export function useAppReady() {
     Inter_600SemiBold,
   });
   const [languageLoaded, setLanguageLoaded] = useState(false);
+  const { isHydrated } = usePersistedPrivyUser();
 
   useEffect(() => {
     const loadLanguage = async () => {
@@ -52,14 +54,15 @@ export function useAppReady() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded && languageLoaded) {
+    if (fontsLoaded && languageLoaded && isHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, languageLoaded]);
+  }, [fontsLoaded, languageLoaded, isHydrated]);
 
   return {
-    appIsReady: fontsLoaded && languageLoaded,
+    appIsReady: fontsLoaded && languageLoaded && isHydrated,
     fontsLoaded,
     languageLoaded,
+    isHydrated,
   };
 }

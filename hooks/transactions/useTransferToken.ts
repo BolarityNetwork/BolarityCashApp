@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { encodeFunctionData, erc20Abi } from 'viem';
 import { useEmbeddedEthereumWallet } from '@privy-io/expo';
+import { ensureBiometricsBeforeTx } from '@/utils/ensureBiometricsBeforeTx';
 
 interface TransferParams {
   tokenAddress?: string; // 可选，为空时表示原生代币转账
@@ -29,6 +30,9 @@ export const useTransferToken = (): UseTransferTokenReturn => {
       setIsTransferring(true);
 
       try {
+        // Require biometric authentication before transaction
+        await ensureBiometricsBeforeTx();
+
         // 验证必要参数
         if (!wallet) {
           throw new Error('No active wallet found');

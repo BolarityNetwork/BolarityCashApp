@@ -439,5 +439,22 @@
     "withdrew": "提取了",
     "withdrawalFailed": "提取失败",
     "ok": "确定"
+  },
+  "biometrics": {
+    "enableTitle": "启用生物识别",
+    "enableDescription": "使用 {{type}} 快速安全地访问您的钱包并确认交易。",
+    "enable": "启用",
+    "enablePrompt": "请进行身份验证以启用生物识别",
+    "enabled": "生物识别已启用",
+    "enableFailed": "启用生物识别失败",
+    "notSupported": "此设备不支持生物识别",
+    "authenticationFailed": "生物识别验证失败",
+    "unlockApp": "解锁 Bolarity",
+    "unlockAppForeground": "请进行身份验证以继续",
+    "cancelledWarning": "为了安全，需要生物识别验证",
+    "benefit1": "快速访问您的钱包",
+    "benefit2": "安全的交易确认",
+    "authenticating": "验证中...",
+    "unlockHint": "请进行身份验证以解锁应用"
   }
 }

@@ -15,6 +15,7 @@ import type {
   UseAlchemy7702GaslessReturn,
 } from '@/types/useAlchemy7702Gasless';
 import { splitSignature } from '@/utils/blockchain/signature';
+import { ensureBiometricsBeforeTx } from '@/utils/ensureBiometricsBeforeTx';
 
 export const useAlchemy7702Gasless = ({
   chain,
@@ -171,6 +172,9 @@ export const useAlchemy7702Gasless = ({
       setError(null);
 
       try {
+        // Require biometric authentication before transaction
+        await ensureBiometricsBeforeTx();
+
         const client = await ensureModularClient();
         const operation = await client.sendUserOperation({
           uo: {

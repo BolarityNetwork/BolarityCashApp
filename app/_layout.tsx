@@ -1,4 +1,4 @@
-// app/_layout.tsx
+import React from 'react';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import { PrivyProvider } from '@privy-io/expo';
@@ -13,17 +13,16 @@ import { useUpdateModal } from '@/hooks/useUpdateModal';
 import UpdateModal from '@/components/modals/UpdateModal';
 import { useCheckForUpdates } from '@/hooks/useCheckForUpdates';
 import { useAppReady } from '@/hooks/useAppReady';
-import { usePrivyReady } from '@/hooks/usePrivyReady';
+import { useAppLock } from '@/hooks/useAppLock';
 import { PRIVY_CONFIG, SUPPORTED_CHAINS } from '@/constants/privyConfig';
 import Toast from 'react-native-toast-message';
 import { TakoToast } from '@/components/common/TakoToast';
 import { toastConfig } from '@/components/common/ToastConfig';
+import LockSplash from '@/components/LockSplash';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  useAppReady();
-
   const {
     isVisible,
     updateInfo,
@@ -64,7 +63,8 @@ function AppContent({
   hideUpdateModal: () => void;
   handleUpdate: () => void;
 }) {
-  usePrivyReady();
+  const { appIsReady } = useAppReady();
+  const { locked, onUnlock } = useAppLock(appIsReady);
 
   return (
     <MultiChainWalletProvider>
@@ -82,6 +82,7 @@ function AppContent({
           <Toast config={toastConfig} />
           <TakoToast.Component />
           <PrivyElements />
+          <LockSplash locked={locked} onUnlock={onUnlock} />
         </NiceModal.Provider>
       </ThemeProvider>
     </MultiChainWalletProvider>

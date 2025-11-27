@@ -439,5 +439,22 @@
     "withdrew": "USDC from",
     "withdrawalFailed": "Withdrawal Failed",
     "ok": "OK"
+  },
+  "biometrics": {
+    "enableTitle": "Enable Biometric Authentication",
+    "enableDescription": "Use {{type}} to quickly and securely access your wallet and confirm transactions.",
+    "enable": "Enable",
+    "enablePrompt": "Authenticate to enable biometric authentication",
+    "enabled": "Biometric authentication enabled",
+    "enableFailed": "Failed to enable biometric authentication",
+    "notSupported": "Biometric authentication is not supported on this device",
+    "authenticationFailed": "Biometric authentication failed",
+    "unlockApp": "Unlock Bolarity",
+    "unlockAppForeground": "Authenticate to continue",
+    "cancelledWarning": "Biometric authentication is required for security",
+    "benefit1": "Quick access to your wallet",
+    "benefit2": "Secure transaction confirmation",
+    "authenticating": "Authenticating...",
+    "unlockHint": "Please authenticate to unlock the app"
   }
 }

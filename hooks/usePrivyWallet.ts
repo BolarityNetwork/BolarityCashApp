@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useEmbeddedEthereumWallet } from '@privy-io/expo';
+import { ensureBiometricsBeforeTx } from '@/utils/ensureBiometricsBeforeTx';
 
 interface TransactionParams {
   from: string;
@@ -107,6 +108,9 @@ export function usePrivyWallet(): WalletHookReturn {
       setError(null);
 
       try {
+        // Require biometric authentication before transaction
+        await ensureBiometricsBeforeTx();
+
         const provider = await wallets[0].getProvider();
 
         // Ensure there are accounts
