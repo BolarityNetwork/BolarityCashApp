@@ -71,13 +71,7 @@ export default function ProfileScreen() {
             <SettingItem
               icon={<KeyIcon />}
               title={t('appProfile.keysAndRecovery')}
-              onPress={() => {
-                TakoToast.show({
-                  type: 'normal',
-                  status: 'info',
-                  message: `${t('appProfile.keysAndRecovery')} ${t('actions.comingSoon')}`,
-                });
-              }}
+              onPress={() => router.push('/settings/keys-recovery')}
             />
             <SettingItem
               icon={<SpendingIcon />}
