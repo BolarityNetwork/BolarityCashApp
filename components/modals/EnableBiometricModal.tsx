@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
 import {
@@ -107,67 +108,77 @@ export const EnableBiometricModal = NiceModal.create<EnableBiometricModalProps>(
     return (
       <Modal
         visible={modal.visible}
-        animationType="fade"
+        animationType="slide"
         transparent={true}
         onRequestClose={handleClose}
       >
         <View style={styles.overlay}>
+          <TouchableOpacity
+            style={styles.backdrop}
+            activeOpacity={1}
+            onPress={handleClose}
+          />
           <View style={styles.container}>
-            {/* Icon */}
-            <View style={styles.iconContainer}>
-              <Text style={styles.icon}>🔐</Text>
-            </View>
+            <SafeAreaView edges={['bottom']} style={styles.safeArea}>
+              {/* Drag Handle */}
+              <View style={styles.dragHandle} />
 
-            {/* Title */}
-            <Text style={styles.title}>{t('biometrics.enableTitle')}</Text>
-
-            {/* Description */}
-            <Text style={styles.description}>
-              {t('biometrics.enableDescription', { type: biometricType })}
-            </Text>
-
-            {/* Benefits */}
-            <View style={styles.benefitsContainer}>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>✓</Text>
-                <Text style={styles.benefitText}>
-                  {t('biometrics.benefit1')}
-                </Text>
+              {/* Icon */}
+              <View style={styles.iconContainer}>
+                <Text style={styles.icon}>🔐</Text>
               </View>
-              <View style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>✓</Text>
-                <Text style={styles.benefitText}>
-                  {t('biometrics.benefit2')}
-                </Text>
-              </View>
-            </View>
 
-            {/* Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={handleClose}
-                disabled={isLoading}
-              >
-                <Text style={styles.cancelButtonText}>
-                  {t('common.cancel')}
-                </Text>
-              </TouchableOpacity>
+              {/* Title */}
+              <Text style={styles.title}>{t('biometrics.enableTitle')}</Text>
 
-              <TouchableOpacity
-                style={[styles.button, styles.enableButton]}
-                onPress={handleEnable}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.enableButtonText}>
-                    {t('biometrics.enable')}
+              {/* Description */}
+              <Text style={styles.description}>
+                {t('biometrics.enableDescription', { type: biometricType })}
+              </Text>
+
+              {/* Benefits */}
+              <View style={styles.benefitsContainer}>
+                <View style={styles.benefitItem}>
+                  <Text style={styles.benefitIcon}>✓</Text>
+                  <Text style={styles.benefitText}>
+                    {t('biometrics.benefit1')}
                   </Text>
-                )}
-              </TouchableOpacity>
-            </View>
+                </View>
+                <View style={styles.benefitItem}>
+                  <Text style={styles.benefitIcon}>✓</Text>
+                  <Text style={styles.benefitText}>
+                    {t('biometrics.benefit2')}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Buttons */}
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={handleClose}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.cancelButtonText}>
+                    {t('common.cancel')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.button, styles.enableButton]}
+                  onPress={handleEnable}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.enableButtonText}>
+                      {t('biometrics.enable')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
           </View>
         </View>
       </Modal>
@@ -178,21 +189,43 @@ export const EnableBiometricModal = NiceModal.create<EnableBiometricModalProps>(
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
   },
   container: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     width: '100%',
-    maxWidth: 400,
+    maxHeight: '90%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  safeArea: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 24,
     alignItems: 'center',
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+    marginBottom: 16,
   },
   iconContainer: {
     marginBottom: 16,
+    alignItems: 'center',
   },
   icon: {
     fontSize: 48,
