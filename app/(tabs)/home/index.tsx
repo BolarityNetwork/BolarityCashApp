@@ -23,6 +23,7 @@ import { CategoryInfo, VaultItem } from '@/api/vault';
 import { useUserRewards, getDailyRewards } from '@/api/user';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { ShadowCard } from '@/components/common/ShadowCard';
+import { useShowBiometricModal } from '@/hooks/useShowBiometricModal';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
   const { user } = usePrivy();
@@ -34,7 +35,7 @@ const PerfectVaultSavingsPlatform: React.FC = () => {
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const { activeWallet } = useMultiChainWallet();
-
+  useShowBiometricModal(user);
   useUserRegistration(activeWallet?.address || '');
 
   const { data: todayRewardsData } = useUserRewards(
