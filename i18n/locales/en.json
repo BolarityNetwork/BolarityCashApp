@@ -311,8 +311,10 @@
   },
   "portfolio": {
     "totalInvestment": "Total Investment",
-    "flexi": "Current",
-    "time": "Fixed Term"
+    "flexi": "FlexiVault",
+    "time": "TimeVault",
+    "directlyAvailable": "Directly Available",
+    "flexibleAccess": "Flexible access anytime"
   },
   "modals": {
     "receive": "Receive",

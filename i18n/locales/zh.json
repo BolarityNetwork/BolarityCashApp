@@ -312,7 +312,9 @@
   "portfolio": {
     "totalInvestment": "总投资",
     "flexi": "活期",
-    "time": "定期"
+    "time": "定期",
+    "directlyAvailable": "直接可用",
+    "flexibleAccess": "Flexible access anytime"
   },
   "modals": {
     "receive": "接收",

@@ -3,18 +3,22 @@ import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { useVaultDetails, VaultItem } from '@/api/vault';
-import { useUserBalances } from '@/api/account';
+import { useUserBalances, WalletToken } from '@/api/account';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
-import { PageHeader } from '@/components/common/PageHeader';
-import { UniversalLoadingFallback } from '@/components/universalLoadingFallback';
+import { useRouter } from 'expo-router';
+import BackWhite from '@/assets/icon/nav/back-white.svg';
+import { ShadowCard } from '@/components/common/ShadowCard';
 
 const getLevel1Categories = (t: (key: string) => string) =>
   [
+    { id: 'directlyAvailable', label: t('portfolio.directlyAvailable') },
     { id: 'flexi', label: t('portfolio.flexi') },
     { id: 'time', label: t('portfolio.time') },
   ] as const;
 
-function groupByProtocol(vaults: VaultItem[]): Record<string, VaultItem[]> {
+function groupByProtocol<T extends VaultItem>(
+  vaults: T[]
+): Record<string, T[]> {
   return vaults.reduce(
     (acc, v) => {
       const key = v.protocol || 'Others';
@@ -22,29 +26,34 @@ function groupByProtocol(vaults: VaultItem[]): Record<string, VaultItem[]> {
       acc[key].push(v);
       return acc;
     },
-    {} as Record<string, VaultItem[]>
+    {} as Record<string, T[]>
   );
 }
 
 const PortfolioScreen: React.FC = () => {
   const { t } = useTranslation();
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const router = useRouter();
+  const [categoryCollapsed, setCategoryCollapsed] = useState<
+    Record<string, boolean>
+  >({});
   const { activeWallet } = useMultiChainWallet();
 
   const { data: balancesData, isLoading: isBalancesLoading } = useUserBalances(
     activeWallet?.address || '',
     !!activeWallet?.address
   );
-  console.log('balancesData', balancesData);
+
+  console.log(11122, balancesData);
+
   const {
     data: allVaults = [],
     isLoading,
     isError,
-    refetch,
+    // refetch,
   } = useVaultDetails();
 
-  const toggleProtocol = (key: string) => {
-    setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleCategory = (key: string) => {
+    setCategoryCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleVaultPress = (vaultId: string) => {
@@ -52,62 +61,101 @@ const PortfolioScreen: React.FC = () => {
     Alert.alert('Coming soon', `Vault: ${vaultId}`);
   };
 
+  const totalAssets = balancesData?.totals?.depositsUsd || 0;
+
   return (
-    <CommonSafeAreaView className="flex-1 bg-white" isIncludeBottomBar={true}>
-      <PageHeader
-        title={t('navigation.portfolio', { defaultValue: 'Portfolio' })}
-      />
-      <View className="px-6 pt-6 pb-4">
+    <CommonSafeAreaView
+      className="flex-1 bg-black"
+      isIncludeBottomBar={true}
+      isIncludeStatusBar={true}
+    >
+      {/* Custom Header with Total Assets */}
+      <View className="bg-black pt-[57px] pb-5">
+        {/* Header Bar */}
+        <View className="px-5 pb-[13px] flex-row items-center justify-between">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-8 h-8 items-center justify-center mr-3"
+          >
+            <BackWhite />
+          </TouchableOpacity>
+          <Text className="text-center text-white text-[17px] font-normal">
+            {t('portfolio.title', { defaultValue: '账号总览' })}
+          </Text>
+          <View className="w-8"></View>
+        </View>
+
+        {/* Total Assets Card */}
         {!isBalancesLoading && balancesData && (
-          <View style={{ marginTop: 16 }}>
-            <Text style={{ fontSize: 14, color: '#6b7280', marginBottom: 4 }}>
-              {t('portfolio.totalInvestment', {
-                defaultValue: 'Total Investment',
-              })}
+          <View className="bg-white rounded-[20px] p-5 py-4 mx-5 mt-5">
+            <Text className="text-[12px] font-[600] text-black">
+              {t('portfolio.totalAssets', { defaultValue: '总资产' })}
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827' }}>
-              ${balancesData.totals?.depositsUsd?.toFixed(3) || '0.00'}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* 内容区 */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
-      >
-        {(isLoading || isBalancesLoading) && (
-          <View style={{ paddingVertical: 60, alignItems: 'center' }}>
-            <UniversalLoadingFallback style={{ width: 72, height: 72 }} />
-          </View>
-        )}
-
-        {isError && !isLoading && (
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
-            <Text style={{ color: '#dc2626', marginBottom: 8 }}>
-              {t('home.failedToLoadVaults', { defaultValue: 'Failed to load' })}
-            </Text>
+            <View className="mt-[5px]">
+              <Text className="text-[20px] font-[600] text-black leading-[28px] w-[170px]">
+                ${totalAssets.toFixed(2)}
+              </Text>
+            </View>
             <TouchableOpacity
-              onPress={() => refetch()}
-              style={{
-                backgroundColor: '#dc2626',
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-              }}
+              className="bg-black rounded-[6px] px-5 py-[9px] self-start mt-[7px]"
+              onPress={() => router.replace('/home')}
             >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>
-                {t('home.retry', { defaultValue: 'Retry' })}
+              <Text className="text-[12px] font-[600] text-white leading-[14px]">
+                {t('portfolio.viewEarnings', { defaultValue: '查看收益' })}
               </Text>
             </TouchableOpacity>
           </View>
         )}
+      </View>
 
+      <ScrollView
+        className="flex-1 bg-white rounded-[20px] px-5 pt-[10px]"
+        showsVerticalScrollIndicator={false}
+      >
         {!isLoading && !isBalancesLoading && !isError && (
-          <>
+          <View>
             {getLevel1Categories(t).map(cat => {
-              // 从 balancesData.protocols 中提取有资金的协议及其 breakdown（vault 名称 -> 金额信息）
+              // Handle "directlyAvailable" category separately
+              if (cat.id === 'directlyAvailable') {
+                const walletData = balancesData?.wallet;
+                const stableTokens = walletData?.stable || [];
+                const assetTokens = walletData?.assets || [];
+
+                // Only show if there are tokens
+                if (stableTokens.length === 0 && assetTokens.length === 0) {
+                  return null;
+                }
+
+                const isCategoryCollapsed = categoryCollapsed[cat.id];
+
+                return (
+                  <ShadowCard key={cat.id} className="mb-4">
+                    {/* Category Card */}
+                    <View className="bg-white rounded-[20px] p-5">
+                      {/* Category Header */}
+                      <TouchableOpacity
+                        onPress={() => toggleCategory(cat.id)}
+                        className={`flex-row items-center justify-between ${isCategoryCollapsed ? 'mb-0' : 'mb-4'}`}
+                      >
+                        <Text className="text-[18px] font-[600] text-black">
+                          {cat.label}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {/* Wallet Token Items */}
+                      {!isCategoryCollapsed && (
+                        <WalletTokenItems
+                          stableTokens={stableTokens}
+                          assetTokens={assetTokens}
+                          t={t}
+                        />
+                      )}
+                    </View>
+                  </ShadowCard>
+                );
+              }
+
+              // 从 balancesData.protocols 中提取有资金的协议及其 breakdown
               const protocolsWithBalance = (balancesData?.protocols || [])
                 .filter(p => (p?.totals?.usd || 0) > 0)
                 .map(p => ({
@@ -125,31 +173,24 @@ const PortfolioScreen: React.FC = () => {
               protocolsWithBalance.forEach(protocolData => {
                 Object.keys(protocolData.breakdown).forEach(vaultKey => {
                   const breakdownInfo = protocolData.breakdown[vaultKey];
-                  // breakdown 的 key 是 symbol（如 "USDE-BASE 11 DEC 2025"），需要与 allVaults 中的 id 或 market 匹配
 
-                  // 提取核心 symbol（去掉日期和协议前缀），用于匹配
                   const extractCoreSymbol = (str: string) => {
                     const normalized = str
                       .toLowerCase()
                       .replace(/\s+/g, '')
                       .replace(/[^\w]/g, '');
-                    // 尝试提取常见的 symbol 核心部分（如 "usdebase"）
-                    // 如果是 "usdebase11dec2025" 或 "usdebase20251211"，提取 "usdebase"
-                    // 如果是 "pendleusde20251211base"，尝试提取中间的 "usdebase"
                     const commonPatterns = ['usdebase', 'usdtbase', 'usdcbase'];
                     for (const pattern of commonPatterns) {
                       if (normalized.includes(pattern)) {
                         return pattern;
                       }
                     }
-                    // 如果没有匹配到常见模式，提取第一个字母序列
                     const match = normalized.match(/^([a-z]+)/);
                     return match ? match[1] : normalized;
                   };
 
                   const vaultKeyCore = extractCoreSymbol(vaultKey);
 
-                  // 在 allVaults 中查找匹配的 vault
                   const matchedVault = (allVaults || []).find(v => {
                     if (
                       (v.protocol || '').toLowerCase() !==
@@ -165,15 +206,11 @@ const PortfolioScreen: React.FC = () => {
                     const marketCore = extractCoreSymbol(marketLower);
                     const idCore = extractCoreSymbol(idLower);
 
-                    // 匹配策略：
-                    // 1. 核心 symbol 必须匹配（双向包含）
-                    // 2. 如果核心匹配，就认为匹配成功（日期格式差异可以忽略）
                     return (
                       marketCore.includes(vaultKeyCore) ||
                       vaultKeyCore.includes(marketCore) ||
                       idCore.includes(vaultKeyCore) ||
                       vaultKeyCore.includes(idCore) ||
-                      // 也尝试直接包含匹配（处理复杂格式）
                       marketLower.includes(vaultKeyCore) ||
                       vaultKeyCore.includes(marketLower) ||
                       idLower.includes(vaultKeyCore) ||
@@ -196,233 +233,136 @@ const PortfolioScreen: React.FC = () => {
 
               if (protocols.length === 0) return null;
 
+              const isCategoryCollapsed = categoryCollapsed[cat.id];
+
               return (
-                <View key={cat.id} style={{ marginBottom: 24 }}>
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      fontWeight: '800',
-                      color: '#111827',
-                      marginBottom: 12,
-                    }}
-                  >
-                    {cat.label}
-                  </Text>
+                <ShadowCard key={cat.id} className="mb-4">
+                  {/* Category Card */}
+                  <View className="bg-white rounded-[20px] p-5">
+                    {/* Category Header */}
+                    <TouchableOpacity
+                      onPress={() => toggleCategory(cat.id)}
+                      className={`flex-row items-center justify-between ${isCategoryCollapsed ? 'mb-0' : 'mb-4'}`}
+                    >
+                      <Text className="text-[18px] font-[600] text-black">
+                        {cat.label}
+                      </Text>
+                    </TouchableOpacity>
 
-                  {protocols.map(protocol => {
-                    // 计算该协议下的总投资额
-                    const protocolTotal = grouped[protocol].reduce(
-                      (sum, v) =>
-                        sum +
-                        ('balanceUsdValue' in v
-                          ? (v.balanceUsdValue as number)
-                          : 0),
-                      0
-                    );
-
-                    return (
-                      <View
-                        key={`${cat.id}-${protocol}`}
-                        style={{ marginBottom: 20 }}
-                      >
-                        <TouchableOpacity
-                          onPress={() =>
-                            toggleProtocol(`${cat.id}-${protocol}`)
-                          }
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: 12,
-                            paddingBottom: 8,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#f3f4f6',
-                          }}
-                        >
-                          <View>
-                            <Text
-                              style={{
-                                fontSize: 18,
-                                fontWeight: '700',
-                                color: '#111827',
-                                marginBottom: 4,
-                              }}
-                            >
-                              {protocol}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 10,
-                                color: '#9ca3af',
-                              }}
-                            >
-                              {grouped[protocol].length} vault
-                              {grouped[protocol].length > 1 ? 's' : ''}
-                            </Text>
-                          </View>
-                          <View style={{ alignItems: 'flex-end' }}>
-                            <Text
-                              style={{
-                                fontSize: 20,
-                                fontWeight: '800',
-                                color: '#059669',
-                                marginBottom: 2,
-                              }}
-                            >
-                              ${protocolTotal.toFixed(3)}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 9,
-                                color: '#d1d5db',
-                              }}
-                            >
-                              {collapsed[`${cat.id}-${protocol}`]
-                                ? t('common.expand', { defaultValue: 'Expand' })
-                                : t('common.collapse', {
-                                    defaultValue: 'Collapse',
-                                  })}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-
-                        {!collapsed[`${cat.id}-${protocol}`] &&
-                          grouped[protocol].map(v => (
-                            <TouchableOpacity
-                              onPress={() => handleVaultPress(v.id)}
-                              key={`${v.id}`}
-                              style={{
-                                backgroundColor: '#fff',
-                                borderRadius: 16,
-                                padding: 16,
-                                borderWidth: 1,
-                                borderColor: '#f3f4f6',
-                                marginBottom: 10,
-                              }}
-                            >
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'flex-start',
-                                }}
-                              >
-                                <View style={{ flex: 1, paddingRight: 12 }}>
-                                  <Text
-                                    style={{
-                                      fontSize: 16,
-                                      fontWeight: '700',
-                                      color: '#111827',
-                                      marginBottom: 6,
-                                    }}
-                                  >
-                                    {v.market || v.id}
-                                  </Text>
-                                  <View
-                                    style={{
-                                      flexDirection: 'row',
-                                      alignItems: 'center',
-                                      flexWrap: 'wrap',
-                                    }}
-                                  >
-                                    <Text
-                                      style={{
-                                        fontSize: 11,
-                                        color: '#9ca3af',
-                                        marginRight: 4,
-                                      }}
-                                    >
-                                      {v.chain}
-                                    </Text>
-                                    <Text
-                                      style={{
-                                        fontSize: 11,
-                                        color: '#9ca3af',
-                                        marginRight: 4,
-                                      }}
-                                    >
-                                      •
-                                    </Text>
-                                    <Text
-                                      style={{
-                                        fontSize: 11,
-                                        color: '#9ca3af',
-                                        marginRight: 4,
-                                      }}
-                                    >
-                                      {v.risk}
-                                    </Text>
-                                    {'balanceUsdValue' in v && (
-                                      <>
-                                        <Text
-                                          style={{
-                                            fontSize: 11,
-                                            color: '#9ca3af',
-                                            marginRight: 4,
-                                          }}
-                                        >
-                                          •
-                                        </Text>
-                                        <Text
-                                          style={{
-                                            fontSize: 11,
-                                            color: '#6b7280',
-                                          }}
-                                        >
-                                          APY {v.apy}
-                                        </Text>
-                                      </>
-                                    )}
-                                  </View>
-                                </View>
-                                {'balanceUsdValue' in v && (
-                                  <View style={{ alignItems: 'flex-end' }}>
-                                    <Text
-                                      style={{
-                                        fontSize: 18,
-                                        fontWeight: '500',
-                                        color: '#059669',
-                                        marginBottom: 2,
-                                      }}
-                                    >
-                                      $
-                                      {(v.balanceUsdValue as number).toFixed(3)}
-                                    </Text>
-                                    <Text
-                                      style={{
-                                        fontSize: 10,
-                                        color: '#9ca3af',
-                                      }}
-                                    >
-                                      USD
-                                    </Text>
-                                  </View>
-                                )}
-                              </View>
-
-                              {v.note ? (
-                                <Text
-                                  style={{
-                                    fontSize: 12,
-                                    color: '#6b7280',
-                                    marginTop: 8,
-                                  }}
-                                >
-                                  {v.note}
-                                </Text>
-                              ) : null}
-                            </TouchableOpacity>
-                          ))}
-                      </View>
-                    );
-                  })}
-                </View>
+                    {/* Vault Items */}
+                    {!isCategoryCollapsed && (
+                      <VaultItems
+                        protocols={protocols}
+                        grouped={grouped}
+                        onVaultPress={handleVaultPress}
+                        categoryId={cat.id}
+                        t={t}
+                      />
+                    )}
+                  </View>
+                </ShadowCard>
               );
             })}
-          </>
+          </View>
         )}
       </ScrollView>
     </CommonSafeAreaView>
+  );
+};
+
+interface VaultItemsProps {
+  protocols: string[];
+  grouped: Record<
+    string,
+    Array<VaultItem & { balanceAmount: number; balanceUsdValue: number }>
+  >;
+  onVaultPress: (vaultId: string) => void;
+  categoryId: string;
+  t: (key: string, options?: { defaultValue?: string }) => string;
+}
+
+const VaultItems: React.FC<VaultItemsProps> = ({
+  protocols,
+  grouped,
+  onVaultPress,
+  categoryId,
+}) => {
+  return (
+    <>
+      {protocols.map(protocol => {
+        const protocolVaults = grouped[protocol];
+
+        return (
+          <View key={`${categoryId}-${protocol}`}>
+            {protocolVaults.map(v => {
+              console.log(33333, v);
+              const vaultUsdValue =
+                'balanceUsdValue' in v ? (v.balanceUsdValue as number) : 0;
+
+              return (
+                <TouchableOpacity
+                  key={`${v.id}`}
+                  onPress={() => onVaultPress(v.id)}
+                  className="flex-row items-center justify-between py-[11px]"
+                >
+                  <View className="flex-1">
+                    <Text className="text-[14px] font-[600] text-black mb-1">
+                      {v.id || v.market}
+                    </Text>
+                  </View>
+                  <View className="items-end mr-2">
+                    <Text className="text-[20px] font-[600] text-black mb-1">
+                      ${vaultUsdValue.toFixed(2)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        );
+      })}
+    </>
+  );
+};
+
+interface WalletTokenItemsProps {
+  stableTokens: WalletToken[];
+  assetTokens: WalletToken[];
+  t: (key: string, options?: { defaultValue?: string }) => string;
+}
+
+const WalletTokenItems: React.FC<WalletTokenItemsProps> = ({
+  stableTokens,
+  assetTokens,
+}) => {
+  const allTokens = [...stableTokens, ...assetTokens];
+
+  if (allTokens.length === 0) {
+    return null;
+  }
+
+  return (
+    <View>
+      {allTokens.map((token, index) => {
+        return (
+          <TouchableOpacity
+            key={`${token.symbol}-${token.address || index}`}
+            className="flex-row items-center justify-between py-[15px] pb-1 px-0"
+          >
+            <View className="flex-1">
+              <Text className="text-[14px] font-[600] text-black mb-1">
+                {token.symbol}
+              </Text>
+            </View>
+            <View className="items-end mr-2">
+              <Text className="text-[20px] font-[600] text-black mb-1">
+                ${token.usdValue.toFixed(2)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 };
 
