@@ -46,6 +46,7 @@ export function useCompoundContract(): CompoundContractOperations {
     error: gaslessError,
     smartAccountAddress,
     sendGaslessTransaction,
+    waitForUserOperation,
   } = useAlchemy7702Gasless(gaslessOptions);
 
   const clearError = useCallback(() => {
@@ -148,18 +149,9 @@ export function useCompoundContract(): CompoundContractOperations {
         validateGaslessConfig();
 
         const { vault, amount, userAddress } = params;
-        const targetAddress = await resolveTargetAddress(userAddress);
+        await resolveTargetAddress(userAddress);
         const amountWei = parseAmount(amount, vault.decimals);
 
-        console.log('Compound Deposit:', {
-          vault: vault.marketAddress,
-          asset: vault.asset,
-          amount,
-          amountWei,
-          targetAddress,
-        });
-
-        // 1. Approve asset to Comet contract
         const approveData = encodeFunctionCall('approve(address,uint256)', [
           vault.protocolSpecific?.cometAddress,
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
@@ -173,12 +165,13 @@ export function useCompoundContract(): CompoundContractOperations {
           },
         ]);
 
-        console.log('✅ Approval transaction:', approveTxHash);
+        try {
+          await waitForUserOperation(approveTxHash, 60000);
+        } catch (waitErr) {
+          console.error('Error waiting for approval:', waitErr);
+          // Continue even if wait fails
+        }
 
-        // Wait for approval confirmation
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // 2. Supply to Comet
         const supplyData = encodeFunctionCall('supply(address,uint256)', [
           vault.asset,
           amountWei,
@@ -191,8 +184,6 @@ export function useCompoundContract(): CompoundContractOperations {
             value: 0n,
           },
         ]);
-
-        console.log('✅ Supply transaction:', supplyTxHash);
 
         return {
           success: true,
@@ -215,6 +206,7 @@ export function useCompoundContract(): CompoundContractOperations {
       encodeFunctionCall,
       resolveTargetAddress,
       sendGaslessTransaction,
+      waitForUserOperation,
       validateGaslessConfig,
     ]
   );
@@ -230,18 +222,9 @@ export function useCompoundContract(): CompoundContractOperations {
 
         const { vault, amount, userAddress } = params;
 
-        const targetAddress = await resolveTargetAddress(userAddress);
+        await resolveTargetAddress(userAddress);
         const amountWei = parseAmount(amount, vault.decimals);
 
-        console.log('Compound Withdraw:', {
-          vault: vault.marketAddress,
-          asset: vault.asset,
-          amount,
-          amountWei,
-          targetAddress,
-        });
-
-        // Withdraw from Comet
         const withdrawData = encodeFunctionCall('withdraw(address,uint256)', [
           vault.asset,
           amountWei,
@@ -254,8 +237,6 @@ export function useCompoundContract(): CompoundContractOperations {
             value: 0n,
           },
         ]);
-
-        console.log('✅ Withdraw transaction:', txHash);
 
         return {
           success: true,

@@ -43,9 +43,6 @@ export const useAlchemy7702Gasless = ({
   const signerRef = useRef<AuthorizationCapableSigner | null>(null);
   const modularClientRef = useRef<ModularAccountClient | null>(null);
 
-  // ----------------------------------------------------------
-  // STEP 1: 创建 7702 signer
-  // ----------------------------------------------------------
   const ensureSigner =
     useCallback(async (): Promise<AuthorizationCapableSigner> => {
       if (signerRef.current) return signerRef.current;
@@ -95,9 +92,6 @@ export const useAlchemy7702Gasless = ({
       return signer;
     }, [walletRef, chain]);
 
-  // ----------------------------------------------------------
-  // STEP 2: 创建 7702 Authorization
-  // ----------------------------------------------------------
   const ensureAuthorization = useCallback(
     async (force = false) => {
       if (authorization && !force) return authorization;
@@ -126,9 +120,6 @@ export const useAlchemy7702Gasless = ({
     [authorization, walletRef, chain, implementationAddress, ensureSigner]
   );
 
-  // ----------------------------------------------------------
-  // STEP 3: 创建 Modular Account V2 Client (mode: 7702)
-  // ----------------------------------------------------------
   const ensureModularClient = useCallback(async () => {
     if (modularClientRef.current) return modularClientRef.current;
 
@@ -153,7 +144,6 @@ export const useAlchemy7702Gasless = ({
       modularClientRef.current = client;
       return client;
     } catch (err: any) {
-      console.error(99999, { err });
       setError(err.message || 'Failed to initialize 7702 client');
       throw err;
     } finally {
@@ -161,9 +151,6 @@ export const useAlchemy7702Gasless = ({
     }
   }, [apiKey, chain, ensureAuthorization, ensureSigner, policyId]);
 
-  // ----------------------------------------------------------
-  // STEP 4: 发送 gasless UserOperation
-  // ----------------------------------------------------------
   const sendGaslessTransaction = useCallback(
     async (calls: GaslessCall[]) => {
       if (!calls.length) throw new Error('Missing calls');
@@ -172,10 +159,10 @@ export const useAlchemy7702Gasless = ({
       setError(null);
 
       try {
-        // Require biometric authentication before transaction
         await ensureBiometricsBeforeTx();
 
         const client = await ensureModularClient();
+
         const operation = await client.sendUserOperation({
           uo: {
             target: calls[0].to,
@@ -183,15 +170,53 @@ export const useAlchemy7702Gasless = ({
             value: parseEther(calls[0].value?.toString() ?? '0'),
           },
         });
-        console.log(77777, { operation });
+
         return operation.hash;
       } catch (err: any) {
-        console.error(88888, { err });
         setError(err.message || 'Failed to send gasless UO');
         throw err;
       } finally {
         setIsSending(false);
       }
+    },
+    [ensureModularClient]
+  );
+
+  const waitForUserOperation = useCallback(
+    async (userOpHash: string, maxWaitTime = 60000): Promise<void> => {
+      const client = await ensureModularClient();
+      const startTime = Date.now();
+      const pollInterval = 2000;
+
+      while (Date.now() - startTime < maxWaitTime) {
+        try {
+          if (typeof (client as any).getUserOperationReceipt === 'function') {
+            try {
+              const receipt = await (client as any).getUserOperationReceipt(
+                userOpHash
+              );
+              if (receipt) {
+                return;
+              }
+            } catch (receiptErr: any) {
+              if (
+                receiptErr.message?.includes('not found') ||
+                receiptErr.message?.includes('pending') ||
+                receiptErr.message?.includes('404')
+              ) {
+                // Continue polling
+              }
+            }
+          }
+        } catch (err: any) {
+          // Continue polling on error
+          console.error(err);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+      }
+
+      return;
     },
     [ensureModularClient]
   );
@@ -203,6 +228,6 @@ export const useAlchemy7702Gasless = ({
     authorization,
     smartAccountAddress,
     sendGaslessTransaction,
-    // refreshAuthorization: () => ensureAuthorization(true),
+    waitForUserOperation,
   };
 };

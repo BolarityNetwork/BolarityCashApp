@@ -46,6 +46,7 @@ export function useAaveContract(): AaveContractOperations {
     error: gaslessError,
     smartAccountAddress,
     sendGaslessTransaction,
+    waitForUserOperation,
   } = useAlchemy7702Gasless(gaslessOptions);
 
   const clearError = useCallback(() => {
@@ -151,15 +152,6 @@ export function useAaveContract(): AaveContractOperations {
         const targetAddress = await resolveTargetAddress(userAddress);
         const amountWei = parseAmount(amount, vault.decimals);
 
-        console.log('Aave Deposit:', {
-          vault: vault.marketAddress,
-          asset: vault.asset,
-          amount,
-          amountWei,
-          targetAddress,
-        });
-
-        // 1. Approve asset to Pool contract
         const approveData = encodeFunctionCall('approve(address,uint256)', [
           vault.protocolSpecific?.poolAddress,
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
@@ -173,20 +165,16 @@ export function useAaveContract(): AaveContractOperations {
           },
         ]);
 
-        console.log('✅ Approval transaction:', approveTxHash);
+        try {
+          await waitForUserOperation(approveTxHash, 60000);
+        } catch (waitErr) {
+          console.error('Error waiting for approval:', waitErr);
+          // Continue even if wait fails
+        }
 
-        // Wait for approval confirmation
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // 2. Supply to Pool
         const supplyData = encodeFunctionCall(
           'supply(address,uint256,address,uint16)',
-          [
-            vault.asset,
-            amountWei,
-            targetAddress,
-            0, // referralCode
-          ]
+          [vault.asset, amountWei, targetAddress, 0]
         );
 
         const supplyTxHash = await sendGaslessTransaction([
@@ -196,8 +184,6 @@ export function useAaveContract(): AaveContractOperations {
             value: 0n,
           },
         ]);
-
-        console.log('✅ Supply transaction:', supplyTxHash);
 
         return {
           success: true,
@@ -220,6 +206,7 @@ export function useAaveContract(): AaveContractOperations {
       encodeFunctionCall,
       resolveTargetAddress,
       sendGaslessTransaction,
+      waitForUserOperation,
       validateGaslessConfig,
     ]
   );
@@ -243,15 +230,6 @@ export function useAaveContract(): AaveContractOperations {
             ? '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
             : parseAmount(amount, vault.decimals);
 
-        console.log('Aave Withdraw:', {
-          vault: vault.marketAddress,
-          asset: vault.asset,
-          amount,
-          amountWei,
-          targetAddress,
-        });
-
-        // Withdraw from Pool
         const withdrawData = encodeFunctionCall(
           'withdraw(address,uint256,address)',
           [vault.asset, amountWei, targetAddress]
@@ -264,8 +242,6 @@ export function useAaveContract(): AaveContractOperations {
             value: 0n,
           },
         ]);
-
-        console.log('✅ Withdraw transaction:', txHash);
 
         return {
           success: true,
