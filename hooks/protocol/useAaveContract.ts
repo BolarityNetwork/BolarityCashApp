@@ -46,7 +46,6 @@ export function useAaveContract(): AaveContractOperations {
     error: gaslessError,
     smartAccountAddress,
     sendGaslessTransaction,
-    waitForUserOperation,
   } = useAlchemy7702Gasless(gaslessOptions);
 
   const clearError = useCallback(() => {
@@ -157,27 +156,18 @@ export function useAaveContract(): AaveContractOperations {
           '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
         ]);
 
-        const approveTxHash = await sendGaslessTransaction([
-          {
-            to: vault.asset as `0x${string}`,
-            data: approveData as `0x${string}`,
-            value: 0n,
-          },
-        ]);
-
-        try {
-          await waitForUserOperation(approveTxHash, 60000);
-        } catch (waitErr) {
-          console.error('Error waiting for approval:', waitErr);
-          // Continue even if wait fails
-        }
-
         const supplyData = encodeFunctionCall(
           'supply(address,uint256,address,uint16)',
           [vault.asset, amountWei, targetAddress, 0]
         );
 
-        const supplyTxHash = await sendGaslessTransaction([
+        // 将 approve 和 supply 合并为一个 batch 交易，只需一次人脸识别
+        const txHash = await sendGaslessTransaction([
+          {
+            to: vault.asset as `0x${string}`,
+            data: approveData as `0x${string}`,
+            value: 0n,
+          },
           {
             to: vault.protocolSpecific?.poolAddress as `0x${string}`,
             data: supplyData as `0x${string}`,
@@ -187,7 +177,7 @@ export function useAaveContract(): AaveContractOperations {
 
         return {
           success: true,
-          txHash: supplyTxHash,
+          txHash,
         };
       } catch (err) {
         const errorMessage =
@@ -206,7 +196,6 @@ export function useAaveContract(): AaveContractOperations {
       encodeFunctionCall,
       resolveTargetAddress,
       sendGaslessTransaction,
-      waitForUserOperation,
       validateGaslessConfig,
     ]
   );

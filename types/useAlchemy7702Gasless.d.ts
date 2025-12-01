@@ -36,9 +36,5 @@ export interface UseAlchemy7702GaslessReturn {
   authorization: Authorization<number, true> | null;
   smartAccountAddress: `0x${string}` | null;
   sendGaslessTransaction: (calls: GaslessCall[]) => Promise<`0x${string}`>;
-  waitForUserOperation: (
-    userOpHash: string,
-    maxWaitTime?: number
-  ) => Promise<void>;
   // refreshAuthorization: () => Promise<Authorization<number, true>>;
 }

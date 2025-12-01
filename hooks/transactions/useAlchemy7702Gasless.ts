@@ -163,13 +163,23 @@ export const useAlchemy7702Gasless = ({
 
         const client = await ensureModularClient();
 
-        const operation = await client.sendUserOperation({
-          uo: {
-            target: calls[0].to,
-            data: calls[0].data ?? '0x',
-            value: parseEther(calls[0].value?.toString() ?? '0'),
-          },
-        });
+        // 支持批量操作：如果只有一个调用，使用单个操作；如果有多个，使用批量操作
+        const operation =
+          calls.length === 1
+            ? await client.sendUserOperation({
+                uo: {
+                  target: calls[0].to,
+                  data: calls[0].data ?? '0x',
+                  value: parseEther(calls[0].value?.toString() ?? '0'),
+                },
+              })
+            : await client.sendUserOperation({
+                uo: calls.map(call => ({
+                  target: call.to,
+                  data: call.data ?? '0x',
+                  value: parseEther(call.value?.toString() ?? '0'),
+                })),
+              });
 
         return operation.hash;
       } catch (err: any) {
@@ -182,45 +192,6 @@ export const useAlchemy7702Gasless = ({
     [ensureModularClient]
   );
 
-  const waitForUserOperation = useCallback(
-    async (userOpHash: string, maxWaitTime = 60000): Promise<void> => {
-      const client = await ensureModularClient();
-      const startTime = Date.now();
-      const pollInterval = 2000;
-
-      while (Date.now() - startTime < maxWaitTime) {
-        try {
-          if (typeof (client as any).getUserOperationReceipt === 'function') {
-            try {
-              const receipt = await (client as any).getUserOperationReceipt(
-                userOpHash
-              );
-              if (receipt) {
-                return;
-              }
-            } catch (receiptErr: any) {
-              if (
-                receiptErr.message?.includes('not found') ||
-                receiptErr.message?.includes('pending') ||
-                receiptErr.message?.includes('404')
-              ) {
-                // Continue polling
-              }
-            }
-          }
-        } catch (err: any) {
-          // Continue polling on error
-          console.error(err);
-        }
-
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-      }
-
-      return;
-    },
-    [ensureModularClient]
-  );
-
   return {
     isInitializing,
     isSending,
@@ -228,6 +199,5 @@ export const useAlchemy7702Gasless = ({
     authorization,
     smartAccountAddress,
     sendGaslessTransaction,
-    waitForUserOperation,
   };
 };

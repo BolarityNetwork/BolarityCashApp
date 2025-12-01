@@ -240,7 +240,14 @@ export function usePendleContract(): PendleContractOperations {
 
         console.log('Pendle swap quote:', swapQuote);
 
-        // 1. Handle token approvals
+        // 构建批量交易：包含所有 approvals 和 swap
+        const batchCalls: Array<{
+          to: `0x${string}`;
+          data: `0x${string}`;
+          value: bigint;
+        }> = [];
+
+        // 1. 添加所有 token approvals
         if (swapQuote.tokenApprovals && swapQuote.tokenApprovals.length > 0) {
           for (const approval of swapQuote.tokenApprovals) {
             const approveData = encodeFunctionCall('approve(address,uint256)', [
@@ -248,33 +255,29 @@ export function usePendleContract(): PendleContractOperations {
               '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
             ]);
 
-            const approveTxHash = await sendGaslessTransaction([
-              {
-                to: approval.token as `0x${string}`,
-                data: approveData as `0x${string}`,
-                value: 0n,
-              },
-            ]);
-
-            console.log('✅ Approval transaction:', approveTxHash);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            batchCalls.push({
+              to: approval.token as `0x${string}`,
+              data: approveData as `0x${string}`,
+              value: 0n,
+            });
           }
         }
 
-        // 2. Execute swap via Pendle Router
-        const swapTxHash = await sendGaslessTransaction([
-          {
-            to: (swapQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
-            data: (swapQuote.tx.data || '0x') as `0x${string}`,
-            value: BigInt(swapQuote.tx.value ?? 0),
-          },
-        ]);
+        // 2. 添加 swap 交易
+        batchCalls.push({
+          to: (swapQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
+          data: (swapQuote.tx.data || '0x') as `0x${string}`,
+          value: BigInt(swapQuote.tx.value ?? 0),
+        });
 
-        console.log('✅ Pendle swap transaction:', swapTxHash);
+        // 将所有操作合并为一个 batch 交易，只需一次人脸识别
+        const txHash = await sendGaslessTransaction(batchCalls);
+
+        console.log('✅ Pendle batch transaction:', txHash);
 
         return {
           success: true,
-          txHash: swapTxHash,
+          txHash,
         };
       } catch (err) {
         const errorMessage =
@@ -342,7 +345,14 @@ export function usePendleContract(): PendleContractOperations {
         const redeemQuote = await response.json();
         console.log('Pendle redeem quote:', redeemQuote);
 
-        // 1. Handle token approvals
+        // 构建批量交易：包含所有 approvals 和 redeem
+        const batchCalls: Array<{
+          to: `0x${string}`;
+          data: `0x${string}`;
+          value: bigint;
+        }> = [];
+
+        // 1. 添加所有 token approvals
         if (
           redeemQuote.tokenApprovals &&
           redeemQuote.tokenApprovals.length > 0
@@ -353,33 +363,29 @@ export function usePendleContract(): PendleContractOperations {
               '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
             ]);
 
-            const approveTxHash = await sendGaslessTransaction([
-              {
-                to: approval.token as `0x${string}`,
-                data: approveData as `0x${string}`,
-                value: 0n,
-              },
-            ]);
-
-            console.log('✅ Approval transaction:', approveTxHash);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            batchCalls.push({
+              to: approval.token as `0x${string}`,
+              data: approveData as `0x${string}`,
+              value: 0n,
+            });
           }
         }
 
-        // 2. Execute redeem via Pendle Router
-        const redeemTxHash = await sendGaslessTransaction([
-          {
-            to: (redeemQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
-            data: (redeemQuote.tx.data || '0x') as `0x${string}`,
-            value: BigInt(redeemQuote.tx.value ?? 0),
-          },
-        ]);
+        // 2. 添加 redeem 交易
+        batchCalls.push({
+          to: (redeemQuote.tx.to || PENDLE_ROUTER) as `0x${string}`,
+          data: (redeemQuote.tx.data || '0x') as `0x${string}`,
+          value: BigInt(redeemQuote.tx.value ?? 0),
+        });
 
-        console.log('✅ Pendle redeem transaction:', redeemTxHash);
+        // 将所有操作合并为一个 batch 交易，只需一次人脸识别
+        const txHash = await sendGaslessTransaction(batchCalls);
+
+        console.log('✅ Pendle batch transaction:', txHash);
 
         return {
           success: true,
-          txHash: redeemTxHash,
+          txHash,
         };
       } catch (err) {
         const errorMessage =
