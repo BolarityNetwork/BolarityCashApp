@@ -8,6 +8,7 @@ import useMultiChainWallet from '@/hooks/useMultiChainWallet';
 import { useRouter } from 'expo-router';
 import BackWhite from '@/assets/icon/nav/back-white.svg';
 import { ShadowCard } from '@/components/common/ShadowCard';
+import Skeleton from '@/components/common/Skeleton';
 
 const getLevel1Categories = (t: (key: string) => string) =>
   [
@@ -86,25 +87,37 @@ const PortfolioScreen: React.FC = () => {
         </View>
 
         {/* Total Assets Card */}
-        {!isBalancesLoading && balancesData && (
+        {isBalancesLoading ? (
           <View className="bg-white rounded-[20px] p-5 py-4 mx-5 mt-5">
-            <Text className="text-[12px] font-[600] text-black">
-              {t('portfolio.totalAssets', { defaultValue: '总资产' })}
-            </Text>
+            <Skeleton width={60} height={14} borderRadius={4} />
             <View className="mt-[5px]">
-              <Text className="text-[20px] font-[600] text-black leading-[28px] w-[170px]">
-                ${totalAssets.toFixed(2)}
-              </Text>
+              <Skeleton width={170} height={28} borderRadius={4} />
             </View>
-            <TouchableOpacity
-              className="bg-black rounded-[6px] px-5 py-[9px] self-start mt-[7px]"
-              onPress={() => router.replace('/home')}
-            >
-              <Text className="text-[12px] font-[600] text-white leading-[14px]">
-                {t('portfolio.viewEarnings', { defaultValue: '查看收益' })}
-              </Text>
-            </TouchableOpacity>
+            <View className="mt-[7px]">
+              <Skeleton width={80} height={32} borderRadius={6} />
+            </View>
           </View>
+        ) : (
+          balancesData && (
+            <View className="bg-white rounded-[20px] p-5 py-4 mx-5 mt-5">
+              <Text className="text-[12px] font-[600] text-black">
+                {t('portfolio.totalAssets', { defaultValue: '总资产' })}
+              </Text>
+              <View className="mt-[5px]">
+                <Text className="text-[20px] font-[600] text-black leading-[28px] w-[170px]">
+                  ${totalAssets.toFixed(2)}
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="bg-black rounded-[6px] px-5 py-[9px] self-start mt-[7px]"
+                onPress={() => router.replace('/home')}
+              >
+                <Text className="text-[12px] font-[600] text-white leading-[14px]">
+                  {t('portfolio.viewEarnings', { defaultValue: '查看收益' })}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )
         )}
       </View>
 
@@ -112,7 +125,9 @@ const PortfolioScreen: React.FC = () => {
         className="flex-1 bg-white rounded-[20px] px-5 pt-[10px]"
         showsVerticalScrollIndicator={false}
       >
-        {!isLoading && !isBalancesLoading && !isError && (
+        {isLoading || isBalancesLoading ? (
+          <PortfolioSkeleton />
+        ) : !isError ? (
           <View>
             {getLevel1Categories(t).map(cat => {
               // Handle "directlyAvailable" category separately
@@ -264,7 +279,7 @@ const PortfolioScreen: React.FC = () => {
               );
             })}
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </CommonSafeAreaView>
   );
@@ -362,6 +377,66 @@ const WalletTokenItems: React.FC<WalletTokenItemsProps> = ({
           </TouchableOpacity>
         );
       })}
+    </View>
+  );
+};
+
+const PortfolioSkeleton: React.FC = () => {
+  return (
+    <View>
+      {/* 直接可用分类骨架屏 */}
+      <ShadowCard className="mb-4">
+        <View className="bg-white rounded-[20px] p-5">
+          <Skeleton width={100} height={22} borderRadius={4} />
+          <View className="mt-4">
+            {[1, 2].map(index => (
+              <View
+                key={index}
+                className="flex-row items-center justify-between py-[15px] pb-1"
+              >
+                <Skeleton width={60} height={20} borderRadius={4} />
+                <Skeleton width={100} height={24} borderRadius={4} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </ShadowCard>
+
+      {/* 活期分类骨架屏 */}
+      <ShadowCard className="mb-4">
+        <View className="bg-white rounded-[20px] p-5">
+          <Skeleton width={80} height={22} borderRadius={4} />
+          <View className="mt-4">
+            {[1, 2].map(index => (
+              <View
+                key={index}
+                className="flex-row items-center justify-between py-[11px]"
+              >
+                <Skeleton width={120} height={20} borderRadius={4} />
+                <Skeleton width={100} height={24} borderRadius={4} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </ShadowCard>
+
+      {/* 定期分类骨架屏 */}
+      <ShadowCard className="mb-4">
+        <View className="bg-white rounded-[20px] p-5">
+          <Skeleton width={80} height={22} borderRadius={4} />
+          <View className="mt-4">
+            {[1, 2].map(index => (
+              <View
+                key={index}
+                className="flex-row items-center justify-between py-[11px]"
+              >
+                <Skeleton width={120} height={20} borderRadius={4} />
+                <Skeleton width={100} height={24} borderRadius={4} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </ShadowCard>
     </View>
   );
 };
