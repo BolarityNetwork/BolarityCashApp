@@ -310,7 +310,10 @@
     "referAFriend": "Refer a Friend"
   },
   "portfolio": {
+    "title": "Portfolio",
     "totalInvestment": "Total Investment",
+    "totalAssets": "Total Assets",
+    "viewEarnings": "View Earnings",
     "flexi": "FlexiVault",
     "time": "TimeVault",
     "directlyAvailable": "Directly Available",

@@ -44,8 +44,6 @@ const PortfolioScreen: React.FC = () => {
     !!activeWallet?.address
   );
 
-  console.log(11122, balancesData);
-
   const {
     data: allVaults = [],
     isLoading,
@@ -81,7 +79,7 @@ const PortfolioScreen: React.FC = () => {
             <BackWhite />
           </TouchableOpacity>
           <Text className="text-center text-white text-[17px] font-normal">
-            {t('portfolio.title', { defaultValue: '账号总览' })}
+            {t('portfolio.title')}
           </Text>
           <View className="w-8"></View>
         </View>
@@ -101,7 +99,7 @@ const PortfolioScreen: React.FC = () => {
           balancesData && (
             <View className="bg-white rounded-[20px] p-5 py-4 mx-5 mt-5">
               <Text className="text-[12px] font-[600] text-black">
-                {t('portfolio.totalAssets', { defaultValue: '总资产' })}
+                {t('portfolio.totalAssets')}
               </Text>
               <View className="mt-[5px]">
                 <Text className="text-[20px] font-[600] text-black leading-[28px] w-[170px]">
@@ -113,7 +111,7 @@ const PortfolioScreen: React.FC = () => {
                 onPress={() => router.replace('/home')}
               >
                 <Text className="text-[12px] font-[600] text-white leading-[14px]">
-                  {t('portfolio.viewEarnings', { defaultValue: '查看收益' })}
+                  {t('portfolio.viewEarnings')}
                 </Text>
               </TouchableOpacity>
             </View>

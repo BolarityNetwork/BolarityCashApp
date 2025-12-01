@@ -310,7 +310,10 @@
     "referAFriend": "推荐朋友"
   },
   "portfolio": {
+    "title": "账号总览",
     "totalInvestment": "总投资",
+    "totalAssets": "总资产",
+    "viewEarnings": "查看收益",
     "flexi": "活期",
     "time": "定期",
     "directlyAvailable": "直接可用",
