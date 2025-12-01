@@ -496,7 +496,6 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
           </ScrollView>
         </SafeAreaView>
-        <TakoToast.Component />
         <Toast config={toastConfig} />
       </KeyboardAvoidingView>
     </Modal>

@@ -59,7 +59,7 @@ export const toastConfig: ToastConfig = {
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastNormalError />
-            <Text className="ml-[10px] text-white font-bold text-[14px]">
+            <Text className="ml-[10px] flex-1 text-white font-bold text-[14px]">
               {text1}
             </Text>
           </BlurView>
@@ -82,7 +82,7 @@ export const toastConfig: ToastConfig = {
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastNormalSuccess />
-            <Text className="ml-[10px] text-white font-bold text-[14px]">
+            <Text className="ml-[10px] flex-1 text-white font-bold text-[14px]">
               {text1}
             </Text>
           </BlurView>
@@ -105,7 +105,7 @@ export const toastConfig: ToastConfig = {
             experimentalBlurMethod={'dimezisBlurView'}
           >
             <ToastImportantCommon />
-            <Text className="ml-[10px] text-white font-bold text-[14px]">
+            <Text className="ml-[10px] flex-1 text-white font-bold text-[14px]">
               {text1}
             </Text>
           </BlurView>
