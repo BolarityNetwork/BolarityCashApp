@@ -142,7 +142,7 @@ function PrimaryActions({ isLoading, onEmailLogin }: any) {
         <View className="flex-row items-center flex-1">
           <EmailIcon />
           <Text className="ml-[14px] text-[12px] text-[#DADADA] font-[600] flex-1">
-            your@emsil.com
+            your@email.com
           </Text>
         </View>
         <Text className="text-[12px] text-[#ACB3BF] font-[600]">
