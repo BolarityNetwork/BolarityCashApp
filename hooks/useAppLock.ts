@@ -5,7 +5,7 @@ import { isBiometricEnabled } from '@/utils/biometrics';
 
 export function useAppLock(appIsReady: boolean) {
   const { user } = usePersistedPrivyUser();
-  const [locked, setLocked] = useState(true);
+  const [locked, setLocked] = useState(appIsReady);
   const appState = useRef<AppStateStatus>(AppState.currentState);
   const hasInitialCheck = useRef(false);
   const isUnlocked = useRef(false);
