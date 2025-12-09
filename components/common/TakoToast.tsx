@@ -168,8 +168,13 @@ export const TakoToast = {
       switch (type) {
         case 'important':
           return (
-            <BlurView intensity={4} className="overflow-hidden rounded-[16px]">
-              <View className="px-6 py-6 items-center justify-center bg-custom-toast-bg-1">
+            <BlurView
+              tint="default"
+              intensity={4}
+              experimentalBlurMethod={'dimezisBlurView'}
+              className="overflow-hidden rounded-[20px] border border-white/20 backdrop-blur-[10px]"
+            >
+              <View className="px-6 py-6 items-center justify-center bg-[#000000E5]">
                 {icon ||
                   (toastStatus === 'success' ? (
                     <StatesSuccess />
