@@ -154,6 +154,10 @@ const ChartSection: React.FC<ChartSectionProps> = ({
 
     // Format label based on value size
     const formatLabel = (value: number): string => {
+      // If value is 0 or very close to 0, return "0"
+      if (value === 0 || Math.abs(value) < 0.005) {
+        return '0';
+      }
       if (value >= 1000) {
         const kValue = value / 1000;
         if (kValue % 1 === 0) {
@@ -168,7 +172,12 @@ const ChartSection: React.FC<ChartSectionProps> = ({
         return value.toFixed(1);
       } else {
         // For values < 1, show 2 decimal places
-        return value.toFixed(2);
+        const formatted = value.toFixed(2);
+        // If formatted result is "0.00", return "0"
+        if (formatted === '0.00') {
+          return '0';
+        }
+        return formatted;
       }
     };
 
@@ -282,8 +291,10 @@ const ChartSection: React.FC<ChartSectionProps> = ({
                   {barHeight > 0 && (
                     <View style={styles.earningsTooltip}>
                       <View style={styles.tooltipContainer}>
-                        <Text style={styles.tooltipText}>
-                          +${formatCompactNumber(Number(dataPoint.reward))}
+                        <Text style={styles.tooltipText} numberOfLines={1}>
+                          {Number(dataPoint.reward) < 0.1
+                            ? '< $0.1'
+                            : `$${formatCompactNumber(Number(dataPoint.reward))}`}
                         </Text>
                         <View style={styles.tooltipArrow} />
                       </View>
@@ -325,8 +336,8 @@ const styles = StyleSheet.create({
   chartYAxis: {
     position: 'absolute',
     left: 0,
-    top: 0,
-    height: '100%',
+    top: -10,
+    height: '90%',
     justifyContent: 'space-between',
     width: 30,
   },
@@ -334,6 +345,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ACB3BF',
     lineHeight: 17,
+    textAlign: 'center',
   },
   chartBars: {
     marginLeft: 38,
