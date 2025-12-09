@@ -150,7 +150,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
       if (result.success) {
         TakoToast.show({
-          type: 'normal',
+          type: 'important',
           status: 'success',
           message: `${t('modals.depositSuccessfulDetails')} ${depositAmount} USDC ${t('modals.toProtocol')} ${selectedVault.protocol}`,
         });
@@ -183,7 +183,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   const handleWithdraw = useCallback(async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       TakoToast.show({
-        type: 'normal',
+        type: 'important',
         status: 'error',
         message: t('modals.pleaseEnterValidWithdrawAmount'),
       });
@@ -192,7 +192,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
     if (!selectedVault) {
       TakoToast.show({
-        type: 'normal',
+        type: 'important',
         status: 'error',
         message: t('modals.noVaultSelected'),
       });
@@ -256,7 +256,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
 
               if (result.success) {
                 TakoToast.show({
-                  type: 'normal',
+                  type: 'important',
                   status: 'success',
                   message: `${t('modals.withdrawalSuccessfulDetails')} ${depositAmount} ${t('modals.withdrew')} ${selectedVault.protocol}`,
                 });
@@ -496,8 +496,9 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
             </View>
           </ScrollView>
         </SafeAreaView>
-        <Toast config={toastConfig} />
       </KeyboardAvoidingView>
+      <Toast config={toastConfig} />
+      <TakoToast.Component />
     </Modal>
   );
 };

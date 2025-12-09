@@ -178,7 +178,7 @@ export const TakoToast = {
                   ) : (
                     <ToastImportantCommon />
                   ))}
-                <Text className="max-w-[86px] mt-4 text-white font-medium text-[14px] text-center">
+                <Text className="max-w-[148px] mt-4 text-white font-medium text-[14px] text-center">
                   {message}
                 </Text>
               </View>
