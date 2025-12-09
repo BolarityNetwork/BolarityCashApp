@@ -9,7 +9,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TakoToast } from '@/components/common/TakoToast';
 import {
-  usePrivy,
   useEmbeddedEthereumWallet,
   getUserEmbeddedEthereumWallet,
   useEmbeddedSolanaWallet,
@@ -21,6 +20,7 @@ import {
   SystemProgram,
   PublicKey,
 } from '@solana/web3.js';
+import { usePersistedPrivyUser } from './usePersistedPrivyUser';
 
 // ==================== 数据结构设计 ====================
 // "Bad programmers worry about the code. Good programmers worry about data structures."
@@ -415,7 +415,7 @@ const MultiChainWalletContext = createContext<WalletContextType | null>(null);
 // ==================== 主 Hook - 组装一切 ====================
 
 export function useMultiChainWalletState(): WalletContextType {
-  const { user } = usePrivy();
+  const { user } = usePersistedPrivyUser();
 
   // Privy hooks
   const { wallets: ethWallets } = useEmbeddedEthereumWallet();

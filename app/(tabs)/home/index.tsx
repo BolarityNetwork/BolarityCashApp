@@ -1,7 +1,6 @@
 // components/PerfectVaultSavingsPlatform/index.tsx
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Animated } from 'react-native';
-import { usePrivy } from '@privy-io/expo';
 import useMultiChainWallet from '@/hooks/useMultiChainWallet';
 import { useUserRegistration } from '@/hooks/useUserRegistration';
 import { useTranslation } from 'react-i18next';
@@ -24,9 +23,10 @@ import { useUserRewards, getDailyRewards } from '@/api/user';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { ShadowCard } from '@/components/common/ShadowCard';
 import { useShowBiometricModal } from '@/hooks/useShowBiometricModal';
+import { usePersistedPrivyUser } from '@/hooks/usePersistedPrivyUser';
 
 const PerfectVaultSavingsPlatform: React.FC = () => {
-  const { user } = usePrivy();
+  const { user } = usePersistedPrivyUser();
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showVaultListModal, setShowVaultListModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryInfo | null>(
