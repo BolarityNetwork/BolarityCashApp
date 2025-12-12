@@ -38,10 +38,7 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <ScrollView
-        className="flex-1 px-5 mt-4"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1 mt-4" showsVerticalScrollIndicator={false}>
         {/* Search box */}
         <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
           <IconSearch />
@@ -73,7 +70,7 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   // Error state
   if (isError) {
     return (
-      <View className="flex-1 items-center justify-center px-5">
+      <View className="flex-1 items-center justify-center">
         <View className="items-center">
           <Icon name="alert-circle-outline" size={48} color="#ef4444" />
           <Text className="mt-4 text-[14px] text-[#50555C] text-center">
@@ -94,10 +91,7 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   // No tokens state
   if (tokens.length === 0) {
     return (
-      <ScrollView
-        className="flex-1 px-5 mt-4"
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1 mt-4" showsVerticalScrollIndicator={false}>
         {/* Search box */}
         <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
           <IconSearch />
@@ -128,10 +122,7 @@ const TokenSelectStep: React.FC<TokenSelectStepProps> = ({
   });
 
   return (
-    <ScrollView
-      className="flex-1 px-5 mt-4"
-      showsVerticalScrollIndicator={false}
-    >
+    <ScrollView className="flex-1 mt-4" showsVerticalScrollIndicator={false}>
       {/* Search box */}
       <View className="flex-row items-center bg-white rounded-[8px] p-4 mb-6 border border-[#E2E8F0]">
         <IconSearch />

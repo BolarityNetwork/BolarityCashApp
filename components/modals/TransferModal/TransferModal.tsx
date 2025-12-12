@@ -389,46 +389,46 @@ const TransferModalComponent: React.FC<TransferModalProps> = () => {
       onClose={handleBack}
       title={getCurrentStepTitle()}
     >
-      {renderStepContent()}
+      <View className="flex-1 px-5">
+        {renderStepContent()}
+        {(showNextButton || showConfirmButton || showCloseButton) && (
+          <View className="mt-8">
+            {showNextButton && (
+              <TouchableOpacity
+                className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
+                onPress={
+                  currentStep === Step.ENTER_RECIPIENT
+                    ? handleAddressInputComplete
+                    : handleAmountInputComplete
+                }
+              >
+                <Text className="text-white font-bold text-lg">Next</Text>
+              </TouchableOpacity>
+            )}
 
-      {/* Bottom action buttons */}
-      {(showNextButton || showConfirmButton || showCloseButton) && (
-        <View className="mt-8">
-          {showNextButton && (
-            <TouchableOpacity
-              className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
-              onPress={
-                currentStep === Step.ENTER_RECIPIENT
-                  ? handleAddressInputComplete
-                  : handleAmountInputComplete
-              }
-            >
-              <Text className="text-white font-bold text-lg">Next</Text>
-            </TouchableOpacity>
-          )}
+            {showConfirmButton && (
+              <TouchableOpacity
+                className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
+                onPress={handleConfirm}
+                disabled={isProcessing}
+              >
+                <Text className="text-white font-bold text-lg">
+                  Confirm & Send
+                </Text>
+              </TouchableOpacity>
+            )}
 
-          {showConfirmButton && (
-            <TouchableOpacity
-              className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
-              onPress={handleConfirm}
-              disabled={isProcessing}
-            >
-              <Text className="text-white font-bold text-lg">
-                Confirm & Send
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {showCloseButton && (
-            <TouchableOpacity
-              className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
-              onPress={handleComplete}
-            >
-              <Text className="text-white font-bold text-lg">Close</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+            {showCloseButton && (
+              <TouchableOpacity
+                className="bg-indigo-600 rounded-xl p-4 items-center justify-center"
+                onPress={handleComplete}
+              >
+                <Text className="text-white font-bold text-lg">Close</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
     </BaseModal>
   );
 };
