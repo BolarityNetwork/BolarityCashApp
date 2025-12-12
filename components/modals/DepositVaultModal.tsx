@@ -88,6 +88,16 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       return;
     }
 
+    // Check if vault is expired (APY is "n/a")
+    if (selectedVault.apy === 'n/a' || selectedVault.apy === 'N/A') {
+      TakoToast.show({
+        type: 'important',
+        status: 'error',
+        message: t('modals.vaultExpired'),
+      });
+      return;
+    }
+
     // Pendle requires minimum $0.01
     if (
       selectedVault.protocol.toLowerCase() === 'pendle' &&
@@ -292,6 +302,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
   if (!visible || !selectedVault) {
     return null;
   }
+  console.log('selectedVault', selectedVault);
 
   return (
     <Modal

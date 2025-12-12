@@ -443,7 +443,7 @@
     "withdrawalSuccessfulDetails": "成功从",
     "withdrew": "提取了",
     "withdrawalFailed": "提取失败",
-    "ok": "确定"
+    "vaultExpired": "该金库已过期，不再接受存款"
   },
   "biometrics": {
     "enableTitle": "启用生物识别",

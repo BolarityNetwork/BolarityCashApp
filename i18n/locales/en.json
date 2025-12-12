@@ -443,7 +443,7 @@
     "withdrawalSuccessfulDetails": "Successfully withdrew",
     "withdrew": "USDC from",
     "withdrawalFailed": "Withdrawal Failed",
-    "ok": "OK"
+    "vaultExpired": "This vault has expired and is no longer available for deposits"
   },
   "biometrics": {
     "enableTitle": "Enable Biometric Authentication",
