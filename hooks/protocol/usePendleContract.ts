@@ -323,7 +323,12 @@ export function usePendleContract(): PendleContractOperations {
 
         // Get redeem quote from Pendle API
         const url = `${PENDLE_API_BASE}/core/v2/sdk/${vault.chainId}/redeem`;
-        const amountWei = parseAmount(amount, vault.decimals);
+        const ptTokenAddress = vault.protocolSpecific?.ptAddress;
+        if (!ptTokenAddress) {
+          throw new Error('PT token address is required for Pendle redeem');
+        }
+        const ptTokenDecimals = 18;
+        const amountWei = parseAmount(amount, ptTokenDecimals);
 
         const params_query = new URLSearchParams({
           receiver: targetAddress,
@@ -331,15 +336,47 @@ export function usePendleContract(): PendleContractOperations {
           enableAggregator: 'true',
           yt: vault.protocolSpecific?.ytAddress || '',
           amountIn: amountWei,
+          tokenIn: ptTokenAddress,
         });
 
         if (vault.asset) {
           params_query.append('tokenOut', vault.asset);
         }
 
-        const response = await fetch(url + '?' + params_query.toString());
+        const fullUrl = url + '?' + params_query.toString();
+        const response = await fetch(fullUrl, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+
         if (!response.ok) {
-          throw new Error(`Pendle redeem API error: ${response.statusText}`);
+          let errorMessage = `Pendle redeem API error: ${response.status} ${response.statusText}`;
+          try {
+            const errorBody = await response.text();
+            console.error('Pendle redeem API error response:', errorBody);
+            // Try to parse as JSON for more detailed error
+            try {
+              const errorJson = JSON.parse(errorBody);
+              if (errorJson.message) {
+                errorMessage = `Pendle redeem API error: ${errorJson.message}`;
+              } else if (errorJson.error) {
+                errorMessage = `Pendle redeem API error: ${errorJson.error}`;
+              } else {
+                errorMessage = `Pendle redeem API error: ${errorBody}`;
+              }
+            } catch {
+              // If not JSON, use the text as is
+              if (errorBody) {
+                errorMessage = `Pendle redeem API error: ${errorBody}`;
+              }
+            }
+          } catch (e) {
+            console.error('Failed to read error response body:', e);
+          }
+          throw new Error(errorMessage);
         }
 
         const redeemQuote = await response.json();
