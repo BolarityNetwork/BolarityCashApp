@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Switch } from 'react-native';
+import { useRouter } from 'expo-router';
 import { CommonSafeAreaView } from '@/components/CommonSafeAreaView';
 import { PageHeader } from '@/components/common/PageHeader';
 import { ShadowCard } from '@/components/common/ShadowCard';
 import { SettingSection } from '@/components/profile/SettingSection';
+import { SettingItem } from '@/components/profile/SettingItem';
 import {
   isBiometricEnabled,
   enableBiometric,
@@ -18,6 +20,7 @@ import { TakoToast } from '@/components/common/TakoToast';
 
 export default function KeysRecoveryScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricType, setBiometricType] = useState<string>('Face ID');
   const [isLoading, setIsLoading] = useState(true);
@@ -149,6 +152,17 @@ export default function KeysRecoveryScreen() {
               ios_backgroundColor="#E5E7EB"
             />
           </View>
+        </SettingSection>
+      </ShadowCard>
+
+      <ShadowCard borderRadius={20} className="mt-4 mx-5">
+        <SettingSection title={t('appProfile.exportKeys')}>
+          <SettingItem
+            title={t('appProfile.exportKeys')}
+            subtitle={t('appProfile.exportKeysDescription')}
+            onPress={() => router.push('/settings/export-keys')}
+            isLast
+          />
         </SettingSection>
       </ShadowCard>
     </CommonSafeAreaView>
