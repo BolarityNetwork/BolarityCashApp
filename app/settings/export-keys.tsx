@@ -13,8 +13,36 @@ export default function ExportKeysScreen() {
   const [error, setError] = useState<string | null>(null);
   const webViewRef = useRef<WebView>(null);
   const previousUserIdRef = useRef<string | null>(null);
+  const [webViewKey, setWebViewKey] = useState(0);
 
-  // 监听用户变化，如果用户 ID 改变则重新加载
+  // 清除 WebView 存储的 JavaScript 代码（在内容加载前执行）
+  // 当 WebView key 变化时，会重新创建 WebView，此时会执行此脚本清除所有存储
+  const clearStorageScript = `
+    (function() {
+      try {
+        // 清除 localStorage
+        if (typeof localStorage !== 'undefined') {
+          localStorage.clear();
+        }
+        // 清除 sessionStorage
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.clear();
+        }
+        // 清除所有 cookies
+        if (typeof document !== 'undefined' && document.cookie) {
+          document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+          });
+        }
+        console.log('Storage cleared for new user session');
+      } catch (e) {
+        console.error('Error clearing storage:', e);
+      }
+    })();
+    true; // 注意：注入的脚本必须返回 true
+  `;
+
+  // 监听用户变化，如果用户 ID 改变则清除存储并重新加载
   useEffect(() => {
     const currentUserId = user?.id || null;
 
@@ -23,8 +51,9 @@ export default function ExportKeysScreen() {
       previousUserIdRef.current !== null &&
       previousUserIdRef.current !== currentUserId
     ) {
-      // 重新加载 WebView 以同步新的用户状态
-      webViewRef.current?.reload();
+      // 先注入脚本清除存储，然后通过 key 变化强制重新创建 WebView
+      // 这样可以确保完全清除所有状态
+      setWebViewKey(prev => prev + 1);
       setLoading(true);
     }
 
@@ -67,6 +96,7 @@ export default function ExportKeysScreen() {
             </View>
           )}
           <WebView
+            key={webViewKey}
             ref={webViewRef}
             source={{ uri: 'https://privy-export-web.vercel.app/' }}
             onLoadStart={handleLoadStart}
@@ -79,6 +109,8 @@ export default function ExportKeysScreen() {
             scalesPageToFit={true}
             mixedContentMode="always"
             cacheEnabled={false}
+            injectedJavaScriptBeforeContentLoaded={clearStorageScript}
+            sharedCookiesEnabled={false}
           />
         </View>
       )}
