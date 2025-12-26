@@ -31,6 +31,13 @@ import { TakoToast } from '@/components/common/TakoToast';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/components/common/ToastConfig';
 
+// Morpho Vault Address Mapping
+// Maps market identifier to actual vault contract address
+const MORPHO_VAULT_ADDRESSES: Record<string, string> = {
+  'steakhouse-usdc': '0xbeeF010f9cb27031ad51e3333f9aF9C6B1228183',
+  'gauntlet-usdc-core': '0xeE8F4eC5672F09119b96Ab6fB59C27E1b7e44b61',
+};
+
 interface DepositVaultModalProps {
   visible: boolean;
   selectedVault: VaultItem | null;
@@ -124,10 +131,26 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
         `💰 Depositing ${depositAmount} USDC to ${selectedVault.protocol}...`
       );
 
-      const marketAddress =
-        protocol === 'morpho' && selectedVault.market
-          ? selectedVault.market
-          : selectedVault.id;
+      // For Morpho, resolve market identifier to actual vault address
+      // For other protocols, use id as marketAddress
+      let marketAddress: string;
+      if (protocol === 'morpho' && selectedVault.market) {
+        // Check if market is already an address (starts with 0x)
+        if (selectedVault.market.startsWith('0x')) {
+          marketAddress = selectedVault.market;
+        } else {
+          // Look up address from mapping
+          marketAddress =
+            MORPHO_VAULT_ADDRESSES[selectedVault.market] || selectedVault.id;
+          if (!MORPHO_VAULT_ADDRESSES[selectedVault.market]) {
+            console.warn(
+              `⚠️ Morpho vault address not found for market: ${selectedVault.market}`
+            );
+          }
+        }
+      } else {
+        marketAddress = selectedVault.id;
+      }
 
       // Create vault market info for the selected protocol
       const vaultMarketInfo = createVaultMarketInfo(protocol, {
@@ -236,12 +259,27 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                 `💸 Withdrawing ${depositAmount} USDC from ${selectedVault.protocol}...`
               );
 
-              // For Morpho, use market field as marketAddress (ERC-4626 vault address)
+              // For Morpho, resolve market identifier to actual vault address
               // For other protocols, use id as marketAddress
-              const marketAddress =
-                protocol === 'morpho' && selectedVault.market
-                  ? selectedVault.market
-                  : selectedVault.id;
+              let marketAddress: string;
+              if (protocol === 'morpho' && selectedVault.market) {
+                // Check if market is already an address (starts with 0x)
+                if (selectedVault.market.startsWith('0x')) {
+                  marketAddress = selectedVault.market;
+                } else {
+                  // Look up address from mapping
+                  marketAddress =
+                    MORPHO_VAULT_ADDRESSES[selectedVault.market] ||
+                    selectedVault.id;
+                  if (!MORPHO_VAULT_ADDRESSES[selectedVault.market]) {
+                    console.warn(
+                      `⚠️ Morpho vault address not found for market: ${selectedVault.market}`
+                    );
+                  }
+                }
+              } else {
+                marketAddress = selectedVault.id;
+              }
 
               // Create vault market info for the selected protocol
               const vaultMarketInfo = createVaultMarketInfo(protocol, {

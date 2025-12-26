@@ -39,6 +39,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   const aaveBalance = getProtocolTotalUSD(balancesData, 'aave');
   const compoundBalance = getProtocolTotalUSD(balancesData, 'compound');
   const pendleBalance = getProtocolTotalUSD(balancesData, 'pendle');
+  const morphoBalance = getProtocolTotalUSD(balancesData, 'morpho');
 
   return (
     <View className="p-5">
@@ -247,6 +248,33 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             ) : (
               <AnimatedNumber
                 value={pendleBalance}
+                style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  lineHeight: 22,
+                  color: '#000000',
+                }}
+                duration={800}
+                formatOptions={{
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 3,
+                  prefix: '$',
+                }}
+              />
+            )}
+          </View>
+          <View className="flex-row items-center justify-between my-[3px]">
+            <View className="flex-row items-center">
+              <View className="w-2 h-2 rounded-full bg-[#6B46C1] mr-2" />
+              <Text className="text-[12px] leading-[17px] text-[#000000]">
+                {t('appProfile.morpho')}
+              </Text>
+            </View>
+            {isLoading ? (
+              <Skeleton width={100} height={22} borderRadius={12} />
+            ) : (
+              <AnimatedNumber
+                value={morphoBalance}
                 style={{
                   fontSize: 16,
                   fontWeight: '600',

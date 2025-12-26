@@ -190,6 +190,7 @@
     "aave": "Aave",
     "compound": "Compound",
     "pendle": "Pendle",
+    "morpho": "Morpho",
     "error": "Error"
   },
   "settings": {
