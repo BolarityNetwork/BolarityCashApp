@@ -117,16 +117,22 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
       const protocol = selectedVault.protocol.toLowerCase() as
         | 'aave'
         | 'compound'
-        | 'pendle';
+        | 'pendle'
+        | 'morpho';
 
       console.log(
         `💰 Depositing ${depositAmount} USDC to ${selectedVault.protocol}...`
       );
 
+      const marketAddress =
+        protocol === 'morpho' && selectedVault.market
+          ? selectedVault.market
+          : selectedVault.id;
+
       // Create vault market info for the selected protocol
       const vaultMarketInfo = createVaultMarketInfo(protocol, {
         assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
-        marketAddress: selectedVault.id,
+        marketAddress: marketAddress,
         chainId: 8453, // Base
         network: 'base',
         decimals: 6,
@@ -223,16 +229,24 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
               const protocol = selectedVault.protocol.toLowerCase() as
                 | 'aave'
                 | 'compound'
-                | 'pendle';
+                | 'pendle'
+                | 'morpho';
 
               console.log(
                 `💸 Withdrawing ${depositAmount} USDC from ${selectedVault.protocol}...`
               );
 
+              // For Morpho, use market field as marketAddress (ERC-4626 vault address)
+              // For other protocols, use id as marketAddress
+              const marketAddress =
+                protocol === 'morpho' && selectedVault.market
+                  ? selectedVault.market
+                  : selectedVault.id;
+
               // Create vault market info for the selected protocol
               const vaultMarketInfo = createVaultMarketInfo(protocol, {
                 assetAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base USDC
-                marketAddress: selectedVault.id,
+                marketAddress: marketAddress,
                 chainId: 8453, // Base
                 network: 'base',
                 decimals: 6,
@@ -256,6 +270,7 @@ const DepositVaultModal: React.FC<DepositVaultModalProps> = ({
                   protocol === 'pendle'
                     ? '0x1490516d8391e4d0bcbd13b7a56b4fe4996478be' // YT USDe Dec 2025
                     : undefined,
+                // Morpho uses ERC-4626 standard, no additional protocol-specific fields needed
               });
 
               const result = await vaultWithdraw(

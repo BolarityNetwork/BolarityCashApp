@@ -6,6 +6,7 @@ import {
 import { useAaveContract } from '@/hooks/protocol/useAaveContract';
 import { useCompoundContract } from '@/hooks/protocol/useCompoundContract';
 import { usePendleContract } from '@/hooks/protocol/usePendleContract';
+import { useMorphoVaultContract } from '@/hooks/protocol/useMorphoVaultContract';
 
 interface VaultServiceOperations {
   deposit: (params: VaultOperationParams) => Promise<VaultOperationResult>;
@@ -19,6 +20,7 @@ export function useVaultService(): VaultServiceOperations {
   const aaveContract = useAaveContract();
   const compoundContract = useCompoundContract();
   const pendleContract = usePendleContract();
+  const morphoContract = useMorphoVaultContract();
 
   // 根据协议类型选择对应的合约操作
   const getContractOperations = (protocol: string) => {
@@ -29,6 +31,8 @@ export function useVaultService(): VaultServiceOperations {
         return compoundContract;
       case 'pendle':
         return pendleContract;
+      case 'morpho':
+        return morphoContract;
       default:
         throw new Error(`Unsupported protocol: ${protocol}`);
     }
@@ -54,16 +58,21 @@ export function useVaultService(): VaultServiceOperations {
   const isLoading =
     aaveContract.isLoading ||
     compoundContract.isLoading ||
-    pendleContract.isLoading;
+    pendleContract.isLoading ||
+    morphoContract.isLoading;
 
   // 获取当前错误（任一协议有错误）
   const error =
-    aaveContract.error || compoundContract.error || pendleContract.error;
+    aaveContract.error ||
+    compoundContract.error ||
+    pendleContract.error ||
+    morphoContract.error;
 
   const clearError = () => {
     aaveContract.clearError();
     compoundContract.clearError();
     pendleContract.clearError();
+    morphoContract.clearError();
   };
 
   return {
@@ -77,7 +86,7 @@ export function useVaultService(): VaultServiceOperations {
 
 // 工具函数：创建 VaultMarketInfo
 export function createVaultMarketInfo(
-  protocol: 'aave' | 'compound' | 'pendle',
+  protocol: 'aave' | 'compound' | 'pendle' | 'morpho',
   marketData: any
 ): VaultMarketInfo {
   const baseInfo: VaultMarketInfo = {
@@ -109,6 +118,8 @@ export function createVaultMarketInfo(
         ptAddress: marketData.ptAddress,
         ytAddress: marketData.ytAddress,
       };
+      break;
+    case 'morpho':
       break;
   }
 

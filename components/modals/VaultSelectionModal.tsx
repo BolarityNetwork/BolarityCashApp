@@ -78,10 +78,28 @@ const VaultSelectionModal: React.FC<VaultSelectionModalProps> = ({
       );
     }
 
+    // Create mock Morpho vault for flexi category
+    const morphoVault: VaultItem = {
+      id: 'morpho-vault-mock',
+      apy: '8.5%',
+      category: 'flexi',
+      chain: 'base',
+      icon: require('@/assets/logos/compound.png'), // Using compound logo as placeholder, replace with Morpho logo when available
+      market: '0x00Cc39b44f74ad55fcb958925e2F4978C1466f7c',
+      note: 'Steakhouse High Yield Instant - ERC-4626 Vault',
+      protocol: 'morpho',
+      risk: 'Medium',
+      tvl: '$1.2M',
+    };
+
+    // Add Morpho vault at the end if category is flexi
+    const vaultsToDisplay =
+      selectedCategory?.id === 'flexi' ? [...vaults, morphoVault] : vaults;
+
     // Show actual vault options
     return (
       <View className="gap-3">
-        {vaults.map(vault => (
+        {vaultsToDisplay.map(vault => (
           <TouchableOpacity
             key={vault.id}
             className="bg-white rounded-2xl p-4 border border-gray-200"

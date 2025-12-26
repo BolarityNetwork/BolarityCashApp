@@ -2,7 +2,7 @@
 
 export interface VaultMarketInfo {
   // 基础信息
-  protocol: 'aave' | 'compound' | 'pendle';
+  protocol: 'aave' | 'compound' | 'pendle' | 'morpho';
   asset: string; // 资产地址
   marketAddress: string; // 市场合约地址
 
@@ -48,7 +48,7 @@ export interface VaultOperations {
 }
 
 export interface VaultServiceConfig {
-  protocol: 'aave' | 'compound' | 'pendle';
+  protocol: 'aave' | 'compound' | 'pendle' | 'morpho';
   network: string;
   chainId: number;
 }
